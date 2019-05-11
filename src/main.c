@@ -1,5 +1,6 @@
 #include "config.h"
 #include "fsys.h"
+#include "gui.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,8 +9,8 @@
 
 int main(int argc, char** argv) {
     if(argc < 2) {
-        fprintf(stderr, "Missing options. Try rotwkl --help\n");
-        return 1;
+        gui_init(argc, argv);
+        return 0;
     }
     
     if(argv[1][0] != '-') {
@@ -35,13 +36,13 @@ int main(int argc, char** argv) {
             return 1;
         }
         if(strcmp(argv[2], "rotwk") == 0) {
-            set_configuration("toml/rotwk.toml");
+            active_configuration("toml/rotwk.toml");
         }
         else if(strcmp(argv[2], "edain") == 0) {
-            set_configuration("toml/edain.toml");
+            active_configuration("toml/edain.toml");
         }
         else if(strcmp(argv[2], "botta") == 0) {
-            set_configuration("toml/botta.toml");
+            active_configuration("toml/botta.toml");
         }
         else {
             fprintf(stderr, "Unknown configuration %s\n", argv[2]);
@@ -72,56 +73,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-
-
-    /*
-    char str[50];
-    unsigned char hash[MD5_DIGEST_LENGTH];
-    if(!md5sum("toml/edain.toml", hash))
-        return 0;
-    int j;
-    for(j = 0; j < MD5_DIGEST_LENGTH; j++)
-        sprintf(&str[j * 2], "%02x", (unsigned int)hash[j]);
-    printf("%s\n", str);
-    */
-    /*
-    big_file* bf = malloc(100 * sizeof(big_file));
-    size_t bf_cap = 100;
-    big_file* df = malloc(100 * sizeof(big_file));
-    size_t df_cap = 100;
-    size_t swp_cap = 4;
-    size_t bf_size, df_size, swp_size;
-    dat_file* swp = malloc(swp_cap * sizeof(dat_file));
-    read_game_config("toml/edain.toml", &bf, &bf_cap, &bf_size, &df, &df_cap, &df_size, &swp, &swp_cap, &swp_size);
-    
-    int i;
-    printf("Enable\n");
-    for(i = 0; i < bf_size; i++) {
-        printf("%s\n", bf[i].name);
-        printf("%s\n", bf[i].checksum);
-        printf("%s\n\n", bf[i].extension);
-    }
-    printf("Disable\n");
-    for(i = 0; i < df_size; i++) {
-        printf("%s\n", df[i].name);
-        printf("%s\n", df[i].checksum);
-        printf("%s\n\n", df[i].extension);
-    }
-    printf("Swap:\n");
-    for(i = 0; i < swp_size; i++) {
-        printf("%s\n", swp[i].name);
-        printf("%s\n", swp[i].checksum);
-        if(swp[i].state == active)
-            printf("active\n");
-        else
-            printf("!active\n");
-    }
-    
-
-    free(bf);
-    free(df);
-    free(swp);
-    */
 
     return 0;
 }

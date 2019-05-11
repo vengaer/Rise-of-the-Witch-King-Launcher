@@ -2,15 +2,12 @@ CC ?= gcc
 UNAME := $(shell uname -s)
 BIN = rotwkl
 
-
 SRC = $(wildcard src/*.c)
 OBJ := $(addsuffix .o, $(basename $(SRC)))
 
-INC = -I src/
+INC = -I src/ 
 
-export CPFLAGS
-
-CFLAGS := $(CFLAGS) -std=c11 -Wall -Wextra -pedantic $(INC)
+CFLAGS := $(CFLAGS) -std=c11 -Wall -Wextra -pedantic -fopenmp $(INC) `pkg-config --cflags --libs gtk+-3.0`
 LIBS = -lssl -lcrypto
 
 ifeq ($(OS), Windows_NT)
@@ -18,7 +15,7 @@ ifeq ($(OS), Windows_NT)
 endif
 
 $(BIN): $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
 .PHONY: clean run
 

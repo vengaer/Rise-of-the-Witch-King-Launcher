@@ -3,18 +3,13 @@
 #include "game_files.h"
 
 #include <openssl/md5.h>
+#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #ifdef __linux__
 #include <unistd.h>
-#elif defined _WIN32
-#include <tchar.h>
-#include <windows.h>
-#ifdef _UNICODE
-#error "Unicode not supported"
-#endif
 #endif
 
 void set_extension(char* filename, char const* extension);
@@ -24,9 +19,9 @@ void revert_changes(big_file* enable, size_t enable_size, big_file* disable, siz
 
 bool md5sum(char const* filename, char* checksum) {
     int i, num_bytes;
-    FILE* file = fopen(filename, "rb");
+    FILE* fp = fopen(filename, "rb");
     
-    if(file == NULL) {
+    if(!fp) {
         fprintf(stderr, "%s could not be opened for hashing\n", filename);
         return false;
     }
@@ -36,11 +31,11 @@ bool md5sum(char const* filename, char* checksum) {
     MD5_CTX context;
     MD5_Init(&context);
 
-    while((num_bytes = fread(data, 1, CHUNK_SIZE, file)))
+    while((num_bytes = fread(data, 1, CHUNK_SIZE, fp)))
         MD5_Update(&context, data, num_bytes);
 
     MD5_Final(hash, &context);
-    fclose(file);
+    fclose(fp);
 
     for(i = 0; i < MD5_DIGEST_LENGTH; i++)
         sprintf(&checksum[i*2], "%02x", (unsigned int)hash[i]);
@@ -122,7 +117,7 @@ void update_config_file(char const* filename) {
     free(swap);
 }
 
-void set_configuration(char const* filename) {
+void active_configuration(char const* filename) {
     size_t i;
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
@@ -146,7 +141,6 @@ void set_configuration(char const* filename) {
         }
     }
 
-    // omp
     for(i = 0; i < swap_size; i++) {
         if(swap[i].state == inactive) {
             md5sum(swap[i].name, hash);
@@ -205,17 +199,12 @@ bool file_exists(char const* filename) {
     return false;
 
 #elif defined _WIN32
-    TCHAR tname[128];
-    _tcscpy(tname, filename);
-    
-    WIN32_FIND_DATA find_file_data;
-    HANDLE handle = FindFirstFile(tname, &find_file_data);
-    
-    bool found = handle != INVALID_HANDLE_VALUE;
-    if(found)
-        FindClose(handle);
+    FILE* fp = fopen(filename, "r");
+    if(!fp)
+    bool exists = fp != NULL;
+    fclose(fp);
 
-    return found;
+    return exists;
 #endif
 
     return false;
@@ -226,51 +215,56 @@ void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_
     char toggled[64];
     char hash[64];
 
-    // omp
-    for(i = 0; i < enable_size; i++) {
-        strcpy(toggled, enable[i].name);
-        set_extension(toggled, enable[i].extension);
-        if(file_exists(enable[i].name)) {
-            md5sum(enable[i].name, hash);
-            if(strcmp(enable[i].checksum, hash) != 0) {
-                char invalid[64];
-                strcpy(invalid, enable[i].name);
-                set_extension(invalid, INVALID_EXT);
-                fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", enable[i].name, invalid);
+    #pragma omp parallel private(i, toggled, hash) 
+    {
+        #pragma omp for
+        for(i = 0; i < enable_size; i++) {
+            strcpy(toggled, enable[i].name);
+            set_extension(toggled, enable[i].extension);
+            if(file_exists(enable[i].name)) {
+                md5sum(enable[i].name, hash);
+                if(strcmp(enable[i].checksum, hash) != 0) {
+                    char invalid[64];
+                    strcpy(invalid, enable[i].name);
+                    set_extension(invalid, INVALID_EXT);
+                    fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", enable[i].name, invalid);
 
-                rename(enable[i].name, invalid);
+                    rename(enable[i].name, invalid);
+                }
+                else {
+                    if(file_exists(toggled))
+                        remove(toggled);
+                    continue;
+                }
             }
-            else {
-                if(file_exists(toggled))
-                    remove(toggled);
-                continue;
-            }
-        }
-        strcpy(toggled, enable[i].name);
-        set_extension(toggled, enable[i].extension);
-        rename(toggled, enable[i].name);
-    }
-    for(i = 0; i < disable_size; i++) {
-        strcpy(toggled, disable[i].name);
-        set_extension(toggled, disable[i].extension);
-        if(file_exists(toggled)) {
-            md5sum(toggled, hash);
-            if(strcmp(disable[i].checksum, hash) != 0) {
-                char invalid[64];
-                strcpy(invalid, toggled);
-                set_extension(invalid, INVALID_EXT);
-                fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid);
-
-                rename(toggled, invalid);
-            }
-            else {
-                if(file_exists(disable[i].name))
-                    remove(disable[i].name);
-                continue;
-            }
+            strcpy(toggled, enable[i].name);
+            set_extension(toggled, enable[i].extension);
+            rename(toggled, enable[i].name);
         }
 
-        rename(disable[i].name, toggled);
+        #pragma omp for
+        for(i = 0; i < disable_size; i++) {
+            strcpy(toggled, disable[i].name);
+            set_extension(toggled, disable[i].extension);
+            if(file_exists(toggled)) {
+                md5sum(toggled, hash);
+                if(strcmp(disable[i].checksum, hash) != 0) {
+                    char invalid[64];
+                    strcpy(invalid, toggled);
+                    set_extension(invalid, INVALID_EXT);
+                    fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid);
+
+                    rename(toggled, invalid);
+                }
+                else {
+                    if(file_exists(disable[i].name))
+                        remove(disable[i].name);
+                    continue;
+                }
+            }
+
+            rename(disable[i].name, toggled);
+        }
     }
 
 }

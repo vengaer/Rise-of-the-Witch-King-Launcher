@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define CONFIG_FILE "toml/config.toml"
+
 #include "game_files.h"
 #include <stddef.h>
 
