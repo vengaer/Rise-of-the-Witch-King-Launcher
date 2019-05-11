@@ -12,9 +12,8 @@
 #include <unistd.h>
 #endif
 
-void set_extension(char* filename, char const* extension);
 bool file_exists(char const* filename);
-void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
+void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 
 bool md5sum(char const* filename, char* checksum) {
@@ -54,63 +53,83 @@ void update_config_file(char const* filename) {
                                &disable, &disable_cap, &disable_size,
                                &swap, &swap_cap, &swap_size);
     
-    size_t i;
-    char toggled[64];
-    bool config_enabled;
-    for(i = 0; i < enable_size; i++) {
-        if(file_exists(enable[i].name)) {
-            if(!md5sum(enable[i].name, enable[i].checksum))
-                return;
-        }
-        else {
-            config_enabled = false;
-            strcpy(toggled, enable[i].name);
-            set_extension(toggled, enable[i].extension);
-            if(!md5sum(toggled, enable[i].checksum))
-                return;
-        }
-    }
-    for(i = 0; i < disable_size; i++) {
-        if(file_exists(disable[i].name)) {
-            if(!md5sum(disable[i].name, disable[i].checksum))
-                return;
-        }
-        else {
-            config_enabled = true;
-            strcpy(toggled, disable[i].name);
-            set_extension(toggled, disable[i].extension);
-            if(!md5sum(toggled, disable[i].checksum))
-                return;
-        }
-    }
-    for(i = 0; i < swap_size; i++) {
-        strcpy(toggled, swap[i].name);
-        set_extension(toggled, OTHER_EXT);
-        if(swap[i].state == active) {
-            if(config_enabled) {
-                if(!md5sum(swap[i].name, swap[i].checksum))
-                    return;
+    bool success = true;
+    omp_lock_t lock;
+    omp_init_lock(&lock);
+
+    #pragma omp parallel 
+    {
+        size_t i;
+        char toggled[64];
+        bool config_enabled;
+        bool local_success = true;
+
+        #pragma omp for
+        for(i = 0; i < enable_size; i++) {
+            if(file_exists(enable[i].name)) {
+                if(!md5sum(enable[i].name, enable[i].checksum))
+                    local_success = false;
             }
             else {
-                if(!md5sum(toggled, swap[i].checksum))
-                    return;
+                config_enabled = false;
+                strcpy(toggled, enable[i].name);
+                set_extension(toggled, enable[i].extension);
+                if(!md5sum(toggled, enable[i].checksum))
+                   local_success = false;
             }
         }
-        else {
-            if(config_enabled) {
-                if(!md5sum(toggled, swap[i].checksum))
-                    return;
+        #pragma omp for
+        for(i = 0; i < disable_size; i++) {
+            if(file_exists(disable[i].name)) {
+                if(!md5sum(disable[i].name, disable[i].checksum))
+                    local_success = false;
             }
             else {
-                if(!md5sum(swap[i].name, swap[i].checksum))
-                    return;
+                config_enabled = true;
+                strcpy(toggled, disable[i].name);
+                set_extension(toggled, disable[i].extension);
+                if(!md5sum(toggled, disable[i].checksum))
+                    local_success = false;
             }
         }
+        #pragma omp for
+        for(i = 0; i < swap_size; i++) {
+            strcpy(toggled, swap[i].name);
+            set_extension(toggled, OTHER_EXT);
+            if(swap[i].state == active) {
+                if(config_enabled) {
+                    if(!md5sum(swap[i].name, swap[i].checksum))
+                        local_success = false;
+                }
+                else {
+                    if(!md5sum(toggled, swap[i].checksum))
+                        local_success = false;
+                }
+            }
+            else {
+                if(config_enabled) {
+                    if(!md5sum(toggled, swap[i].checksum))
+                        local_success = false;
+                }
+                else {
+                    if(!md5sum(swap[i].name, swap[i].checksum))
+                        local_success = false;
+                }
+            }
+        }
+
+        omp_set_lock(&lock);
+        success = local_success;
+        omp_unset_lock(&lock);
     }
 
-    write_game_config(filename, enable, enable_size, 
-                                disable, disable_size, 
-                                swap, swap_size);
+    if(success) {
+        write_game_config(filename, enable, enable_size, 
+                                    disable, disable_size, 
+                                    swap, swap_size);
+    }
+    else 
+        fprintf(stderr, "Errors were encountered during hashing, config file will remain unchanged\n");
 
     free(enable);
     free(disable);
@@ -131,13 +150,17 @@ void active_configuration(char const* filename) {
 
     char toggled[64];
     char hash[64];
-    rename_files(enable, enable_size, disable, disable_size);
+    toggle_big_files(enable, enable_size, disable, disable_size);
 
     for(i = 0; i < swap_size; i++) {
         if(swap[i].state == active) {
             md5sum(swap[i].name, hash);
-            if(file_exists(swap[i].name) && strcmp(swap[i].checksum, hash) == 0)
+            if(file_exists(swap[i].name) && strcmp(swap[i].checksum, hash) == 0) {
+                free(enable);
+                free(disable);
+                free(swap);
                 return;
+            }
         }
     }
 
@@ -198,7 +221,7 @@ bool file_exists(char const* filename) {
         return true;
     return false;
 
-#elif defined _WIN32
+#else
     FILE* fp = fopen(filename, "r");
     if(!fp)
     bool exists = fp != NULL;
@@ -210,13 +233,14 @@ bool file_exists(char const* filename) {
     return false;
 }
 
-void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size) {
-    size_t i;
-    char toggled[64];
-    char hash[64];
+void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size) {
 
-    #pragma omp parallel private(i, toggled, hash) 
+    #pragma omp parallel 
     {
+        size_t i;
+        char toggled[64];
+        char hash[64];
+
         #pragma omp for
         for(i = 0; i < enable_size; i++) {
             strcpy(toggled, enable[i].name);
@@ -270,7 +294,7 @@ void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_
 }
 
 void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size) {
-    rename_files(disable, disable_size, enable, enable_size);
+    toggle_big_files(disable, disable_size, enable, enable_size);
     
     char const* swp = "game.swp";
     char toggled[64];

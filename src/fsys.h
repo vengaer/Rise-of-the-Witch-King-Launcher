@@ -11,4 +11,6 @@ void update_config_file(char const* filename);
 
 void active_configuration(char const* filename);
 
+void set_extension(char* filename, char const* extension);
+
 #endif
