@@ -25,7 +25,6 @@ void read_game_config(char const* filename,
                       size_t* swap_capacity,
                       size_t* swap_size) {
 
-    size_t i;
     *enable_size = 0;
     *disable_size = 0;
     *swap_size = 0;
@@ -126,24 +125,24 @@ void write_game_config(char const* filename,
     size_t i;
     for(i = 0; i < enable_size; i++) {
         fprintf(fp, "[[enable]]\n");
-        fprintf(fp, "name = %s\n", enable[i].name);
-        fprintf(fp, "checksum = %s\n", enable[i].checksum);
-        fprintf(fp, "extension = %s\n\n", enable[i].extension);
+        fprintf(fp, "name = \"%s\"\n", enable[i].name);
+        fprintf(fp, "checksum = \"%s\"\n", enable[i].checksum);
+        fprintf(fp, "extension = \"%s\"\n\n", enable[i].extension);
     }
     for(i = 0; i < disable_size; i++) {
         fprintf(fp, "[[disable]]\n");
-        fprintf(fp, "name = %s\n", disable[i].name);
-        fprintf(fp, "checksum = %s\n", disable[i].checksum);
-        fprintf(fp, "extension = %s\n\n", disable[i].extension);
+        fprintf(fp, "name = \"%s\"\n", disable[i].name);
+        fprintf(fp, "checksum = \"%s\"\n", disable[i].checksum);
+        fprintf(fp, "extension = \"%s\"\n\n", disable[i].extension);
     }
     fprintf(fp, "[[swap]]\n");
     for(i = 0; i < swap_size; i++) {
         if(swap[i].state == active)
-            fprintf(fp, "    [swap.activate]");
+            fprintf(fp, "    [swap.activate]\n");
         else
-            fprintf(fp, "    [swap.deactivate]");
-        fprintf(fp, "        name = %s\n", swap[i].name);
-        fprintf(fp, "        checksum = %s\n", swap[i].checksum);
+            fprintf(fp, "    [swap.deactivate]\n");
+        fprintf(fp, "        name = \"%s\"\n", swap[i].name);
+        fprintf(fp, "        checksum = \"%s\"\n", swap[i].checksum);
     }
 
     fclose(fp);

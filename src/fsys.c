@@ -11,12 +11,15 @@
 #include <unistd.h>
 #elif defined _WIN32
 #include <tchar.h>
-#include <atlstr.h>
+#include <windows.h>
+#ifdef _UNICODE
+#error "Unicode not supported"
+#endif
 #endif
 
 void set_extension(char* filename, char const* extension);
-void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 bool file_exists(char const* filename);
+void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 
 bool md5sum(char const* filename, char* checksum) {
@@ -57,15 +60,58 @@ void update_config_file(char const* filename) {
                                &swap, &swap_cap, &swap_size);
     
     size_t i;
-    for(i = 0; i < enable_size; i++)
-        if(!md5sum(enable[i].name, enable[i].checksum))
-            return;
-    for(i = 0; i < disable_size; i++) 
-        if(!md5sum(disable[i].name, disable[i].checksum))
-            return;
-    for(i = 0; i < swap_size; i++)
-        if(!md5sum(swap[i].name, swap[i].checksum))
-            return;
+    char toggled[64];
+    bool config_enabled;
+    for(i = 0; i < enable_size; i++) {
+        if(file_exists(enable[i].name)) {
+            if(!md5sum(enable[i].name, enable[i].checksum))
+                return;
+        }
+        else {
+            config_enabled = false;
+            strcpy(toggled, enable[i].name);
+            set_extension(toggled, enable[i].extension);
+            if(!md5sum(toggled, enable[i].checksum))
+                return;
+        }
+    }
+    for(i = 0; i < disable_size; i++) {
+        if(file_exists(disable[i].name)) {
+            if(!md5sum(disable[i].name, disable[i].checksum))
+                return;
+        }
+        else {
+            config_enabled = true;
+            strcpy(toggled, disable[i].name);
+            set_extension(toggled, disable[i].extension);
+            if(!md5sum(toggled, disable[i].checksum))
+                return;
+        }
+    }
+    for(i = 0; i < swap_size; i++) {
+        strcpy(toggled, swap[i].name);
+        set_extension(toggled, OTHER_EXT);
+        if(swap[i].state == active) {
+            if(config_enabled) {
+                if(!md5sum(swap[i].name, swap[i].checksum))
+                    return;
+            }
+            else {
+                if(!md5sum(toggled, swap[i].checksum))
+                    return;
+            }
+        }
+        else {
+            if(config_enabled) {
+                if(!md5sum(toggled, swap[i].checksum))
+                    return;
+            }
+            else {
+                if(!md5sum(swap[i].name, swap[i].checksum))
+                    return;
+            }
+        }
+    }
 
     write_game_config(filename, enable, enable_size, 
                                 disable, disable_size, 
@@ -160,7 +206,7 @@ bool file_exists(char const* filename) {
 
 #elif defined _WIN32
     TCHAR tname[128];
-    _tcscpy(tname, A2T(filename));
+    _tcscpy(tname, filename);
     
     WIN32_FIND_DATA find_file_data;
     HANDLE handle = FindFirstFile(tname, &find_file_data);
@@ -182,6 +228,8 @@ void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_
 
     // omp
     for(i = 0; i < enable_size; i++) {
+        strcpy(toggled, enable[i].name);
+        set_extension(toggled, enable[i].extension);
         if(file_exists(enable[i].name)) {
             md5sum(enable[i].name, hash);
             if(strcmp(enable[i].checksum, hash) != 0) {
@@ -193,8 +241,8 @@ void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_
                 rename(enable[i].name, invalid);
             }
             else {
-                if(file_exists(enable[i].name))
-                    remove(enable[i].name);
+                if(file_exists(toggled))
+                    remove(toggled);
                 continue;
             }
         }
@@ -203,15 +251,17 @@ void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_
         rename(toggled, enable[i].name);
     }
     for(i = 0; i < disable_size; i++) {
-        if(file_exists(disable[i].name)) {
-            md5sum(disable[i].name, hash);
+        strcpy(toggled, disable[i].name);
+        set_extension(toggled, disable[i].extension);
+        if(file_exists(toggled)) {
+            md5sum(toggled, hash);
             if(strcmp(disable[i].checksum, hash) != 0) {
                 char invalid[64];
-                strcpy(invalid, disable[i].name);
+                strcpy(invalid, toggled);
                 set_extension(invalid, INVALID_EXT);
-                fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", disable[i].name, invalid);
+                fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid);
 
-                rename(disable[i].name, invalid);
+                rename(toggled, invalid);
             }
             else {
                 if(file_exists(disable[i].name))
@@ -220,8 +270,6 @@ void rename_files(big_file* enable, size_t enable_size, big_file* disable, size_
             }
         }
 
-        strcpy(toggled, disable[i].name);
-        set_extension(toggled, disable[i].extension);
         rename(disable[i].name, toggled);
     }
 

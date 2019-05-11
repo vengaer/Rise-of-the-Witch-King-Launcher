@@ -35,13 +35,13 @@ int main(int argc, char** argv) {
             return 1;
         }
         if(strcmp(argv[2], "rotwk") == 0) {
-            // rotwk.toml
+            set_configuration("toml/rotwk.toml");
         }
         else if(strcmp(argv[2], "edain") == 0) {
-            // edain.toml
+            set_configuration("toml/edain.toml");
         }
         else if(strcmp(argv[2], "botta") == 0) {
-            // botta.toml
+            set_configuration("toml/botta.toml");
         }
         else {
             fprintf(stderr, "Unknown configuration %s\n", argv[2]);
@@ -49,14 +49,18 @@ int main(int argc, char** argv) {
         }
     }
     else if(strcmp(argv[1], "--update") == 0 || strcmp(argv[1], "-u") == 0) {
+        if(argc < 3) {
+            fprintf(stderr, "%s must be followed by a configuration\n", argv[1]);
+            return 1;
+        }
         if(strcmp(argv[2], "rotwk") == 0) {
-            // rotwk.toml
+            update_config_file("toml/rotwk.toml");
         }
         else if(strcmp(argv[2], "edain") == 0) {
-            // edain.toml
+            update_config_file("toml/edain.toml");
         }
         else if(strcmp(argv[2], "botta") == 0) {
-            // botta.toml
+            update_config_file("toml/botta.toml");
         }
         else {
             fprintf(stderr, "Unknown configuration %s\n", argv[2]);
@@ -68,8 +72,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    printf("%s\n", argv[1]);
-    
+
 
     /*
     char str[50];
