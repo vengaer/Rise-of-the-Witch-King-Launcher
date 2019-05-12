@@ -151,6 +151,7 @@ void active_configuration(char const* filename) {
 
     char toggled[64];
     char hash[64];
+    // inline instead
     toggle_big_files(enable, enable_size, disable, disable_size);
 
     for(i = 0; i < swap_size; i++) {
@@ -224,10 +225,7 @@ void set_extension(char* filename, char const* extension) {
 
 bool file_exists(char const* filename) {
 #ifdef __linux__
-    if(access(filename, F_OK) != -1)
-        return true;
-    return false;
-
+    return access(filename, F_OK) != -1;
 #else
     FILE* fp = fopen(filename, "r");
     bool exists = fp != NULL;
