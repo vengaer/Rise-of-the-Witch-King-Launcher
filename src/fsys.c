@@ -12,7 +12,6 @@
 #include <unistd.h>
 #endif
 
-bool file_exists(char const* filename);
 void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 
@@ -118,9 +117,11 @@ void update_config_file(char const* filename) {
             }
         }
 
-        omp_set_lock(&lock);
-        success = local_success;
-        omp_unset_lock(&lock);
+        if(!local_success) {
+            omp_set_lock(&lock);
+            success = local_success;
+            omp_unset_lock(&lock);
+        }
     }
 
     if(success) {
@@ -212,6 +213,12 @@ void active_configuration(char const* filename) {
 
 void set_extension(char* filename, char const* extension) {
     char* ext_begin = strrchr(filename, '.');
+
+    if(strcmp(ext_begin, ".bak") == 0) {
+        filename[strlen(filename) - strlen(ext_begin)] = '\0';
+        ext_begin = strrchr(filename, '.');
+    }
+
     strcpy(++ext_begin, extension);
 }
 

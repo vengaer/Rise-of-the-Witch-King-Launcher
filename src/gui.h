@@ -4,6 +4,6 @@
 #include "fsys.h"
 #include <gtk/gtk.h>
 
-void gui_init(int argc, char** argv);
+void gui_run(int argc, char** argv);
 
 #endif

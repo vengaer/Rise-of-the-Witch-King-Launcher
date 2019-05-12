@@ -3,7 +3,7 @@
 static void gui_update_config(char const* filename);
 static void gui_active_config(char const* filename); 
 
-void gui_init(int argc, char** argv) {
+void gui_run(int argc, char** argv) {
     GtkBuilder* builder;
     GObject* window;
     GObject* button;

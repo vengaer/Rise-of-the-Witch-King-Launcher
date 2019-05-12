@@ -13,4 +13,6 @@ void active_configuration(char const* filename);
 
 void set_extension(char* filename, char const* extension);
 
+bool file_exists(char const* filename);
+
 #endif

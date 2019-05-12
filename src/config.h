@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define CONFIG_FILE "toml/config.toml"
+#define CONFIG_FILE "rotwkl.toml"
 
 #include "game_files.h"
 #include <stddef.h>
