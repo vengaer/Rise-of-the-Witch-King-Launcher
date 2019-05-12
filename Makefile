@@ -3,6 +3,7 @@ UNAME := $(shell uname -s)
 BIN = rotwkl
 
 SRC = $(wildcard src/*.c)
+RC = $(wildcard src/*.rc)
 OBJ := $(addsuffix .o, $(basename $(SRC)))
 
 INC = -I src/ 
