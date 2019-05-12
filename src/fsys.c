@@ -268,8 +268,7 @@ void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, s
                     continue;
                 }
             }
-            strcpy(toggled, enable[i].name);
-            set_extension(toggled, enable[i].extension);
+            
             rename(toggled, enable[i].name);
         }
 
