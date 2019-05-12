@@ -7,12 +7,13 @@ OBJ := $(addsuffix .o, $(basename $(SRC)))
 
 INC = -I src/ 
 
-CFLAGS := $(CFLAGS) -std=c11 -Wall -Wextra -pedantic -fopenmp $(INC) `pkg-config --cflags --libs gtk+-3.0`
-LIBS = -lssl -lcrypto
-
 ifeq ($(OS), Windows_NT)
-    LIBS += -L "%PROGRAMFILES(x86)\OpenSSL-win32\lib\VC"
+    INC += -I "C:\msys64\mingw64\include"
+    LFLAGS += -L "C:\msys64\mingw64\lib"
 endif
+
+CFLAGS := $(CFLAGS) -std=c11 -Wall -Wextra -pedantic -fopenmp $(INC)
+LIBS = $(LFLAGS) -lssl -lcrypto
 
 $(BIN): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 

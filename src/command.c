@@ -15,7 +15,7 @@ void launch_game() {
 void sleep_for(size_t ms) {
 #ifdef __linux__
     sleep(ms / 1000);
-#elif defined _WIN32
+#elif defined __CYGWIN__ || defined _WIN32
     Sleep(ms);
 #endif
 }

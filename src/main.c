@@ -1,20 +1,25 @@
 #include "config.h"
 #include "command.h"
-#include "fsys.h"
 #include "gui.h"
+#include "fsys.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 
+
 int main(int argc, char** argv) {
     if(argc < 2) {
+        #if defined __CYGWIN__ || defined _WIN32
         if(!file_exists(CONFIG_FILE)) {
             /* gui setup */
         }
-        gui_run(argc, argv);
         return 0;
+        #elif defined __linux__
+        fprintf(stderr, "GUI not available on Linux. Try rotwkl --help\n");
+        return 1;
+        #endif
     }
     
     if(argv[1][0] != '-') {

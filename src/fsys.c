@@ -230,9 +230,9 @@ bool file_exists(char const* filename) {
 
 #else
     FILE* fp = fopen(filename, "r");
-    if(!fp)
     bool exists = fp != NULL;
-    fclose(fp);
+    if(exists)
+        fclose(fp);
 
     return exists;
 #endif
