@@ -64,7 +64,7 @@ void read_game_config(char const* filename,
 
         if(strcmp(header, "enable") == 0) {
             if(*enable_size >= *enable_capacity) {
-                *enable = realloc(*enable, 2 * (*enable_capacity));
+                *enable = realloc(*enable, 2 * (*enable_capacity) * sizeof(big_file));
                 *enable_capacity *= 2;
             }
             
@@ -76,7 +76,7 @@ void read_game_config(char const* filename,
         }
         else if(strcmp(header, "disable") == 0) {
             if(*disable_size >= *disable_capacity) {
-                *disable = realloc(*disable, 2 * (*disable_capacity));
+                *disable = realloc(*disable, 2 * (*disable_capacity) * sizeof(big_file));
                 *disable_capacity *= 2;
             }
             
@@ -89,7 +89,7 @@ void read_game_config(char const* filename,
         }
         else if(strcmp(header, "swap") == 0) {
             if(*swap_size >= *swap_capacity) {
-                *swap = realloc(*swap, 2 * (*swap_capacity));
+                *swap = realloc(*swap, 2 * (*swap_capacity) * sizeof(dat_file));
                 *swap_capacity *= 2;
             }
             if(!read_dat_table(&fp, line, sizeof line, &(*swap)[(*swap_size)++])) {
