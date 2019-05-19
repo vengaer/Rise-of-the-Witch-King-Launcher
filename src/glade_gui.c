@@ -34,9 +34,8 @@ void gui_init(int* argc, char*** argv) {
     GObject *rotwk_upd, *edain_upd, *botta_upd;
     GObject *rotwk_launch, *edain_launch, *botta_launch;
 
-    read_launcher_config(&ld, CONFIG_FILE);
-    //if(!read_launcher_config(&ld, CONFIG_FILE))
-        //return;
+    if(!read_launcher_config(&ld, CONFIG_FILE))
+        return;
     
     construct_from_rel_path(&ld, launch_cmd, "/lotrbfme2ep1.exe");
     construct_from_rel_path(&ld, rotwk_toml, "/toml/rotwk.toml");
