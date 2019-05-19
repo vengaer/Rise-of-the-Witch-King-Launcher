@@ -19,10 +19,13 @@ LIBS = $(LFLAGS) -lssl -lcrypto
 $(BIN): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
-.PHONY: clean run
+.PHONY: clean run release
 
 clean:
 	rm -f $(OBJ) $(BIN)
 
 run: $(BIN)
 	./$(BIN)
+
+release: CFLAGS += -o3
+release: $(BIN)
