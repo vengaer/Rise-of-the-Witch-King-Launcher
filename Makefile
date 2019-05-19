@@ -9,12 +9,12 @@ OBJ := $(addsuffix .o, $(basename $(SRC)))
 INC = -I src/ 
 
 ifeq ($(OS), Windows_NT)
-    INC += -I "C:\msys64\mingw64\include"
-    LFLAGS += -L "C:\msys64\mingw64\lib"
+    INC += -I "C:/msys64/mingw64/include"
+    LFLAGS += -L "C:/msys64/mingw64/lib"
 endif
 
 CFLAGS := $(CFLAGS) -std=c11 -Wall -Wextra -pedantic -fopenmp $(INC)
-LIBS = $(LFLAGS) -lssl -lcrypto
+LIBS = $(LFLAGS)   -static -static-libgcc -lssl -lcrypto -lgomp -lpthread
 
 $(BIN): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 

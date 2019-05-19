@@ -8,6 +8,8 @@
 #include <string.h>
 #include <unistd.h>
 
+/* TODO: fix botta */
+/* TODO: handle paths (when run from different dir) */
 
 static void print_help(void) {
     fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");
@@ -23,7 +25,6 @@ static void print_help(void) {
 }
 
 static char const CONFIG_FILE[] = "rotwkl.toml";
-
 
 int main(int argc, char** argv) {
     if(argc < 2) {
@@ -91,7 +92,7 @@ int main(int argc, char** argv) {
     else 
         read_launcher_config(&ld, lcfg);
 
-    char launch_cmd[128];
+    char launch_cmd[256];
     char rotwk_toml[128];
     char edain_toml[128];
     char botta_toml[128];
@@ -119,14 +120,22 @@ int main(int argc, char** argv) {
             return 1;
         }
     }
-
+    
+    configuration active;
+    
     if(r_flag || s_flag) {
-        if(strcmp(scfg, "rotwk") == 0)
+        if(strcmp(scfg, "rotwk") == 0) {
             set_active_configuration(rotwk_toml, !n_flag);
-        else if(ld.edain_available && strcmp(scfg, "edain") == 0) 
+            active = rotwk;
+        }
+        else if(ld.edain_available && strcmp(scfg, "edain") == 0) {
             set_active_configuration(edain_toml, !n_flag);
-        else if(ld.botta_available && strcmp(scfg, "botta") == 0) 
+            active = edain;
+        }
+        else if(ld.botta_available && strcmp(scfg, "botta") == 0) {
             set_active_configuration(botta_toml, !n_flag);
+            active = botta;
+        }
         else {
             fprintf(stderr, "Unknown configuration %s\n", scfg);
             return 1;
@@ -137,7 +146,11 @@ int main(int argc, char** argv) {
                     fprintf(stderr, "'%s' returned an error\n", ld.mount_cmd);
                     return 1;
                 }
-                    
+            }
+        
+            if(active == botta) {
+                strcat(launch_cmd, " -mod ");
+                strcat(launch_cmd, ld.botta_path);
             }
 
             if(system(launch_cmd) != 0)

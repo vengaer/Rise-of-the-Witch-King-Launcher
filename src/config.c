@@ -14,6 +14,7 @@ bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry);
 bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry);
 void remove_newline(char* line);
 void replace_char(char* line, char orig, char repl);
+void sys_format(char* syscall, char const* orig_command);
 
 void read_game_config(char const* filename,
                       big_file** enable,
@@ -293,9 +294,9 @@ void read_launcher_config(launcher_data* cfg, char const* file) {
             if(strcmp(key, "automatic") == 0)
                 cfg->automatic_mount = strcmp(value, "true") == 0;
             else if(strcmp(key, "mount_cmd") == 0)
-                strcpy(cfg->mount_cmd, value);
+                sys_format(cfg->mount_cmd, value);
             else if(strcmp(key, "umount_cmd") == 0)
-                strcpy(cfg->umount_cmd, value);
+                sys_format(cfg->umount_cmd, value);
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
@@ -452,4 +453,13 @@ void replace_char(char* line, char orig, char repl) {
     for(i = 0; i < len; i++)
         if(line[i] == orig)
             line[i] = repl;
+}
+
+void sys_format(char* syscall, char const* orig_command) {
+    syscall[0] = '\"';
+    strcpy(syscall + 1, orig_command);
+    replace_char(syscall, '\'', '\"');
+    int len = strlen(syscall);
+    syscall[len - 1] = '\"';
+    syscall[len] = '\0';
 }

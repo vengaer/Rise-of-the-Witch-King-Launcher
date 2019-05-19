@@ -14,6 +14,12 @@ typedef enum {
     inactive
 } target_state;
 
+typedef enum {
+    rotwk,
+    edain,
+    botta
+} configuration;
+
 typedef struct {
     char name[64];
     char checksum[64];
