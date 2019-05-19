@@ -25,8 +25,9 @@ void write_game_config(char const* filename,
 
 void cli_setup(launcher_data* cfg, char const* file);
 
-void write_launcher_config(launcher_data* cfg, char const* file);
-void read_launcher_config(launcher_data* cfg, char const* file);
-                       
+void write_launcher_config(launcher_data const* cfg, char const* file);
+bool read_launcher_config(launcher_data* cfg, char const* file);
+
+void construct_from_rel_path(launcher_data const* cfg, char* dst, char const* rel_path);
 
 #endif

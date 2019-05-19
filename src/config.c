@@ -210,6 +210,7 @@ void cli_setup(launcher_data* cfg, char const* file) {
         remove_newline(cfg->mount_cmd);
         replace_char(cfg->mount_cmd, '"', '\'');
         printf("Mount command set to '%s'.\n", cfg->mount_cmd);
+
         printf("Enter the unmount command (path to executable, potential command line options and image if necessary).\n");
         fgets(cfg->umount_cmd, sizeof cfg->umount_cmd, stdin);
         remove_newline(cfg->umount_cmd);
@@ -224,7 +225,7 @@ void cli_setup(launcher_data* cfg, char const* file) {
     write_launcher_config(cfg, file);
 }
 
-void write_launcher_config(launcher_data* cfg, char const* file) {
+void write_launcher_config(launcher_data const* cfg, char const* file) {
     FILE* fp = fopen(file, "w");
 
     if(!fp) {
@@ -247,11 +248,11 @@ void write_launcher_config(launcher_data* cfg, char const* file) {
     fclose(fp);
 }
 
-void read_launcher_config(launcher_data* cfg, char const* file) {
+bool read_launcher_config(launcher_data* cfg, char const* file) {
     FILE* fp = fopen(file, "r");
     if(!fp) {
         fprintf(stderr, "Could not read config file\n");
-        return;
+        return false;
     }
     char line[128];
     char header[32];
@@ -305,6 +306,13 @@ void read_launcher_config(launcher_data* cfg, char const* file) {
     }
 
     fclose(fp);
+
+    return true;
+}
+
+void construct_from_rel_path(launcher_data const* cfg, char* dst, char const* rel_path) {
+    strcpy(dst, cfg->game_path);
+    strcat(dst, rel_path);
 }
 
 bool header_name(char const* line, char* header) {

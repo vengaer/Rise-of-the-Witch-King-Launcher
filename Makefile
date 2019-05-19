@@ -8,13 +8,15 @@ OBJ := $(addsuffix .o, $(basename $(SRC)))
 
 INC = -I src/ 
 
+CFLAGS := $(CFLAGS) -std=c11 -Wall -Wextra -pedantic -fopenmp `pkg-config --cflags gtk+-3.0` $(INC)
+LIBS = $(LFLAGS) -static-libgcc -lssl -lcrypto -lgomp -lpthread `pkg-config --libs gtk+-3.0`
+
 ifeq ($(OS), Windows_NT)
     INC += -I "C:/msys64/mingw64/include"
     LFLAGS += -L "C:/msys64/mingw64/lib"
+    LIBS := -static $(LFLAGS)
 endif
 
-CFLAGS := $(CFLAGS) -std=c11 -Wall -Wextra -pedantic -fopenmp $(INC)
-LIBS = $(LFLAGS)   -static -static-libgcc -lssl -lcrypto -lgomp -lpthread
 
 $(BIN): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 

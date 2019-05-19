@@ -1,5 +1,6 @@
 #include "config.h"
 #include "command.h"
+#include "glade_gui.h"
 #include "fsys.h"
 #include <ctype.h>
 #include <stdbool.h>
@@ -24,11 +25,12 @@ static void print_help(void) {
     fprintf(stderr, "* The mod to enable must be installed correctly\n");
 }
 
-static char const CONFIG_FILE[] = "rotwkl.toml";
 
 int main(int argc, char** argv) {
+    static char const CONFIG_FILE[] = "rotwkl.toml";
     if(argc < 2) {
-        print_help();
+        gui_init(&argc, &argv);
+        //print_help();
         return 0;
     }
 
@@ -96,14 +98,11 @@ int main(int argc, char** argv) {
     char rotwk_toml[128];
     char edain_toml[128];
     char botta_toml[128];
-    strcpy(launch_cmd, ld.game_path);
-    strcpy(rotwk_toml, ld.game_path);
-    strcpy(edain_toml, ld.game_path);
-    strcpy(botta_toml, ld.game_path);
-    strcat(rotwk_toml, "/toml/rotwk.toml");
-    strcat(edain_toml, "/toml/edain.toml");
-    strcat(botta_toml, "/toml/botta.toml");
-    strcat(launch_cmd, "/lotrbfme2ep1.exe");
+    
+    construct_from_rel_path(&ld, launch_cmd, "/lotrbfme2ep1.exe");
+    construct_from_rel_path(&ld, rotwk_toml, "/toml/rotwk.toml");
+    construct_from_rel_path(&ld, edain_toml, "/toml/edain.toml");
+    construct_from_rel_path(&ld, botta_toml, "/toml/botta.toml");
 
     if(u_flag) {
         if(strcmp(ucfg, "rotwk") == 0) {
@@ -122,6 +121,7 @@ int main(int argc, char** argv) {
     }
     
     configuration active;
+    bool mounted = false;
     
     if(r_flag || s_flag) {
         if(strcmp(scfg, "rotwk") == 0) {
@@ -141,11 +141,14 @@ int main(int argc, char** argv) {
             return 1;
         }
         if(r_flag) {
+            
+            /* Check .dat file checksum */
             if(ld.automatic_mount) {
                 if(system(ld.mount_cmd) != 0) {
                     fprintf(stderr, "'%s' returned an error\n", ld.mount_cmd);
                     return 1;
                 }
+                mounted = true;
             }
         
             if(active == botta) {
@@ -159,7 +162,7 @@ int main(int argc, char** argv) {
             while(game_running())
                 sleep_for(SLEEP_TIME);
             
-            if(ld.automatic_mount) {
+            if(mounted && ld.automatic_mount) {
                 if(system(ld.umount_cmd) != 0) {
                     fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
                     return 1;
