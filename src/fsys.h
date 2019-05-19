@@ -9,7 +9,7 @@ bool md5sum(char const* filename, char* csum);
 
 void update_config_file(char const* filename);
 
-void active_configuration(char const* filename);
+void set_active_configuration(char const* filename, bool should_swap);
 
 void set_extension(char* filename, char const* extension);
 

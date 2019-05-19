@@ -1,16 +1,13 @@
 #include "fsys.h"
 #include "config.h"
-#include "game_files.h"
+#include "game_data.h"
 
 #include <openssl/md5.h>
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifdef __linux__
 #include <unistd.h>
-#endif
 
 void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
@@ -137,7 +134,9 @@ void update_config_file(char const* filename) {
     free(swap);
 }
 
-void active_configuration(char const* filename) {
+
+
+void set_active_configuration(char const* filename, bool should_swap) {
     size_t i;
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
@@ -153,6 +152,13 @@ void active_configuration(char const* filename) {
     char hash[64];
     // inline instead
     toggle_big_files(enable, enable_size, disable, disable_size);
+
+    if(!should_swap) {
+        free(enable);
+        free(disable);
+        free(swap);
+        return;
+    }
 
     for(i = 0; i < swap_size; i++) {
         if(swap[i].state == active) {

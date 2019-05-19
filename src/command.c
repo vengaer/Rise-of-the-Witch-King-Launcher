@@ -3,13 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-bool game_running() {
+bool game_running(void) {
     return system(PS_LIST) == 0;
-}
-
-void launch_game() {
-    if(system(LAUNCH_COMMAND) != 0)
-        fprintf(stderr, "Failed to launch game\n");
 }
 
 void sleep_for(size_t ms) {

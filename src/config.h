@@ -1,9 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define CONFIG_FILE "rotwkl.toml"
-
-#include "game_files.h"
+#include "game_data.h"
 #include <stddef.h>
 
 void read_game_config(char const* filename, 
@@ -24,6 +22,11 @@ void write_game_config(char const* filename,
                        size_t disable_size,
                        dat_file* swap,
                        size_t swap_size);
+
+void cli_setup(launcher_data* cfg, char const* file);
+
+void write_launcher_config(launcher_data* cfg, char const* file);
+void read_launcher_config(launcher_data* cfg, char const* file);
                        
 
 #endif
