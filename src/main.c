@@ -36,8 +36,6 @@ int main(int argc, char** argv) {
     bool r_flag = false, s_flag = false, u_flag = false, h_flag = false, n_flag = false;
     char *scfg = NULL, *ucfg = NULL;
     int idx, opt;
-    extern char* optarg;
-    extern int optind, optopt;
 
     while((opt = getopt(argc, argv, ":r:s:u:c:hnv")) != -1) {
         switch(opt) {
@@ -101,7 +99,7 @@ int main(int argc, char** argv) {
     strcpy(rotwk_toml, ld.game_path);
     strcpy(edain_toml, ld.game_path);
     strcpy(botta_toml, ld.game_path);
-    strcat(rotwk_toml, "/toml/rotwl.toml");
+    strcat(rotwk_toml, "/toml/rotwk.toml");
     strcat(edain_toml, "/toml/edain.toml");
     strcat(botta_toml, "/toml/botta.toml");
     strcat(launch_cmd, "/lotrbfme2ep1.exe");

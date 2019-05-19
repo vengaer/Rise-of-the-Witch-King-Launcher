@@ -13,6 +13,7 @@ bool read_dat_entry(char* line, dat_file* entry);
 bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry);
 bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry);
 void remove_newline(char* line);
+void replace_char(char* line, char orig, char repl);
 
 void read_game_config(char const* filename,
                       big_file** enable,
@@ -206,10 +207,12 @@ void cli_setup(launcher_data* cfg, char const* file) {
         printf("Enter the mount command (path to executable, potential command line options and path to the image).\n");
         fgets(cfg->mount_cmd, sizeof cfg->mount_cmd, stdin);
         remove_newline(cfg->mount_cmd);
+        replace_char(cfg->mount_cmd, '"', '\'');
         printf("Mount command set to '%s'.\n", cfg->mount_cmd);
         printf("Enter the unmount command (path to executable, potential command line options and image if necessary).\n");
         fgets(cfg->umount_cmd, sizeof cfg->umount_cmd, stdin);
         remove_newline(cfg->umount_cmd);
+        replace_char(cfg->umount_cmd, '"', '\'');
         printf("Unmount command set ot '%s'.\n", cfg->umount_cmd);
     }
     else {
@@ -253,7 +256,7 @@ void read_launcher_config(launcher_data* cfg, char const* file) {
     char header[32];
     char tmp_header[32];
     char key[32];
-    char value[64];
+    char value[128];
 
     while(fgets(line, sizeof line, fp)) {
         if(line[0] == '\n')
@@ -331,12 +334,13 @@ bool subheader_name(char const* line, char* header) {
 
 void get_table_key(char const* entry, char* key) {
     size_t i;
-    for(i = 0; i < strlen(entry); i++) {
-        if(entry[i] != ' ')
+    size_t len = strlen(entry);
+    for(i = 0; i < len; i++) {
+        if(entry[i] != ' ' && entry[i] != '\t')
             break;
     }
     size_t start = i;
-    for(; i < strlen(entry); i++)
+    for(; i < len; i++)
         if(entry[i] == ' ')
             break;
 
@@ -440,4 +444,12 @@ void remove_newline(char* line) {
     int len = strlen(line);
     if(line[len - 1] == '\n')
         line[len - 1] = '\0';
+}
+
+void replace_char(char* line, char orig, char repl) {
+    int len = strlen(line);
+    int i;
+    for(i = 0; i < len; i++)
+        if(line[i] == orig)
+            line[i] = repl;
 }
