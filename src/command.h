@@ -1,6 +1,7 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include <game_data.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -22,5 +23,7 @@
 
 bool game_running(void);
 void sleep_for(size_t ms);
+
+void cd_to_game_path(launcher_data const* cfg);
 
 #endif

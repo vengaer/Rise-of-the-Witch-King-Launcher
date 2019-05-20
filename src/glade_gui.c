@@ -36,6 +36,8 @@ void gui_init(int* argc, char*** argv) {
 
     if(!read_launcher_config(&ld, CONFIG_FILE))
         return;
+
+    cd_to_game_path(&ld);
     
     construct_from_rel_path(&ld, launch_cmd, "/lotrbfme2ep1.exe");
     construct_from_rel_path(&ld, rotwk_toml, "/toml/rotwk.toml");

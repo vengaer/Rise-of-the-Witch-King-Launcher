@@ -12,6 +12,9 @@
 /* TODO: fix botta */
 /* TODO: handle paths (when run from different dir) */
 
+/* Add csum */
+#define NEW_DAT_CSUM ""
+
 static void print_help(void) {
     fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");
     fprintf(stderr, "    -r <config>,        Run the given configuration.\n");
@@ -27,7 +30,9 @@ static void print_help(void) {
 
 
 int main(int argc, char** argv) {
+
     static char const CONFIG_FILE[] = "rotwkl.toml";
+
     if(argc < 2) {
         gui_init(&argc, &argv);
         //print_help();
@@ -94,6 +99,8 @@ int main(int argc, char** argv) {
     else 
         read_launcher_config(&ld, lcfg);
 
+    cd_to_game_path(&ld);
+
     char launch_cmd[256];
     char rotwk_toml[128];
     char edain_toml[128];
@@ -121,7 +128,6 @@ int main(int argc, char** argv) {
     }
     
     configuration active;
-    bool mounted = false;
     
     if(r_flag || s_flag) {
         if(strcmp(scfg, "rotwk") == 0) {
@@ -141,14 +147,15 @@ int main(int argc, char** argv) {
             return 1;
         }
         if(r_flag) {
+            char game_csum[64];
+            md5sum("game.dat", game_csum);
+            bool mounting_necessary = strcmp(game_csum, NEW_DAT_CSUM);
             
-            /* Check .dat file checksum */
-            if(ld.automatic_mount) {
+            if(mounting_necessary && ld.automatic_mount) {
                 if(system(ld.mount_cmd) != 0) {
                     fprintf(stderr, "'%s' returned an error\n", ld.mount_cmd);
                     return 1;
                 }
-                mounted = true;
             }
         
             if(active == botta) {
@@ -162,7 +169,7 @@ int main(int argc, char** argv) {
             while(game_running())
                 sleep_for(SLEEP_TIME);
             
-            if(mounted && ld.automatic_mount) {
+            if(mounting_necessary && ld.automatic_mount) {
                 if(system(ld.umount_cmd) != 0) {
                     fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
                     return 1;
