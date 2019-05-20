@@ -11,7 +11,7 @@
 
 /* TODO: fix botta */
 /* TODO: handle paths (when run from different dir) */
-/* Add csum to game_data.h*/
+/* Add csum to game_data.h, check in glade_gui before mounting */
 /* Popups, tooltips, resizing, sensitivity umount_imspec */
 
 static void print_help(void) {
