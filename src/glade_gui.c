@@ -284,6 +284,7 @@ static void gui_save_preferences(GtkButton* button, gpointer data) {
         if(!config_exists) {
             config_exists = true;
             gtk_widget_set_sensitive(GTK_WIDGET(pref_switcher), true);
+            gui_setup_config();
         }
     }
 }   
