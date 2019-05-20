@@ -36,12 +36,17 @@ typedef struct {
 typedef struct {
     char game_path[128];
     char botta_path[128];
+    char mount_exe[256];
+    char disc_image[256];
+    char mount_flags[32];
+    char umount_flags[32];
     char mount_cmd[256];
     char umount_cmd[256];
     bool edain_available;
     bool botta_available;
     bool automatic_mount;
     bool swap_dat_file;
+    bool umount_imspec;
 } launcher_data;
     
 void launcher_data_init(launcher_data* cfg);

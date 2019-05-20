@@ -10,14 +10,17 @@
 
 #define UNUSED(x) (void)(x)
 
-static void gui_update_rotwk(GtkWidget* widget, gpointer data);
-static void gui_update_edain(GtkWidget* widget, gpointer data);
-static void gui_update_botta(GtkWidget* widget, gpointer data);
-static void gui_update_all(GtkWidget* widget, gpointer data);
-static void gui_launch_rotwk(GtkWidget* widget, gpointer data);
-static void gui_launch_edain(GtkWidget* widget, gpointer data);
-static void gui_launch_botta(GtkWidget* widget, gpointer data);
+static void gui_update_rotwk(GtkButton* button, gpointer data);
+static void gui_update_edain(GtkButton* button, gpointer data);
+static void gui_update_botta(GtkButton* button, gpointer data);
+static void gui_update_all(GtkButton* button, gpointer data);
+static void gui_launch_rotwk(GtkButton* button, gpointer data);
+static void gui_launch_edain(GtkButton* button, gpointer data);
+static void gui_launch_botta(GtkButton* button, gpointer data);
 static void gui_toggle_dat_swap(GtkToggleButton* toggle, gpointer data);
+static void gui_botta_toggle(GtkSwitch* gswitch, gpointer data);
+static void gui_mount_toggle(GtkSwitch* gswitch, gpointer data);
+static void gui_save_preferences(GtkButton* button, gpointer data);
 
 static void gui_launch(configuration config);
 static bool gui_setup_config(void);
@@ -32,20 +35,29 @@ static bool swap_dat_file = true;
 static char game_csum[64];
 static bool mounting_necessary;
 static bool lock_gui;
+static bool config_exists;
+
+static GObject *game_dir, *botta_dir;
+static GObject *edain_toggle, *botta_toggle, *mount_toggle;
+static GObject *mount_exe, *image;
+static GObject *mount_flag, *umount_flag, *umount_imspec_toggle;
+static GObject *pref_switcher;
 
 void gui_init(int* argc, char*** argv) {
     GtkBuilder* builder;
     GtkWidget* window;
     GError* error = NULL;
-    GObject *quit1, *quit2, *dat_swap;
+    GObject *quit1, *quit2, *quit3;
+    GObject *dat_swap;
     GObject *rotwk_upd, *edain_upd, *botta_upd, *all_upd;
     GObject *rotwk_launch, *edain_launch, *botta_launch;
+    GObject *pref_save;
+    GObject *main_stack;
+    GObject *pref_pane;
 
     lock_gui = false;
 
-    //if(!gui_setup_config())
-        //return;
-    gui_setup_config();
+    config_exists = gui_setup_config();
     
     gtk_init(argc, argv);
     builder = gtk_builder_new();
@@ -59,82 +71,128 @@ void gui_init(int* argc, char*** argv) {
     window = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    rotwk_upd    = gtk_builder_get_object(builder, "rotwk_upd");
-    edain_upd    = gtk_builder_get_object(builder, "edain_upd");
-    botta_upd    = gtk_builder_get_object(builder, "botta_upd");
-    all_upd      = gtk_builder_get_object(builder, "all_upd");
-    rotwk_launch = gtk_builder_get_object(builder, "rotwk_launch");
-    edain_launch = gtk_builder_get_object(builder, "edain_launch");
-    botta_launch = gtk_builder_get_object(builder, "botta_launch");
-    quit1        = gtk_builder_get_object(builder, "quit1");
-    quit2        = gtk_builder_get_object(builder, "quit2");
-    dat_swap     = gtk_builder_get_object(builder, "dat_swap");
+    rotwk_upd            = gtk_builder_get_object(builder, "rotwk_upd");
+    edain_upd            = gtk_builder_get_object(builder, "edain_upd");
+    botta_upd            = gtk_builder_get_object(builder, "botta_upd");
+    all_upd              = gtk_builder_get_object(builder, "all_upd");
+    rotwk_launch         = gtk_builder_get_object(builder, "rotwk_launch");
+    edain_launch         = gtk_builder_get_object(builder, "edain_launch");
+    botta_launch         = gtk_builder_get_object(builder, "botta_launch");
+    quit1                = gtk_builder_get_object(builder, "quit1");
+    quit2                = gtk_builder_get_object(builder, "quit2");
+    quit3                = gtk_builder_get_object(builder, "quit3");
+    dat_swap             = gtk_builder_get_object(builder, "dat_swap");
+    game_dir             = gtk_builder_get_object(builder, "game_dir");
+    botta_dir            = gtk_builder_get_object(builder, "botta_dir");
+    edain_toggle         = gtk_builder_get_object(builder, "edain_toggle");
+    botta_toggle         = gtk_builder_get_object(builder, "botta_toggle");
+    mount_toggle         = gtk_builder_get_object(builder, "mount_toggle");
+    mount_exe            = gtk_builder_get_object(builder, "mount_exe");
+    image                = gtk_builder_get_object(builder, "image");
+    mount_flag           = gtk_builder_get_object(builder, "mount_flag");
+    umount_flag          = gtk_builder_get_object(builder, "umount_flag");
+    umount_imspec_toggle = gtk_builder_get_object(builder, "umount_imspec_toggle");
+    pref_save            = gtk_builder_get_object(builder, "pref_save");
+    main_stack           = gtk_builder_get_object(builder, "main_stack");
+    pref_pane            = gtk_builder_get_object(builder, "pref_pane");
+    pref_switcher        = gtk_builder_get_object(builder, "pref_switcher");
     
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dat_swap), ld.swap_dat_file);
 
+    gtk_switch_set_active(GTK_SWITCH(edain_toggle), ld.edain_available);
+    gtk_switch_set_active(GTK_SWITCH(botta_toggle), ld.botta_available);
+    gtk_switch_set_active(GTK_SWITCH(mount_toggle), ld.automatic_mount);
+    gtk_switch_set_active(GTK_SWITCH(mount_toggle), ld.umount_imspec);
+
+    gtk_widget_set_sensitive(GTK_WIDGET(botta_dir), ld.botta_available);
+    gtk_widget_set_sensitive(GTK_WIDGET(mount_exe), ld.automatic_mount);
+    gtk_widget_set_sensitive(GTK_WIDGET(image), ld.automatic_mount);
+    gtk_widget_set_sensitive(GTK_WIDGET(mount_flag), ld.automatic_mount);
+    gtk_widget_set_sensitive(GTK_WIDGET(umount_flag), ld.automatic_mount);
+
+    if(config_exists) {
+        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(game_dir), ld.game_path);
+        if(ld.botta_available)
+            gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(botta_dir), ld.botta_path);
+        if(ld.automatic_mount) {
+            gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(mount_exe), ld.mount_exe);
+            gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(image), ld.disc_image);
+            gtk_entry_set_text(GTK_ENTRY(mount_flag), ld.mount_flags);
+            gtk_entry_set_text(GTK_ENTRY(umount_flag), ld.umount_flags);
+        }
+    }
+    else {
+        gtk_stack_set_visible_child(GTK_STACK(main_stack), GTK_WIDGET(pref_pane));
+        gtk_widget_set_sensitive(GTK_WIDGET(pref_switcher), false);
+    }
+
     g_object_unref(builder);
 
-    g_signal_connect(rotwk_upd, "clicked", G_CALLBACK(gui_update_rotwk), NULL);
-    g_signal_connect(edain_upd, "clicked", G_CALLBACK(gui_update_edain), NULL);
-    g_signal_connect(botta_upd, "clicked", G_CALLBACK(gui_update_botta), NULL);
-    g_signal_connect(all_upd, "clicked", G_CALLBACK(gui_update_all), NULL);
-    g_signal_connect(rotwk_launch, "clicked", G_CALLBACK(gui_launch_rotwk), NULL);
-    g_signal_connect(edain_launch, "clicked", G_CALLBACK(gui_launch_edain), NULL);
-    g_signal_connect(botta_launch, "clicked", G_CALLBACK(gui_launch_botta), NULL);
-    g_signal_connect(quit1, "clicked", G_CALLBACK(gtk_main_quit), NULL);
-    g_signal_connect(quit2, "clicked", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(GTK_BUTTON(rotwk_upd), "clicked", G_CALLBACK(gui_update_rotwk), NULL);
+    g_signal_connect(GTK_BUTTON(edain_upd), "clicked", G_CALLBACK(gui_update_edain), NULL);
+    g_signal_connect(GTK_BUTTON(botta_upd), "clicked", G_CALLBACK(gui_update_botta), NULL);
+    g_signal_connect(GTK_BUTTON(all_upd), "clicked", G_CALLBACK(gui_update_all), NULL);
+    g_signal_connect(GTK_BUTTON(rotwk_launch), "clicked", G_CALLBACK(gui_launch_rotwk), NULL);
+    g_signal_connect(GTK_BUTTON(edain_launch), "clicked", G_CALLBACK(gui_launch_edain), NULL);
+    g_signal_connect(GTK_BUTTON(botta_launch), "clicked", G_CALLBACK(gui_launch_botta), NULL);
+    g_signal_connect(GTK_BUTTON(quit1), "clicked", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(GTK_BUTTON(quit2), "clicked", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(GTK_BUTTON(quit3), "clicked", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect(GTK_TOGGLE_BUTTON(dat_swap), "toggled", G_CALLBACK(gui_toggle_dat_swap), NULL);
+    g_signal_connect(GTK_SWITCH(botta_toggle), "state-set", G_CALLBACK(gui_botta_toggle), NULL);
+    g_signal_connect(GTK_SWITCH(mount_toggle), "state-set", G_CALLBACK(gui_mount_toggle), NULL);
+    g_signal_connect(GTK_BUTTON(pref_save), "clicked", G_CALLBACK(gui_save_preferences), NULL);
 
     gtk_widget_show(window);
     gtk_main();
 }
 
-static void gui_update_rotwk(GtkWidget* widget, gpointer data) {
+static void gui_update_rotwk(GtkButton* button, gpointer data) {
     if(!lock_gui) {
         lock_gui = true;
-        UNUSED(widget);
+        UNUSED(button);
         UNUSED(data);
         update_config_file(rotwk_toml);
         lock_gui = false;
     }
 }
 
-static void gui_update_edain(GtkWidget* widget, gpointer data) {
+static void gui_update_edain(GtkButton* button, gpointer data) {
     if(!lock_gui) {
         lock_gui = true;
-        UNUSED(widget);
+        UNUSED(button);
         UNUSED(data);
         update_config_file(edain_toml);
         lock_gui = false;
     }
 }
 
-static void gui_update_botta(GtkWidget* widget, gpointer data) {
+static void gui_update_botta(GtkButton* button, gpointer data) {
     if(!lock_gui) {
         lock_gui = true;
-        UNUSED(widget);
+        UNUSED(button);
         UNUSED(data);
         update_config_file(botta_toml);
         lock_gui = false;
     }
 }
 
-static void gui_update_all(GtkWidget* widget, gpointer data) {
+static void gui_update_all(GtkButton* button, gpointer data) {
     if(!lock_gui) {  
         lock_gui = true;
-        gui_update_rotwk(widget, data);
+        gui_update_rotwk(button, data);
         if(ld.edain_available)
-            gui_update_edain(widget, data);
+            gui_update_edain(button, data);
         if(ld.botta_available)
-            gui_update_botta(widget, data);
+            gui_update_botta(button, data);
         lock_gui = false;
     }
 }
 
-static void gui_launch_rotwk(GtkWidget* widget, gpointer data) {
+static void gui_launch_rotwk(GtkButton* button, gpointer data) {
     if(!lock_gui) {
         lock_gui = true;
-        UNUSED(widget);
+        UNUSED(button);
         UNUSED(data);
         
         gui_launch(rotwk);
@@ -142,10 +200,10 @@ static void gui_launch_rotwk(GtkWidget* widget, gpointer data) {
     }
 }
 
-static void gui_launch_edain(GtkWidget* widget, gpointer data) {
+static void gui_launch_edain(GtkButton* button, gpointer data) {
     if(!lock_gui) {
         lock_gui = true;
-        UNUSED(widget);
+        UNUSED(button);
         UNUSED(data);
         if(!ld.edain_available)
             return;
@@ -155,10 +213,10 @@ static void gui_launch_edain(GtkWidget* widget, gpointer data) {
     }
 }
 
-static void gui_launch_botta(GtkWidget* widget, gpointer data) {
+static void gui_launch_botta(GtkButton* button, gpointer data) {
     if(!lock_gui) {
         lock_gui = true;
-        UNUSED(widget);
+        UNUSED(button);
         UNUSED(data);
 
         if(!ld.botta_available)
@@ -178,6 +236,75 @@ static void gui_toggle_dat_swap(GtkToggleButton* toggle, gpointer data) {
         lock_gui = false;
     }
 }
+
+static void gui_botta_toggle(GtkSwitch* gswitch, gpointer data) {
+    if(!lock_gui) {
+        lock_gui = true;
+        UNUSED(data);
+        gtk_widget_set_sensitive(GTK_WIDGET(botta_dir), gtk_switch_get_active(gswitch));
+        lock_gui = false;
+    }
+}
+
+static void gui_mount_toggle(GtkSwitch* gswitch, gpointer data) {
+    if(!lock_gui) {
+        lock_gui = true;
+        UNUSED(data);
+        gtk_widget_set_sensitive(GTK_WIDGET(mount_exe), gtk_switch_get_active(gswitch));
+        gtk_widget_set_sensitive(GTK_WIDGET(image), gtk_switch_get_active(gswitch));
+        gtk_widget_set_sensitive(GTK_WIDGET(mount_flag), gtk_switch_get_active(gswitch));
+        gtk_widget_set_sensitive(GTK_WIDGET(umount_flag), gtk_switch_get_active(gswitch));
+        lock_gui = false;
+    }
+}  
+
+static void gui_save_preferences(GtkButton* button, gpointer data) {
+    if(!lock_gui) {
+        lock_gui = true;
+        UNUSED(data);
+        UNUSED(button);
+
+        char const* game_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(game_dir));
+        if(game_path)
+            strcpy(ld.game_path, game_path);
+
+        ld.edain_available = gtk_switch_get_active(GTK_SWITCH(edain_toggle));
+        ld.botta_available = gtk_switch_get_active(GTK_SWITCH(botta_toggle));
+        
+        if(ld.botta_available) {
+            char const* botta_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(botta_dir));
+            
+            if(botta_path)
+                strcpy(ld.botta_path, botta_path);
+        }
+
+        ld.automatic_mount = gtk_switch_get_active(GTK_SWITCH(mount_toggle));
+        if(ld.automatic_mount) {
+            char const* mexec = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(mount_exe));
+            char const* mimg = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(image));
+            char const* mflags = gtk_entry_get_text(GTK_ENTRY(mount_flag));
+            char const* umflags = gtk_entry_get_text(GTK_ENTRY(umount_flag));
+            
+            ld.umount_imspec = gtk_switch_get_active(GTK_SWITCH(umount_imspec_toggle));
+
+            if(mexec && mimg) {
+                strcpy(ld.mount_exe, mexec);
+                strcpy(ld.disc_image, mimg);
+                strcpy(ld.mount_flags, mflags);
+                strcpy(ld.umount_flags, umflags);
+                construct_mount_command(ld.mount_cmd, mexec, mflags, mimg);
+                construct_umount_command(ld.umount_cmd, mexec, umflags, mimg, ld.umount_imspec);
+            }
+        }
+
+        write_launcher_config(&ld, CONFIG_FILE);
+        if(!config_exists) {
+            config_exists = true;
+            gtk_widget_set_sensitive(GTK_WIDGET(pref_switcher), true);
+        }
+        lock_gui = false;
+    }
+}   
 
 static void gui_launch(configuration config) {
     bool mounting_successful;
@@ -263,3 +390,4 @@ static bool gui_setup_config(void) {
     }
     return config_found;
 }
+

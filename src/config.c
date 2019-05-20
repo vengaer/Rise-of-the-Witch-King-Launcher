@@ -1,6 +1,5 @@
 #include "config.h"
 #include <ctype.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -151,11 +150,12 @@ void write_game_config(char const* filename,
 }
 
 void cli_setup(launcher_data* cfg, char const* file) {
+    launcher_data_init(cfg);
     bool input_ok = false;
     char c;
 
     printf("Unofficial Rise of the Witch-King Launcher setup\n");
-    printf("Please enter the path to the game directory (directory containing lotrbfme2ep1.exe).\n");
+    printf("Enter the path to the game directory (directory containing lotrbfme2ep1.exe).\n");
     fgets(cfg->game_path, sizeof cfg->game_path, stdin);
     remove_newline(cfg->game_path);
     printf("Game path set to '%s'.\n", cfg->game_path);
@@ -206,21 +206,42 @@ void cli_setup(launcher_data* cfg, char const* file) {
     cfg->automatic_mount = c == 'y' || c == 'Y';
     
     if(cfg->automatic_mount) {
-        printf("Enter the mount command (path to executable, potential command line options and path to the image).\n");
-        fgets(cfg->mount_cmd, sizeof cfg->mount_cmd, stdin);
-        remove_newline(cfg->mount_cmd);
-        replace_char(cfg->mount_cmd, '"', '\'');
-        printf("Mount command set to '%s'.\n", cfg->mount_cmd);
+        printf("Enter path to mount executable (without quotes or escaping any chars)\n");
+        fgets(cfg->mount_exe, sizeof cfg->mount_exe, stdin);
+        remove_newline(cfg->mount_exe);
+        printf("Mount executable set to '%s'.\n", cfg->mount_exe);
 
-        printf("Enter the unmount command (path to executable, potential command line options and image if necessary).\n");
-        fgets(cfg->umount_cmd, sizeof cfg->umount_cmd, stdin);
-        remove_newline(cfg->umount_cmd);
-        replace_char(cfg->umount_cmd, '"', '\'');
+        printf("Enter path to the disc image that should be mounted (without quotes or escaping chars)\n");
+        fgets(cfg->disc_image, sizeof cfg->disc_image, stdin);
+        remove_newline(cfg->disc_image);
+        printf("Disc image set to '%s'.\n", cfg->disc_image);
+
+        printf("Enter mounting flags (if non, leave empty)\n");
+        fgets(cfg->mount_flags, sizeof cfg->mount_flags, stdin);
+        remove_newline(cfg->mount_flags);
+        printf("Mounting flags set to '%s'.\n", cfg->mount_flags);
+
+        printf("Enter unmounting flags (if non, leave empty)\n");
+        fgets(cfg->umount_flags, sizeof cfg->umount_flags, stdin);
+        remove_newline(cfg->umount_flags);
+        printf("Unmounting flags set to '%s'.\n", cfg->umount_flags);
+
+        printf("Should the disc image be specified when invoking the unmoung command?\n");
+        while(!input_ok) {
+            c = getchar();
+            while(getchar() != '\n') { }
+            if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
+                input_ok = true;
+            else 
+                printf("Please enter 'y' or 'n'.\n");
+        }
+        input_ok = false;
+        cfg->umount_imspec = c == 'y' || c == 'Y';
+
+        construct_mount_command(cfg->mount_cmd, cfg->mount_exe, cfg->mount_flags, cfg->disc_image);
+        construct_umount_command(cfg->umount_cmd, cfg->mount_exe, cfg->umount_flags, cfg->disc_image, cfg->umount_imspec);
+        printf("Mount command set ot '%s'.\n", cfg->mount_cmd);
         printf("Unmount command set ot '%s'.\n", cfg->umount_cmd);
-    }
-    else {
-        cfg->mount_cmd[0] = '\0';
-        cfg->umount_cmd[0] = '\0';
     }
 
     printf("Should the launcher swap dat files? (Recommended).");
@@ -257,6 +278,10 @@ void write_launcher_config(launcher_data const* cfg, char const* file) {
     fprintf(fp, "path = \"%s\"\n\n", cfg->botta_path);
     fprintf(fp, "[mount]\n");
     fprintf(fp, "automatic = \"%s\"\n", cfg->automatic_mount ? "true" : "false");
+    fprintf(fp, "mount_exe = \"%s\"\n", cfg->mount_exe);
+    fprintf(fp, "disc_image = \"%s\"\n", cfg->disc_image);
+    fprintf(fp, "mount_flags = \"%s\"\n", cfg->mount_flags);
+    fprintf(fp, "umount_flags = \"%s\"\n", cfg->umount_flags);
     fprintf(fp, "mount_cmd = \"%s\"\n", cfg->mount_cmd);
     fprintf(fp, "umount_cmd = \"%s\"\n", cfg->umount_cmd);
 
@@ -317,6 +342,14 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
         else if(strcmp(header, "mount") == 0) {
             if(strcmp(key, "automatic") == 0)
                 cfg->automatic_mount = strcmp(value, "true") == 0;
+            else if(strcmp(key, "mount_exe") == 0)
+                strcpy(cfg->mount_exe, value);
+            else if(strcmp(key, "disc_image") == 0)
+                strcpy(cfg->disc_image, value);
+            else if(strcmp(key, "mount_flags") == 0)
+                strcpy(cfg->mount_flags, value);
+            else if(strcmp(key, "umount_flags") == 0)
+                strcpy(cfg->umount_flags, value);
             else if(strcmp(key, "mount_cmd") == 0)
                 sys_format(cfg->mount_cmd, value);
             else if(strcmp(key, "umount_cmd") == 0)
@@ -331,6 +364,33 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
     fclose(fp);
 
     return true;
+}
+
+void construct_mount_command(char* dst, char const* exe, char const* flags, char const* img) {
+    dst[0] = '\'';
+    strcpy(dst + 1, exe);
+    if(flags[0] != '\0') {
+        strcat(dst, " ");
+        strcat(dst, flags);
+    }
+    strcat(dst, "' '");
+    strcat(dst, img);
+    strcat(dst, "'");
+}
+
+void construct_umount_command(char* dst, char const* exe, char const* flags, char const* img, bool spec_img) {
+    dst[0] = '\'';
+    strcpy(dst + 1, exe);
+    if(flags[0] != '\0') {
+        strcat(dst, " ");
+        strcat(dst, flags);
+    }
+
+    if(spec_img) {
+        strcat(dst, "' '");
+        strcat(dst, img);
+    }
+    strcat(dst, "'");
 }
 
 void construct_from_rel_path(launcher_data const* cfg, char* dst, char const* rel_path) {

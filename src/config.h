@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include "game_data.h"
+#include <stdbool.h>
 #include <stddef.h>
 
 void read_game_config(char const* filename, 
@@ -28,6 +29,11 @@ void cli_setup(launcher_data* cfg, char const* file);
 void write_launcher_config(launcher_data const* cfg, char const* file);
 bool read_launcher_config(launcher_data* cfg, char const* file);
 
+void construct_mount_command(char* dst, char const* exe, char const* flags, char const* img);
+
+void construct_umount_command(char* dst, char const* exe, char const* flags, char const* img, bool spec_img);
+
 void construct_from_rel_path(launcher_data const* cfg, char* dst, char const* rel_path);
+
 
 #endif
