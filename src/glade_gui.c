@@ -329,10 +329,8 @@ static void gui_launch(configuration config) {
                 if(system(botta_launch_cmd) != 0)
                     fprintf(stderr, "Failed to launch game.\n");
             }
-            else {
-                if(system(launch_cmd) != 0)
+            else if(system(launch_cmd) != 0)
                     fprintf(stderr, "Failed to launch game.\n");
-            }
             
             while(game_running())
                 sleep_for(SLEEP_TIME);
