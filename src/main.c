@@ -11,8 +11,8 @@
 
 /* TODO: fix botta */
 /* TODO: handle paths (when run from different dir) */
-
-/* Add csum */
+/* Add csum to game_data.h*/
+/* Popups, tooltips */
 
 static void print_help(void) {
     fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");
