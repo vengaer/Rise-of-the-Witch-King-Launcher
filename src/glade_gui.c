@@ -310,7 +310,7 @@ static void gui_launch(configuration config) {
         else
             set_active_configuration(botta_toml, swap_dat_file);
 
-        if(ld.automatic_mount) {
+        if(mounting_necessary && ld.automatic_mount) {
             if(system(ld.mount_cmd) != 0) {
                 fprintf(stderr, "'%s' returned an error\n", ld.mount_cmd);
                 mounting_successful = false;
@@ -319,7 +319,7 @@ static void gui_launch(configuration config) {
                 mounting_successful = true;
         }
 
-        if(mounting_successful) {
+        if(!mounting_necessary || mounting_successful) {
             if(config == botta) {
                 char botta_launch_cmd[256];
                 strcpy(botta_launch_cmd, launch_cmd);
@@ -335,7 +335,7 @@ static void gui_launch(configuration config) {
             while(game_running())
                 sleep_for(SLEEP_TIME);
             
-            if(ld.automatic_mount) {
+            if(mounting_necessary && ld.automatic_mount) {
                 if(system(ld.umount_cmd) != 0)
                     fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
             }
