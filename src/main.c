@@ -13,7 +13,6 @@
 /* TODO: handle paths (when run from different dir) */
 
 /* Add csum */
-#define NEW_DAT_CSUM ""
 
 static void print_help(void) {
     fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");
@@ -28,9 +27,7 @@ static void print_help(void) {
     fprintf(stderr, "* The mod to enable must be installed correctly\n");
 }
 
-
 int main(int argc, char** argv) {
-
     static char const CONFIG_FILE[] = "rotwkl.toml";
 
     if(argc < 2) {
@@ -124,20 +121,20 @@ int main(int argc, char** argv) {
         }
     }
     
-    configuration active;
+    configuration active_config;
     
     if(r_flag || s_flag) {
         if(strcmp(scfg, "rotwk") == 0) {
             set_active_configuration(rotwk_toml, !n_flag);
-            active = rotwk;
+            active_config = rotwk;
         }
         else if(ld.edain_available && strcmp(scfg, "edain") == 0) {
             set_active_configuration(edain_toml, !n_flag);
-            active = edain;
+            active_config = edain;
         }
         else if(ld.botta_available && strcmp(scfg, "botta") == 0) {
             set_active_configuration(botta_toml, !n_flag);
-            active = botta;
+            active_config = botta;
         }
         else {
             fprintf(stderr, "Unknown configuration %s\n", scfg);
@@ -155,7 +152,7 @@ int main(int argc, char** argv) {
                 }
             }
         
-            if(active == botta) {
+            if(active_config == botta) {
                 strcat(launch_cmd, " -mod ");
                 strcat(launch_cmd, ld.botta_path);
             }

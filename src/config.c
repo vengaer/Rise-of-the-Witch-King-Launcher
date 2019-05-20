@@ -264,7 +264,7 @@ void write_launcher_config(launcher_data const* cfg, char const* file) {
 }
 
 bool read_launcher_config(launcher_data* cfg, char const* file) {
-    launcher_data_new(cfg);
+    launcher_data_init(cfg);
 
     FILE* fp = fopen(file, "r");
     if(!fp) {

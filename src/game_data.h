@@ -6,6 +6,7 @@
 #define SWP_EXT "swp"
 #define OTHER_EXT "other"
 #define INVALID_EXT "invalid"
+#define NEW_DAT_CSUM ""
 
 #include <stdbool.h>
 
@@ -43,6 +44,6 @@ typedef struct {
     bool swap_dat_file;
 } launcher_data;
     
-void launcher_data_new(launcher_data* cfg);
+void launcher_data_init(launcher_data* cfg);
 
 #endif

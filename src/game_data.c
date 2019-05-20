@@ -1,7 +1,7 @@
 #include "game_data.h"
 #include <unistd.h>
 
-void launcher_data_new(launcher_data* cfg) {
+void launcher_data_init(launcher_data* cfg) {
     getcwd(cfg->game_path, sizeof(cfg->game_path));
     cfg->botta_path[0] = '\0';
     cfg->mount_cmd[0] = '\0';
