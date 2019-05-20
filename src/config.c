@@ -202,6 +202,7 @@ void cli_setup(launcher_data* cfg, char const* file) {
         else 
             printf("Please enter 'y' or 'n'.\n");
     }
+    input_ok = false;
     cfg->automatic_mount = c == 'y' || c == 'Y';
     
     if(cfg->automatic_mount) {
@@ -222,6 +223,18 @@ void cli_setup(launcher_data* cfg, char const* file) {
         cfg->umount_cmd[0] = '\0';
     }
 
+    printf("Should the launcher swap dat files? (Recommended).");
+
+    while(!input_ok) {
+        c = getchar();
+        while(getchar() != '\n') { }
+        if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
+            input_ok = true;
+        else 
+            printf("Please enter 'y' or 'n'.\n");
+    }
+    cfg->swap_dat_file = c == 'y' || c == 'Y';
+
     write_launcher_config(cfg, file);
 }
 
@@ -233,6 +246,8 @@ void write_launcher_config(launcher_data const* cfg, char const* file) {
         return;
     }
 
+    fprintf(fp, "[launcher]\n");
+    fprintf(fp, "swap = \"%s\"\n\n", cfg->swap_dat_file ? "true" : "false");
     fprintf(fp, "[game]\n");
     fprintf(fp, "path = \"%s\"\n\n", cfg->game_path);
     fprintf(fp, "[edain]\n");
@@ -249,6 +264,8 @@ void write_launcher_config(launcher_data const* cfg, char const* file) {
 }
 
 bool read_launcher_config(launcher_data* cfg, char const* file) {
+    launcher_data_new(cfg);
+
     FILE* fp = fopen(file, "r");
     if(!fp) {
         fprintf(stderr, "Could not read config file\n");
@@ -271,7 +288,13 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
         get_table_key(line, key);
         get_table_value(line, value);
 
-        if(strcmp(header, "game") == 0) {
+        if(strcmp(header, "launcher") == 0) {
+            if(strcmp(key, "swap") == 0)
+                cfg->swap_dat_file = strcmp(value, "true") == 0;
+            else
+                fprintf(stderr, "Unknown key %s.\n", key);
+        }
+        else if(strcmp(header, "game") == 0) {
             if(strcmp(key, "path") == 0) 
                 strcpy(cfg->game_path, value);
             else

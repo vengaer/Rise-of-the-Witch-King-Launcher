@@ -112,15 +112,12 @@ int main(int argc, char** argv) {
     construct_from_rel_path(&ld, botta_toml, "/toml/botta.toml");
 
     if(u_flag) {
-        if(strcmp(ucfg, "rotwk") == 0) {
+        if(strcmp(ucfg, "rotwk") == 0)
             update_config_file(rotwk_toml);
-        }
-        else if(ld.edain_available && strcmp(ucfg, "edain") == 0) {
+        else if(ld.edain_available && strcmp(ucfg, "edain") == 0)
             update_config_file(edain_toml);
-        }
-        else if(ld.botta_available && strcmp(ucfg, "botta") == 0) {
+        else if(ld.botta_available && strcmp(ucfg, "botta") == 0)
             update_config_file(botta_toml);
-        }
         else {
             fprintf(stderr, "Unknown configuration %s\n", ucfg);
             return 1;

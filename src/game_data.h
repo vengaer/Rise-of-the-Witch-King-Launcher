@@ -40,7 +40,9 @@ typedef struct {
     bool edain_available;
     bool botta_available;
     bool automatic_mount;
+    bool swap_dat_file;
 } launcher_data;
     
+void launcher_data_new(launcher_data* cfg);
 
 #endif
