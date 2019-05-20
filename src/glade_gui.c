@@ -10,6 +10,10 @@
 
 #define UNUSED(x) (void)(x)
 
+#define PROTECT(lock) \
+for(int* i_lock = &lock; i_lock && *i_lock == 0; i_lock = NULL) \
+    for(*i_lock = 1; i_lock; *i_lock = 0, i_lock = NULL)
+
 static void gui_update_rotwk(GtkButton* button, gpointer data);
 static void gui_update_edain(GtkButton* button, gpointer data);
 static void gui_update_botta(GtkButton* button, gpointer data);
@@ -31,10 +35,10 @@ static char launch_cmd[256];
 static char rotwk_toml[128];
 static char edain_toml[128];
 static char botta_toml[128];
-static bool swap_dat_file = true;
+static bool swap_dat_file;
 static char game_csum[64];
 static bool mounting_necessary;
-static bool lock_gui;
+static int lock_gui;
 static bool config_exists;
 
 static GObject *game_dir, *botta_dir;
@@ -62,7 +66,7 @@ void gui_init(int* argc, char*** argv) {
     gtk_init(argc, argv);
     builder = gtk_builder_new();
     
-    if(gtk_builder_add_from_file(builder, "alt_launch.glade", &error) == 0) {
+    if(gtk_builder_add_from_file(builder, "gui/launcher.glade", &error) == 0) {
         g_printerr("Error loading file: %s\n", error->message);
         g_clear_error(&error);
         return;
@@ -148,8 +152,7 @@ void gui_init(int* argc, char*** argv) {
 }
 
 static void gui_update_rotwk(GtkButton* button, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(button);
         UNUSED(data);
         update_config_file(rotwk_toml);
@@ -158,64 +161,53 @@ static void gui_update_rotwk(GtkButton* button, gpointer data) {
 }
 
 static void gui_update_edain(GtkButton* button, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(button);
         UNUSED(data);
         update_config_file(edain_toml);
-        lock_gui = false;
     }
 }
 
 static void gui_update_botta(GtkButton* button, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(button);
         UNUSED(data);
         update_config_file(botta_toml);
-        lock_gui = false;
     }
 }
 
 static void gui_update_all(GtkButton* button, gpointer data) {
-    if(!lock_gui) {  
-        lock_gui = true;
+    PROTECT(lock_gui) {
         gui_update_rotwk(button, data);
         if(ld.edain_available)
             gui_update_edain(button, data);
         if(ld.botta_available)
             gui_update_botta(button, data);
-        lock_gui = false;
     }
 }
 
 static void gui_launch_rotwk(GtkButton* button, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(button);
         UNUSED(data);
         
         gui_launch(rotwk);
-        lock_gui = false;
     }
 }
 
 static void gui_launch_edain(GtkButton* button, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(button);
         UNUSED(data);
         if(!ld.edain_available)
             return;
 
         gui_launch(edain);
-        lock_gui = false;
     }
 }
 
 static void gui_launch_botta(GtkButton* button, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(button);
         UNUSED(data);
 
@@ -223,23 +215,18 @@ static void gui_launch_botta(GtkButton* button, gpointer data) {
             return;
 
         gui_launch(botta);
-        lock_gui = false;
     }
-
 }
 
 static void gui_toggle_dat_swap(GtkToggleButton* toggle, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(data);
         swap_dat_file = gtk_toggle_button_get_active(toggle);
-        lock_gui = false;
     }
 }
 
 static void gui_botta_toggle(GtkSwitch* gswitch, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(data);
         gtk_widget_set_sensitive(GTK_WIDGET(botta_dir), gtk_switch_get_active(gswitch));
         lock_gui = false;
@@ -247,20 +234,17 @@ static void gui_botta_toggle(GtkSwitch* gswitch, gpointer data) {
 }
 
 static void gui_mount_toggle(GtkSwitch* gswitch, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(data);
         gtk_widget_set_sensitive(GTK_WIDGET(mount_exe), gtk_switch_get_active(gswitch));
         gtk_widget_set_sensitive(GTK_WIDGET(image), gtk_switch_get_active(gswitch));
         gtk_widget_set_sensitive(GTK_WIDGET(mount_flag), gtk_switch_get_active(gswitch));
         gtk_widget_set_sensitive(GTK_WIDGET(umount_flag), gtk_switch_get_active(gswitch));
-        lock_gui = false;
     }
 }  
 
 static void gui_save_preferences(GtkButton* button, gpointer data) {
-    if(!lock_gui) {
-        lock_gui = true;
+    PROTECT(lock_gui) {
         UNUSED(data);
         UNUSED(button);
 
@@ -302,7 +286,6 @@ static void gui_save_preferences(GtkButton* button, gpointer data) {
             config_exists = true;
             gtk_widget_set_sensitive(GTK_WIDGET(pref_switcher), true);
         }
-        lock_gui = false;
     }
 }   
 
@@ -314,8 +297,10 @@ static void gui_launch(configuration config) {
     {
     #pragma omp task
     {
-        if(swap_dat_file != ld.swap_dat_file)
+        if(swap_dat_file != ld.swap_dat_file) {
+            ld.swap_dat_file = swap_dat_file;
             write_launcher_config(&ld, CONFIG_FILE);
+        }
     }
         
         gtk_main_quit();

@@ -42,7 +42,7 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="pixbuf">../../../downloads/out.png</property>
+                    <property name="pixbuf">images/witch-king.png</property>
                   </object>
                   <packing>
                     <property name="resize">True</property>
@@ -170,7 +170,7 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="pixbuf">../../../downloads/g.png</property>
+                    <property name="pixbuf">images/gandalf.png</property>
                   </object>
                   <packing>
                     <property name="resize">True</property>

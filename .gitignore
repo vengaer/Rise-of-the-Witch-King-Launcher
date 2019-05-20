@@ -2,5 +2,5 @@
 *.exe
 toml_bak/**
 rotwkl
-ex.toml
+*.toml
 *.*~
