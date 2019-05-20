@@ -229,7 +229,6 @@ static void gui_botta_toggle(GtkSwitch* gswitch, gpointer data) {
     PROTECT(lock_gui) {
         UNUSED(data);
         gtk_widget_set_sensitive(GTK_WIDGET(botta_dir), gtk_switch_get_active(gswitch));
-        lock_gui = false;
     }
 }
 
