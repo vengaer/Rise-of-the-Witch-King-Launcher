@@ -13,6 +13,7 @@
 /* TODO: handle paths (when run from different dir) */
 /* Add csum to game_data.h, check in glade_gui before mounting, fix launch cmd if config not found  */
 /* Popups, tooltips, resizing, sensitivity umount_imspec, disable buttons if mods not installed */
+// omp single + task -> omp section. use reduce instead of mutex for bool
 
 static void print_help(void) {
     fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");
