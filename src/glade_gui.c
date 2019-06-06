@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define ROTWKL_DEVEL
+//#define ROTWKL_DEVEL
 
 #define UNUSED(x) (void)(x)
 

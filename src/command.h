@@ -4,10 +4,9 @@
 #include <game_data.h>
 #include <stdbool.h>
 #include <stddef.h>
-
-#ifdef __linux__
 #include <unistd.h>
-#elif defined __CYGWIN__ || defined _WIN32/* windows */
+
+#if defined __CYGWIN__ || defined _WIN32/* windows */
 #include <windows.h>
 #endif
 

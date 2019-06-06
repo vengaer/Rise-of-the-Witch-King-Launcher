@@ -4,3 +4,4 @@ toml_bak/**
 rotwkl
 *.toml
 *.*~
+*.swp
