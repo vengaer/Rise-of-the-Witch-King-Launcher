@@ -12,7 +12,7 @@
 /* TODO: fix botta */
 /* TODO: handle paths (when run from different dir) */
 /* Add csum to game_data.h, check in glade_gui before mounting, fix launch cmd if config not found  */
-/* Popups, tooltips, resizing, disable buttons if mods not installed */
+/* Resizing */
 
 static void print_help(void) {
     fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");

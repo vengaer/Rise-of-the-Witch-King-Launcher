@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-//#define ROTWKL_DEVEL
+#define ROTWKL_DEVEL
 
 #define UNUSED(x) (void)(x)
 
@@ -51,6 +51,8 @@ static GObject *mount_flag, *umount_flag, *umount_imspec_toggle;
 static GObject *pref_switcher;
 static GObject *game_path_dialog;
 static GObject *game_path_dialog_label;
+static GObject *rotwk_upd, *edain_upd, *botta_upd;
+static GObject *rotwk_launch, *edain_launch, *botta_launch;
 
 void gui_init(int* argc, char*** argv) {
     GtkBuilder* builder;
@@ -58,14 +60,14 @@ void gui_init(int* argc, char*** argv) {
     GError* error = NULL;
     GObject *quit1, *quit2, *quit3;
     GObject *dat_swap;
-    GObject *rotwk_upd, *edain_upd, *botta_upd, *all_upd;
-    GObject *rotwk_launch, *edain_launch, *botta_launch;
+    GObject *all_upd;
     GObject *pref_save;
     GObject *main_stack;
     GObject *pref_pane;
     GObject *game_path_dialog_close;
 
     lock_gui = false;
+    mounting_necessary = true;
     game_csum[0] = '\0';
 
     config_exists = gui_setup_config();
@@ -124,6 +126,11 @@ void gui_init(int* argc, char*** argv) {
     gtk_widget_set_sensitive(GTK_WIDGET(mount_flag), ld.automatic_mount);
     gtk_widget_set_sensitive(GTK_WIDGET(umount_flag), ld.automatic_mount);
     gtk_widget_set_sensitive(GTK_WIDGET(umount_imspec_toggle), ld.automatic_mount);
+
+    gtk_widget_set_sensitive(GTK_WIDGET(edain_launch), ld.edain_available);
+    gtk_widget_set_sensitive(GTK_WIDGET(edain_upd), ld.edain_available);
+    gtk_widget_set_sensitive(GTK_WIDGET(botta_launch), ld.botta_available);
+    gtk_widget_set_sensitive(GTK_WIDGET(botta_upd), ld.botta_available);
 
     if(config_exists) {
         gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(game_dir), ld.game_path);
@@ -286,12 +293,20 @@ static void gui_save_preferences(GtkButton* button, gpointer data) {
         ld.edain_available = gtk_switch_get_active(GTK_SWITCH(edain_toggle));
         ld.botta_available = gtk_switch_get_active(GTK_SWITCH(botta_toggle));
         ld.swap_dat_file   = swap_dat_file;
+
+        if(ld.edain_available) {
+            gtk_widget_set_sensitive(GTK_WIDGET(edain_launch), ld.edain_available);
+            gtk_widget_set_sensitive(GTK_WIDGET(edain_upd), ld.edain_available);
+        }
         
         if(ld.botta_available) {
             char const* botta_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(botta_dir));
             
             if(botta_path)
                 strcpy(ld.botta_path, botta_path);
+
+            gtk_widget_set_sensitive(GTK_WIDGET(botta_launch), ld.botta_available);
+            gtk_widget_set_sensitive(GTK_WIDGET(botta_upd), ld.botta_available);
         }
 
         ld.automatic_mount = gtk_switch_get_active(GTK_SWITCH(mount_toggle));
@@ -339,17 +354,17 @@ static void gui_launch(configuration config) {
         {
         #pragma omp single 
         {
-        #pragma omp task
+        #pragma omp task if(swap_dat_file != ld.swap_dat_file)
         {
-            if(swap_dat_file != ld.swap_dat_file) {
-                ld.swap_dat_file = swap_dat_file;
-                write_launcher_config(&ld, CONFIG_FILE);
-            }
+            ld.swap_dat_file = swap_dat_file;
+            write_launcher_config(&ld, CONFIG_FILE);
         }
             
             gtk_main_quit();
-            if(config == rotwk)
+            if(config == rotwk) {
                 set_active_configuration(rotwk_toml, swap_dat_file);
+                mounting_necessary = false;
+            }
             else if(config == edain)
                 set_active_configuration(edain_toml, swap_dat_file);
             else
@@ -380,7 +395,7 @@ static void gui_launch(configuration config) {
                 while(game_running())
                     sleep_for(SLEEP_TIME);
                 
-                if(mounting_necessary && ld.automatic_mount) {
+                if(mounting_necessary && mounting_successful) {
                     if(system(ld.umount_cmd) != 0)
                         fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
                 }
