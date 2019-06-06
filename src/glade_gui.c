@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#define ROTWKL_DEVEL
+
 #define UNUSED(x) (void)(x)
 
 #define PROTECT(lock) \
@@ -21,10 +23,11 @@ static void gui_update_all(GtkButton* button, gpointer data);
 static void gui_launch_rotwk(GtkButton* button, gpointer data);
 static void gui_launch_edain(GtkButton* button, gpointer data);
 static void gui_launch_botta(GtkButton* button, gpointer data);
-static void gui_toggle_dat_swap(GtkToggleButton* toggle, gpointer data);
+static void gui_toggle_dat_swap(GtkSwitch* toggle, gpointer data);
 static void gui_botta_toggle(GtkSwitch* gswitch, gpointer data);
 static void gui_mount_toggle(GtkSwitch* gswitch, gpointer data);
 static void gui_save_preferences(GtkButton* button, gpointer data);
+static void gui_close_game_path_dialog(GtkButton* button, gpointer data);
 
 static void gui_launch(configuration config);
 static bool gui_setup_config(void);
@@ -46,6 +49,8 @@ static GObject *edain_toggle, *botta_toggle, *mount_toggle;
 static GObject *mount_exe, *image;
 static GObject *mount_flag, *umount_flag, *umount_imspec_toggle;
 static GObject *pref_switcher;
+static GObject *game_path_dialog;
+static GObject *game_path_dialog_label;
 
 void gui_init(int* argc, char*** argv) {
     GtkBuilder* builder;
@@ -58,8 +63,10 @@ void gui_init(int* argc, char*** argv) {
     GObject *pref_save;
     GObject *main_stack;
     GObject *pref_pane;
+    GObject *game_path_dialog_close;
 
     lock_gui = false;
+    game_csum[0] = '\0';
 
     config_exists = gui_setup_config();
     
@@ -75,33 +82,36 @@ void gui_init(int* argc, char*** argv) {
     window = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    rotwk_upd            = gtk_builder_get_object(builder, "rotwk_upd");
-    edain_upd            = gtk_builder_get_object(builder, "edain_upd");
-    botta_upd            = gtk_builder_get_object(builder, "botta_upd");
-    all_upd              = gtk_builder_get_object(builder, "all_upd");
-    rotwk_launch         = gtk_builder_get_object(builder, "rotwk_launch");
-    edain_launch         = gtk_builder_get_object(builder, "edain_launch");
-    botta_launch         = gtk_builder_get_object(builder, "botta_launch");
-    quit1                = gtk_builder_get_object(builder, "quit1");
-    quit2                = gtk_builder_get_object(builder, "quit2");
-    quit3                = gtk_builder_get_object(builder, "quit3");
-    dat_swap             = gtk_builder_get_object(builder, "dat_swap");
-    game_dir             = gtk_builder_get_object(builder, "game_dir");
-    botta_dir            = gtk_builder_get_object(builder, "botta_dir");
-    edain_toggle         = gtk_builder_get_object(builder, "edain_toggle");
-    botta_toggle         = gtk_builder_get_object(builder, "botta_toggle");
-    mount_toggle         = gtk_builder_get_object(builder, "mount_toggle");
-    mount_exe            = gtk_builder_get_object(builder, "mount_exe");
-    image                = gtk_builder_get_object(builder, "image");
-    mount_flag           = gtk_builder_get_object(builder, "mount_flag");
-    umount_flag          = gtk_builder_get_object(builder, "umount_flag");
-    umount_imspec_toggle = gtk_builder_get_object(builder, "umount_imspec_toggle");
-    pref_save            = gtk_builder_get_object(builder, "pref_save");
-    main_stack           = gtk_builder_get_object(builder, "main_stack");
-    pref_pane            = gtk_builder_get_object(builder, "pref_pane");
-    pref_switcher        = gtk_builder_get_object(builder, "pref_switcher");
+    rotwk_upd              = gtk_builder_get_object(builder, "rotwk_upd");
+    edain_upd              = gtk_builder_get_object(builder, "edain_upd");
+    botta_upd              = gtk_builder_get_object(builder, "botta_upd");
+    all_upd                = gtk_builder_get_object(builder, "all_upd");
+    rotwk_launch           = gtk_builder_get_object(builder, "rotwk_launch");
+    edain_launch           = gtk_builder_get_object(builder, "edain_launch");
+    botta_launch           = gtk_builder_get_object(builder, "botta_launch");
+    quit1                  = gtk_builder_get_object(builder, "quit1");
+    quit2                  = gtk_builder_get_object(builder, "quit2");
+    quit3                  = gtk_builder_get_object(builder, "quit3");
+    dat_swap               = gtk_builder_get_object(builder, "dat_swap");
+    game_dir               = gtk_builder_get_object(builder, "game_dir");
+    botta_dir              = gtk_builder_get_object(builder, "botta_dir");
+    edain_toggle           = gtk_builder_get_object(builder, "edain_toggle");
+    botta_toggle           = gtk_builder_get_object(builder, "botta_toggle");
+    mount_toggle           = gtk_builder_get_object(builder, "mount_toggle");
+    mount_exe              = gtk_builder_get_object(builder, "mount_exe");
+    image                  = gtk_builder_get_object(builder, "image");
+    mount_flag             = gtk_builder_get_object(builder, "mount_flag");
+    umount_flag            = gtk_builder_get_object(builder, "umount_flag");
+    umount_imspec_toggle   = gtk_builder_get_object(builder, "umount_imspec_toggle");
+    pref_save              = gtk_builder_get_object(builder, "pref_save");
+    main_stack             = gtk_builder_get_object(builder, "main_stack");
+    pref_pane              = gtk_builder_get_object(builder, "pref_pane");
+    pref_switcher          = gtk_builder_get_object(builder, "pref_switcher");
+    game_path_dialog       = gtk_builder_get_object(builder, "game_path_dialog");
+    game_path_dialog_close = gtk_builder_get_object(builder, "game_path_dialog_close");
+    game_path_dialog_label = gtk_builder_get_object(builder, "game_path_label");
     
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dat_swap), ld.swap_dat_file);
+    gtk_switch_set_active(GTK_SWITCH(dat_swap), ld.swap_dat_file);
 
     gtk_switch_set_active(GTK_SWITCH(edain_toggle), ld.edain_available);
     gtk_switch_set_active(GTK_SWITCH(botta_toggle), ld.botta_available);
@@ -113,6 +123,7 @@ void gui_init(int* argc, char*** argv) {
     gtk_widget_set_sensitive(GTK_WIDGET(image), ld.automatic_mount);
     gtk_widget_set_sensitive(GTK_WIDGET(mount_flag), ld.automatic_mount);
     gtk_widget_set_sensitive(GTK_WIDGET(umount_flag), ld.automatic_mount);
+    gtk_widget_set_sensitive(GTK_WIDGET(umount_imspec_toggle), ld.automatic_mount);
 
     if(config_exists) {
         gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(game_dir), ld.game_path);
@@ -142,10 +153,11 @@ void gui_init(int* argc, char*** argv) {
     g_signal_connect(GTK_BUTTON(quit1), "clicked", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect(GTK_BUTTON(quit2), "clicked", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect(GTK_BUTTON(quit3), "clicked", G_CALLBACK(gtk_main_quit), NULL);
-    g_signal_connect(GTK_TOGGLE_BUTTON(dat_swap), "toggled", G_CALLBACK(gui_toggle_dat_swap), NULL);
+    g_signal_connect(GTK_SWITCH(dat_swap), "state-set", G_CALLBACK(gui_toggle_dat_swap), NULL);
     g_signal_connect(GTK_SWITCH(botta_toggle), "state-set", G_CALLBACK(gui_botta_toggle), NULL);
     g_signal_connect(GTK_SWITCH(mount_toggle), "state-set", G_CALLBACK(gui_mount_toggle), NULL);
     g_signal_connect(GTK_BUTTON(pref_save), "clicked", G_CALLBACK(gui_save_preferences), NULL);
+    g_signal_connect(GTK_BUTTON(game_path_dialog_close), "clicked", G_CALLBACK(gui_close_game_path_dialog), NULL);
 
     gtk_widget_show(window);
     gtk_main();
@@ -218,10 +230,10 @@ static void gui_launch_botta(GtkButton* button, gpointer data) {
     }
 }
 
-static void gui_toggle_dat_swap(GtkToggleButton* toggle, gpointer data) {
+static void gui_toggle_dat_swap(GtkSwitch* toggle, gpointer data) {
     PROTECT(lock_gui) {
         UNUSED(data);
-        swap_dat_file = gtk_toggle_button_get_active(toggle);
+        swap_dat_file = gtk_switch_get_active(toggle);
     }
 }
 
@@ -239,6 +251,7 @@ static void gui_mount_toggle(GtkSwitch* gswitch, gpointer data) {
         gtk_widget_set_sensitive(GTK_WIDGET(image), gtk_switch_get_active(gswitch));
         gtk_widget_set_sensitive(GTK_WIDGET(mount_flag), gtk_switch_get_active(gswitch));
         gtk_widget_set_sensitive(GTK_WIDGET(umount_flag), gtk_switch_get_active(gswitch));
+        gtk_widget_set_sensitive(GTK_WIDGET(umount_imspec_toggle), gtk_switch_get_active(gswitch));
     }
 }  
 
@@ -248,11 +261,31 @@ static void gui_save_preferences(GtkButton* button, gpointer data) {
         UNUSED(button);
 
         char const* game_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(game_dir));
-        if(game_path)
+        if(game_path) {
             strcpy(ld.game_path, game_path);
+        }
+        else {
+            gtk_label_set_text(GTK_LABEL(game_path_dialog_label), "Please specify the game path ");
+            gtk_widget_set_visible(GTK_WIDGET(game_path_dialog), true);
+            lock_gui = false;
+            return;
+        }
+
+#ifndef ROTWKL_DEVEL
+        char exe_path[256];
+        strcpy(exe_path, game_path);
+        strcat(exe_path, "/lotrbfme2ep1.exe");
+        if(!file_exists(exe_path)) {
+            gtk_label_set_text(GTK_LABEL(game_path_dialog_label), "Could not locate lotrbfme2ep1.exe in specified path");
+            gtk_widget_set_visible(GTK_WIDGET(game_path_dialog), true);
+            lock_gui = false;
+            return;
+        }
+#endif
 
         ld.edain_available = gtk_switch_get_active(GTK_SWITCH(edain_toggle));
         ld.botta_available = gtk_switch_get_active(GTK_SWITCH(botta_toggle));
+        ld.swap_dat_file   = swap_dat_file;
         
         if(ld.botta_available) {
             char const* botta_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(botta_dir));
@@ -269,15 +302,25 @@ static void gui_save_preferences(GtkButton* button, gpointer data) {
             char const* umflags = gtk_entry_get_text(GTK_ENTRY(umount_flag));
             
             ld.umount_imspec = gtk_switch_get_active(GTK_SWITCH(umount_imspec_toggle));
-
-            if(mexec && mimg) {
-                strcpy(ld.mount_exe, mexec);
-                strcpy(ld.disc_image, mimg);
-                strcpy(ld.mount_flags, mflags);
-                strcpy(ld.umount_flags, umflags);
-                construct_mount_command(ld.mount_cmd, mexec, mflags, mimg);
-                construct_umount_command(ld.umount_cmd, mexec, umflags, mimg, ld.umount_imspec);
+            if(!mexec) {
+                gtk_label_set_text(GTK_LABEL(game_path_dialog_label), "Please specify mounting executable");
+                gtk_widget_set_visible(GTK_WIDGET(game_path_dialog), true);
+                lock_gui = false;
+                return;
             }
+            if(!mimg) {
+                gtk_label_set_text(GTK_LABEL(game_path_dialog_label), "Please specify disc image");
+                gtk_widget_set_visible(GTK_WIDGET(game_path_dialog), true);
+                lock_gui = false;
+                return;
+            }
+
+            strcpy(ld.mount_exe, mexec);
+            strcpy(ld.disc_image, mimg);
+            strcpy(ld.mount_flags, mflags);
+            strcpy(ld.umount_flags, umflags);
+            construct_mount_command(ld.mount_cmd, mexec, mflags, mimg);
+            construct_umount_command(ld.umount_cmd, mexec, umflags, mimg, ld.umount_imspec);
         }
 
         write_launcher_config(&ld, CONFIG_FILE);
@@ -290,62 +333,62 @@ static void gui_save_preferences(GtkButton* button, gpointer data) {
 }   
 
 static void gui_launch(configuration config) {
-    bool mounting_successful;
-    #pragma omp parallel num_threads(2) 
-    {
-    #pragma omp single 
-    {
-    #pragma omp task
-    {
-        if(swap_dat_file != ld.swap_dat_file) {
-            ld.swap_dat_file = swap_dat_file;
-            write_launcher_config(&ld, CONFIG_FILE);
-        }
-    }
-        
-        gtk_main_quit();
-        if(config == rotwk)
-            set_active_configuration(rotwk_toml, swap_dat_file);
-        else if(config == edain)
-            set_active_configuration(edain_toml, swap_dat_file);
-        else
-            set_active_configuration(botta_toml, swap_dat_file);
-
-        if(mounting_necessary && ld.automatic_mount) {
-            if(system(ld.mount_cmd) != 0) {
-                fprintf(stderr, "'%s' returned an error\n", ld.mount_cmd);
-                mounting_successful = false;
+    PROTECT(lock_gui) {
+        bool mounting_successful;
+        #pragma omp parallel num_threads(2) 
+        {
+        #pragma omp single 
+        {
+        #pragma omp task
+        {
+            if(swap_dat_file != ld.swap_dat_file) {
+                ld.swap_dat_file = swap_dat_file;
+                write_launcher_config(&ld, CONFIG_FILE);
             }
+        }
+            
+            gtk_main_quit();
+            if(config == rotwk)
+                set_active_configuration(rotwk_toml, swap_dat_file);
+            else if(config == edain)
+                set_active_configuration(edain_toml, swap_dat_file);
             else
-                mounting_successful = true;
-        }
+                set_active_configuration(botta_toml, swap_dat_file);
 
-        if(!mounting_necessary || mounting_successful) {
-            if(config == botta) {
-                char botta_launch_cmd[256];
-                strcpy(botta_launch_cmd, launch_cmd);
-                strcat(botta_launch_cmd, " -mod ");
-                strcat(botta_launch_cmd, ld.botta_path);
-
-                if(system(botta_launch_cmd) != 0)
-                    fprintf(stderr, "Failed to launch game.\n");
-            }
-            else if(system(launch_cmd) != 0)
-                    fprintf(stderr, "Failed to launch game.\n");
-            
-            while(game_running())
-                sleep_for(SLEEP_TIME);
-            
             if(mounting_necessary && ld.automatic_mount) {
-                if(system(ld.umount_cmd) != 0)
-                    fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
+                if(system(ld.mount_cmd) != 0) {
+                    fprintf(stderr, "'%s' returned an error\n", ld.mount_cmd);
+                    mounting_successful = false;
+                }
+                else
+                    mounting_successful = true;
+            }
+
+            if(!mounting_necessary || mounting_successful) {
+                if(config == botta) {
+                    char botta_launch_cmd[256];
+                    strcpy(botta_launch_cmd, launch_cmd);
+                    strcat(botta_launch_cmd, " -mod ");
+                    strcat(botta_launch_cmd, ld.botta_path);
+
+                    if(system(botta_launch_cmd) != 0)
+                        fprintf(stderr, "Failed to launch game.\n");
+                }
+                else if(system(launch_cmd) != 0)
+                        fprintf(stderr, "Failed to launch game.\n");
+                
+                while(game_running())
+                    sleep_for(SLEEP_TIME);
+                
+                if(mounting_necessary && ld.automatic_mount) {
+                    if(system(ld.umount_cmd) != 0)
+                        fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
+                }
             }
         }
+        }
     }
-    }
-
 }   
-
 
 static bool gui_setup_config(void) {
     bool config_found;
@@ -354,7 +397,7 @@ static bool gui_setup_config(void) {
     {
     #pragma omp single
     {
-    #pragma omp task
+    #pragma omp task if(!game_csum[0])
     {   
         md5sum("game.dat", game_csum);
         mounting_necessary = strcmp(game_csum, NEW_DAT_CSUM);
@@ -373,4 +416,13 @@ static bool gui_setup_config(void) {
     }
     return config_found;
 }
+
+static void gui_close_game_path_dialog(GtkButton* button, gpointer data) {
+    PROTECT(lock_gui) {
+        UNUSED(button);
+        UNUSED(data);
+        gtk_widget_set_visible(GTK_WIDGET(game_path_dialog), false);
+        
+    }
+}   
 

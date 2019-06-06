@@ -296,7 +296,7 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
         fprintf(stderr, "Could not read config file\n");
         return false;
     }
-    char line[128];
+    char line[256];
     char header[32];
     char tmp_header[32];
     char key[32];
