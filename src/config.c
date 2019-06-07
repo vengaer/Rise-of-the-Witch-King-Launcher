@@ -1,4 +1,5 @@
 #include "config.h"
+#include "fsys.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -154,10 +155,13 @@ void cli_setup(launcher_data* cfg, char const* file) {
     bool input_ok = false;
     char c;
 
+    game_path_from_registry(cfg->game_path);
     printf("Unofficial Rise of the Witch-King Launcher setup\n");
-    printf("Enter the path to the game directory (directory containing lotrbfme2ep1.exe).\n");
-    fgets(cfg->game_path, sizeof cfg->game_path, stdin);
-    remove_newline(cfg->game_path);
+    if(!cfg->game_path[0]) {
+        printf("Enter the path to the game directory (directory containing lotrbfme2ep1.exe).\n");
+        fgets(cfg->game_path, sizeof cfg->game_path, stdin);
+        remove_newline(cfg->game_path);
+    }
     printf("Game path set to '%s'.\n", cfg->game_path);
     printf("Is the Edain mod installed? (y/n)\n");
 

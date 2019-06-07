@@ -1,5 +1,5 @@
-#ifndef GLADE_GUI_H
-#define GLADE_GUI_H
+#ifndef GTK_GUI_H
+#define GTK_GUI_H
 
 #ifdef __cplusplus
 extern "C" {

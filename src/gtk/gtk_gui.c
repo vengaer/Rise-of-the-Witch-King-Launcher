@@ -1,4 +1,4 @@
-#include "glade_gui.h"
+#include "gtk_gui.h"
 #include "command.h"
 #include "config.h"
 #include "fsys.h"
@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define ROTWKL_DEVEL
+//#define ROTWKL_DEVEL
 
 #define UNUSED(x) (void)(x)
 
@@ -74,7 +74,7 @@ void gui_init(int* argc, char*** argv) {
     gtk_init(argc, argv);
     builder = gtk_builder_new();
     
-    if(gtk_builder_add_from_file(builder, "gui/launcher.glade", &error) == 0) {
+    if(gtk_builder_add_from_file(builder, "src/gtk/gui/launcher.glade", &error) == 0) {
         g_printerr("Error loading file: %s\n", error->message);
         g_clear_error(&error);
         return;
@@ -174,7 +174,6 @@ static void gui_update_rotwk(GtkButton* button, gpointer data) {
         UNUSED(button);
         UNUSED(data);
         update_config_file(rotwk_toml);
-        lock_gui = false;
     }
 }
 

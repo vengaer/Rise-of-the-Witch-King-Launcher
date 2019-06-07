@@ -10,6 +10,10 @@
 
 #include <stdbool.h>
 
+#define PATH_SIZE 1024
+#define FSTR_SIZE 64
+#define OPT_SIZE 32
+
 #ifdef __clpusplus
 extern "C" {
 #endif
@@ -26,26 +30,26 @@ typedef enum {
 } configuration;
 
 typedef struct {
-    char name[64];
-    char checksum[64];
-    char extension[32];
+    char name[FSTR_SIZE];
+    char checksum[FSTR_SIZE];
+    char extension[OPT_SIZE];
 } big_file;
 
 typedef struct {
-    char name[64];
-    char checksum[64];
+    char name[FSTR_SIZE];
+    char checksum[FSTR_SIZE];
     target_state state;
 } dat_file;
 
 typedef struct {
-    char game_path[128];
-    char botta_path[128];
-    char mount_exe[256];
-    char disc_image[256];
-    char mount_flags[32];
-    char umount_flags[32];
-    char mount_cmd[256];
-    char umount_cmd[256];
+    char game_path[PATH_SIZE];
+    char botta_path[PATH_SIZE];
+    char mount_exe[PATH_SIZE];
+    char disc_image[PATH_SIZE];
+    char mount_flags[OPT_SIZE];
+    char umount_flags[OPT_SIZE];
+    char mount_cmd[PATH_SIZE];
+    char umount_cmd[PATH_SIZE];
     bool edain_available;
     bool botta_available;
     bool automatic_mount;
