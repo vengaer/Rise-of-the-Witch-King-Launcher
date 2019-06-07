@@ -10,6 +10,10 @@
 
 #include <stdbool.h>
 
+#ifdef __clpusplus
+extern "C" {
+#endif
+
 typedef enum {
     active,
     inactive
@@ -50,5 +54,9 @@ typedef struct {
 } launcher_data;
     
 void launcher_data_init(launcher_data* cfg);
+
+#ifdef __clpusplus
+}
+#endif
 
 #endif

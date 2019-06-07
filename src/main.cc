@@ -29,8 +29,6 @@ static void print_help(void) {
 }
 
 int main(int argc, char** argv) {
-    static char const CONFIG_FILE[] = "rotwkl.toml";
-
     if(argc < 2) {
         gui_init(&argc, &argv);
         //print_help();

@@ -32,7 +32,6 @@ static void gui_close_game_path_dialog(GtkButton* button, gpointer data);
 static void gui_launch(configuration config);
 static bool gui_setup_config(void);
 
-static char const CONFIG_FILE[] = "rotwkl.toml";
 static launcher_data ld;
 static char launch_cmd[256];
 static char rotwk_toml[128];

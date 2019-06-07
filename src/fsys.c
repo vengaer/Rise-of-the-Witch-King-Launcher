@@ -9,6 +9,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#if defined __CYGWIN__ || _WIN32
+#include <windows.h>
+#endif
+
 void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 
@@ -242,6 +246,16 @@ bool file_exists(char const* filename) {
 #endif
 
     return false;
+}
+
+void game_path_from_registry(char* path) {
+    path[0] = '\0';
+#if !defined __CYGWIN__ && !defined(_WIN32)
+    return;
+#else
+    DWORD dw_size = 1024;
+    RegGetValue(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\lotrbfme2ep1.exe", "Path", RRF_RT_ANY, NULL, (PVOID)path, &dw_size);
+#endif
 }
 
 void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size) {

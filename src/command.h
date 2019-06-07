@@ -20,9 +20,17 @@
 
 #define SLEEP_TIME 1500
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool game_running(void);
 void sleep_for(size_t ms);
 
 void cd_to_game_path(launcher_data const* cfg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

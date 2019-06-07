@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void read_game_config(char const* filename, 
                       big_file** enable, 
                       size_t* enable_capacity, 
@@ -35,5 +39,10 @@ void construct_umount_command(char* dst, char const* exe, char const* flags, cha
 
 void construct_from_rel_path(launcher_data const* cfg, char* dst, char const* rel_path);
 
+static char const CONFIG_FILE[] = "launcher.toml";
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
