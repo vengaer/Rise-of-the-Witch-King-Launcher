@@ -54,75 +54,67 @@ void update_config_file(char const* filename) {
                                &swap, &swap_cap, &swap_size);
     
     bool success = true;
-    omp_lock_t lock;
-    omp_init_lock(&lock);
 
     #pragma omp parallel 
     {
         size_t i;
         char toggled[64];
         bool config_enabled;
-        bool local_success = true;
 
-        #pragma omp for
+        #pragma omp for reduction(&& : success)
         for(i = 0; i < enable_size; i++) {
             if(file_exists(enable[i].name)) {
                 if(!md5sum(enable[i].name, enable[i].checksum))
-                    local_success = false;
+                    success = false;
             }
             else {
                 config_enabled = false;
                 strcpy(toggled, enable[i].name);
                 set_extension(toggled, enable[i].extension);
                 if(!md5sum(toggled, enable[i].checksum))
-                   local_success = false;
+                   success = false;
             }
         }
-        #pragma omp for
+        #pragma omp for reduction(&& : success)
         for(i = 0; i < disable_size; i++) {
             if(file_exists(disable[i].name)) {
                 if(!md5sum(disable[i].name, disable[i].checksum))
-                    local_success = false;
+                    success = false;
             }
             else {
                 config_enabled = true;
                 strcpy(toggled, disable[i].name);
                 set_extension(toggled, disable[i].extension);
                 if(!md5sum(toggled, disable[i].checksum))
-                    local_success = false;
+                    success = false;
             }
         }
-        #pragma omp for
+        #pragma omp for reduction(&& : success)
         for(i = 0; i < swap_size; i++) {
             strcpy(toggled, swap[i].name);
             set_extension(toggled, OTHER_EXT);
             if(swap[i].state == active) {
                 if(config_enabled) {
                     if(!md5sum(swap[i].name, swap[i].checksum))
-                        local_success = false;
+                        success = false;
                 }
                 else {
                     if(!md5sum(toggled, swap[i].checksum))
-                        local_success = false;
+                        success = false;
                 }
             }
             else {
                 if(config_enabled) {
                     if(!md5sum(toggled, swap[i].checksum))
-                        local_success = false;
+                        success = false;
                 }
                 else {
                     if(!md5sum(swap[i].name, swap[i].checksum))
-                        local_success = false;
+                        success = false;
                 }
             }
         }
 
-        if(!local_success) {
-            omp_set_lock(&lock);
-            success = local_success;
-            omp_unset_lock(&lock);
-        }
     }
 
     if(success) {
