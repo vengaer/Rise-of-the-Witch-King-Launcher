@@ -361,7 +361,7 @@ void MainWindow::update_single_config(configuration config) {
             break;
     }
 
-    int tasks_done = 0, total_tasks = 1;
+    int tasks_running = 1;
     #pragma omp parallel num_threads(2)
     {
         #pragma omp master
@@ -372,7 +372,7 @@ void MainWindow::update_single_config(configuration config) {
                 update_config_file(toml->toLatin1().data(), invert_dat);
 
                 #pragma omp atomic
-                ++tasks_done;
+                --tasks_running;
             }
 
             int total = 1000;
@@ -383,13 +383,10 @@ void MainWindow::update_single_config(configuration config) {
             dialog.show();
             int progress;
 
-            while(true) {
+            while(tasks_running) {
                 progress = static_cast<int>(track_progress() * total);
                 QCoreApplication::processEvents();
                 dialog.setValue(progress);
-
-                if(tasks_done == total_tasks)
-                    break;
             }
             dialog.setValue(total);
             dialog.close();
@@ -400,7 +397,7 @@ void MainWindow::update_single_config(configuration config) {
 }
 
 void MainWindow::update_all_configs() {
-    int total_tasks = 1, tasks_done = 0;
+    int tasks_running = 1;
     bool invert_dat = strcmp(&game_hash[0], NEW_DAT_MD5.toLatin1().data()) == 0;
 
     #pragma omp parallel num_threads(4)
@@ -412,29 +409,29 @@ void MainWindow::update_all_configs() {
             #pragma omp task if(data_.edain_available)
             {
                 #pragma omp atomic
-                ++total_tasks;
+                ++tasks_running;
 
                 update_config_file(edain_toml_.toLatin1().data(), invert_dat);
                 
                 #pragma omp atomic
-                ++tasks_done;
+                --tasks_running;
             }
             #pragma omp task if(data_.botta_available)
             {
                 #pragma omp atomic
-                ++total_tasks;
+                ++tasks_running;
                 
                 update_config_file(botta_toml_.toLatin1().data(), invert_dat);
 
                 #pragma omp atomic
-                ++tasks_done;
+                --tasks_running;
             }   
             #pragma omp task
             {
                 update_config_file(rotwk_toml_.toLatin1().data(), !invert_dat);
                 
                 #pragma omp atomic
-                ++tasks_done;
+                --tasks_running
             }
 
             int total = 1000;
@@ -445,13 +442,10 @@ void MainWindow::update_all_configs() {
             dialog.show();
             int progress;
 
-            while(true) {
+            while(tasks_running) {
                 progress = static_cast<int>(track_progress() * total);
                 QCoreApplication::processEvents();
                 dialog.setValue(progress);
-
-                if(tasks_done == total_tasks)
-                    break;
             }
             dialog.setValue(total);
             dialog.close();
