@@ -237,7 +237,7 @@ public:
         pref_scroll->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName(QString::fromUtf8("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, -264, 382, 483));
+        scrollAreaWidgetContents->setGeometry(QRect(0, -215, 382, 483));
         gridLayout_4 = new QGridLayout(scrollAreaWidgetContents);
         gridLayout_4->setSpacing(6);
         gridLayout_4->setContentsMargins(11, 11, 11, 11);
@@ -565,30 +565,66 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(update_tab), QApplication::translate("MainWindow", "Update Configs", nullptr));
         groupBox_4->setTitle(QApplication::translate("MainWindow", "Mounting", nullptr));
         label_10->setText(QApplication::translate("MainWindow", "Automatic", nullptr));
+#ifndef QT_NO_TOOLTIP
+        auto_mount->setToolTip(QApplication::translate("MainWindow", "Enables automatic mounting of disc image", nullptr));
+#endif // QT_NO_TOOLTIP
         auto_mount->setText(QString());
         label_13->setText(QApplication::translate("MainWindow", "Mounting Executable", nullptr));
+#ifndef QT_NO_TOOLTIP
+        mount_exec->setToolTip(QApplication::translate("MainWindow", "Path to mounting executable (e.g. DTCommandLine.exe, batchmnt.exe or similar)", nullptr));
+#endif // QT_NO_TOOLTIP
         mount_exec->setText(QApplication::translate("MainWindow", "Choose...", nullptr));
         label_7->setText(QApplication::translate("MainWindow", "Image", nullptr));
+#ifndef QT_NO_TOOLTIP
+        mount_image->setToolTip(QApplication::translate("MainWindow", "Path to disc image to mount", nullptr));
+#endif // QT_NO_TOOLTIP
         mount_image->setText(QApplication::translate("MainWindow", "Choose...", nullptr));
         label_22->setText(QApplication::translate("MainWindow", "Mounting Options", nullptr));
+#ifndef QT_NO_TOOLTIP
+        mount_opt->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Command line options for mounting with chosen executable. Leave empty if none are required.</p><p>(e.g. -m for DTCommandLine.exe, leave blank for batchmnt.exe)</p></body></html>", nullptr));
+#endif // QT_NO_TOOLTIP
         label_21->setText(QApplication::translate("MainWindow", "Unmounting Options", nullptr));
+#ifndef QT_NO_TOOLTIP
+        umount_opt->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Command line options for unmounting with chosen executable. Leave empty if none are required. </p><p>(e.g. -u or -U for DTCommandLine.exe, /unmount or /unmountall for batchmnt.exe)</p></body></html>", nullptr));
+#endif // QT_NO_TOOLTIP
         label_6->setText(QApplication::translate("MainWindow", "Specify Image When Unmounting", nullptr));
+#ifndef QT_NO_TOOLTIP
+        imspec_umount->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Whether the disc image should be specified when unmounting. Generally, this should be checked for any unmount command that does not unmount all mounted images.</p><p>(e.g. turn on if using -u with DTCommandLine.exe or /unmount with batchmnt.exe, leave off if using -U with DTCommandLine.exe or /unmountall with batchmnt.exe)</p></body></html>", nullptr));
+#endif // QT_NO_TOOLTIP
         imspec_umount->setText(QString());
         groupBox_3->setTitle(QApplication::translate("MainWindow", "BotTA", nullptr));
         label_5->setText(QApplication::translate("MainWindow", "Installed", nullptr));
+#ifndef QT_NO_TOOLTIP
+        botta_installed->setToolTip(QApplication::translate("MainWindow", "Enables BotTA-related actions. Works only if the BotTA mod is installed and the correct path to its install directory is specified below", nullptr));
+#endif // QT_NO_TOOLTIP
         botta_installed->setText(QString());
         label_3->setText(QApplication::translate("MainWindow", "BotTA Path", nullptr));
+#ifndef QT_NO_TOOLTIP
+        botta_path_chooser->setToolTip(QApplication::translate("MainWindow", "Path to BotTA directory (directory containing BotTa.lnk)", nullptr));
+#endif // QT_NO_TOOLTIP
         botta_path_chooser->setText(QApplication::translate("MainWindow", "Choose...", nullptr));
         groupBox_2->setTitle(QApplication::translate("MainWindow", "Edain", nullptr));
         label_4->setText(QApplication::translate("MainWindow", "Installed", nullptr));
+#ifndef QT_NO_TOOLTIP
+        edain_installed->setToolTip(QApplication::translate("MainWindow", "Enables Edain-related actions. Works only if the Edain mod is installed", nullptr));
+#endif // QT_NO_TOOLTIP
         edain_installed->setText(QString());
         groupBox->setTitle(QApplication::translate("MainWindow", "Base Game", nullptr));
         label_2->setText(QApplication::translate("MainWindow", "Game Path", nullptr));
+#ifndef QT_NO_TOOLTIP
+        game_path_chooser->setToolTip(QApplication::translate("MainWindow", "Path to game directory (directory containing lotrbfme2ep1.exe)", nullptr));
+#endif // QT_NO_TOOLTIP
         game_path_chooser->setText(QApplication::translate("MainWindow", "Choose...", nullptr));
         label->setText(QApplication::translate("MainWindow", "Swap .dat File", nullptr));
+#ifndef QT_NO_TOOLTIP
+        dat_swap->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.</p><p>(Recommended: On)</p></body></html>", nullptr));
+#endif // QT_NO_TOOLTIP
         dat_swap->setText(QString());
         groupBox_5->setTitle(QApplication::translate("MainWindow", "Launcher", nullptr));
         label_11->setText(QApplication::translate("MainWindow", "Terminate On Launch", nullptr));
+#ifndef QT_NO_TOOLTIP
+        kill_on_launch->setToolTip(QApplication::translate("MainWindow", "Terminate launcher after launching the game", nullptr));
+#endif // QT_NO_TOOLTIP
         kill_on_launch->setText(QString());
         pref_quit->setText(QApplication::translate("MainWindow", "Quit", nullptr));
         pref_save->setText(QApplication::translate("MainWindow", "Save", nullptr));

@@ -176,7 +176,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-264</y>
+             <y>-215</y>
              <width>382</width>
              <height>483</height>
             </rect>
@@ -199,6 +199,9 @@
                  </item>
                  <item>
                   <widget class="QCheckBox" name="auto_mount">
+                   <property name="toolTip">
+                    <string>Enables automatic mounting of disc image</string>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -217,6 +220,9 @@
                  </item>
                  <item>
                   <widget class="QPushButton" name="mount_exec">
+                   <property name="toolTip">
+                    <string>Path to mounting executable (e.g. DTCommandLine.exe, batchmnt.exe or similar)</string>
+                   </property>
                    <property name="text">
                     <string>Choose...</string>
                    </property>
@@ -235,6 +241,9 @@
                  </item>
                  <item>
                   <widget class="QPushButton" name="mount_image">
+                   <property name="toolTip">
+                    <string>Path to disc image to mount</string>
+                   </property>
                    <property name="text">
                     <string>Choose...</string>
                    </property>
@@ -264,6 +273,9 @@
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Command line options for mounting with chosen executable. Leave empty if none are required.&lt;/p&gt;&lt;p&gt;(e.g. -m for DTCommandLine.exe, leave blank for batchmnt.exe)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="layoutDirection">
                     <enum>Qt::RightToLeft</enum>
@@ -301,6 +313,9 @@
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Command line options for unmounting with chosen executable. Leave empty if none are required. &lt;/p&gt;&lt;p&gt;(e.g. -u or -U for DTCommandLine.exe, /unmount or /unmountall for batchmnt.exe)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
                    <property name="layoutDirection">
                     <enum>Qt::RightToLeft</enum>
                    </property>
@@ -325,6 +340,9 @@
                  </item>
                  <item>
                   <widget class="QCheckBox" name="imspec_umount">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether the disc image should be specified when unmounting. Generally, this should be checked for any unmount command that does not unmount all mounted images.&lt;/p&gt;&lt;p&gt;(e.g. turn on if using -u with DTCommandLine.exe or /unmount with batchmnt.exe, leave off if using -U with DTCommandLine.exe or /unmountall with batchmnt.exe)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -352,6 +370,9 @@
                  </item>
                  <item row="0" column="1">
                   <widget class="QCheckBox" name="botta_installed">
+                   <property name="toolTip">
+                    <string>Enables BotTA-related actions. Works only if the BotTA mod is installed and the correct path to its install directory is specified below</string>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -370,6 +391,9 @@
                  </item>
                  <item>
                   <widget class="QPushButton" name="botta_path_chooser">
+                   <property name="toolTip">
+                    <string>Path to BotTA directory (directory containing BotTa.lnk)</string>
+                   </property>
                    <property name="text">
                     <string>Choose...</string>
                    </property>
@@ -397,6 +421,9 @@
                  </item>
                  <item>
                   <widget class="QCheckBox" name="edain_installed">
+                   <property name="toolTip">
+                    <string>Enables Edain-related actions. Works only if the Edain mod is installed</string>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -424,6 +451,9 @@
                  </item>
                  <item>
                   <widget class="QPushButton" name="game_path_chooser">
+                   <property name="toolTip">
+                    <string>Path to game directory (directory containing lotrbfme2ep1.exe)</string>
+                   </property>
                    <property name="text">
                     <string>Choose...</string>
                    </property>
@@ -442,6 +472,9 @@
                  </item>
                  <item>
                   <widget class="QCheckBox" name="dat_swap">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.&lt;/p&gt;&lt;p&gt;(Recommended: On)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -469,6 +502,9 @@
                  </item>
                  <item>
                   <widget class="QCheckBox" name="kill_on_launch">
+                   <property name="toolTip">
+                    <string>Terminate launcher after launching the game</string>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
