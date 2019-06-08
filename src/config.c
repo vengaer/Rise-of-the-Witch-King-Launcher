@@ -154,13 +154,26 @@ void cli_setup(launcher_data* cfg, char const* file) {
     bool input_ok = false;
     char c;
 
+    char path[PATH_SIZE];
+
     game_path_from_registry(cfg->game_path);
     printf("Unofficial Rise of the Witch-King Launcher setup\n");
     if(!cfg->game_path[0]) {
-        printf("Enter the path to the game directory (directory containing lotrbfme2ep1.exe).\n");
-        fgets(cfg->game_path, sizeof cfg->game_path, stdin);
-        remove_newline(cfg->game_path);
+        while(!input_ok) {
+            printf("Enter the path to the game directory (directory containing lotrbfme2ep1.exe).\n");
+            fgets(cfg->game_path, sizeof cfg->game_path, stdin);
+            remove_newline(cfg->game_path);
+
+            strcpy(path, cfg->game_path);
+            strcat(path, "/lotrbfme2ep1.exe");
+            
+            if(!file_exists(path)) 
+                fprintf(stderr, "Could not locate lotrbfme2ep1.exe at given path. Try again");
+            else
+                input_ok = true;
+        }
     }
+    input_ok = false;
     printf("Game path set to '%s'.\n", cfg->game_path);
     printf("Is the Edain mod installed? (y/n)\n");
 
@@ -186,15 +199,28 @@ void cli_setup(launcher_data* cfg, char const* file) {
             printf("Please enter 'y' or 'n'.\n");
     }
     cfg->botta_available = c == 'y' || c == 'Y';
+    input_ok = false;
+
     if(cfg->botta_available) {
         printf("Enter the path to the BotTa directory.\n");
-        fgets(cfg->botta_path, sizeof cfg->botta_path, stdin);
-        remove_newline(cfg->botta_path);
+        while(!input_ok) {
+            fgets(cfg->botta_path, sizeof cfg->botta_path, stdin);
+            remove_newline(cfg->botta_path);
+            
+            strcpy(path, cfg->botta_path);
+            strcat(path, "/BotTa.lnk");
+
+            if(!file_exists(path))
+                fprintf(stderr, "Could not locate BotTa.lnk at given path. Try again.");
+            else
+                input_ok = true;
+
+        }
         printf("BotTa path set to '%s'.\n", cfg->botta_path);
+        input_ok = false;
     }
     else
         cfg->botta_path[0] = '\0';
-    input_ok = false;
 
     printf("Should the launcher mount a disk image automatically? (y/n)\n");
     while(!input_ok) {
@@ -210,16 +236,33 @@ void cli_setup(launcher_data* cfg, char const* file) {
     
     if(cfg->automatic_mount) {
         printf("Enter path to mount executable (without quotes or escaping any chars)\n");
-        fgets(cfg->mount_exe, sizeof cfg->mount_exe, stdin);
-        remove_newline(cfg->mount_exe);
+        while(!input_ok) {
+            fgets(cfg->mount_exe, sizeof cfg->mount_exe, stdin);
+            remove_newline(cfg->mount_exe);
+            
+            if(!file_exists(cfg->mount_exe))
+                fprintf(stderr, "%s does not exist\n", cfg->mount_exe);
+            else
+                input_ok = true;
+            
+        }
         printf("Mount executable set to '%s'.\n", cfg->mount_exe);
+        input_ok = false;
 
         printf("Enter path to the disc image that should be mounted (without quotes or escaping chars)\n");
-        fgets(cfg->disc_image, sizeof cfg->disc_image, stdin);
-        remove_newline(cfg->disc_image);
+        while(!input_ok) {
+            fgets(cfg->disc_image, sizeof cfg->disc_image, stdin);
+            remove_newline(cfg->disc_image);
+            
+            if(!file_exists(cfg->disc_image))
+                fprintf(stderr, "%s does not exist\n", cfg->disc_image);
+            else 
+                input_ok = true;
+        }
         printf("Disc image set to '%s'.\n", cfg->disc_image);
+        input_ok = false;
 
-        printf("Enter mounting flags (if non, leave empty)\n");
+        printf("Enter mounting flags (if none, leave empty)\n");
         fgets(cfg->mount_flags, sizeof cfg->mount_flags, stdin);
         remove_newline(cfg->mount_flags);
         printf("Mounting flags set to '%s'.\n", cfg->mount_flags);
@@ -400,11 +443,6 @@ void construct_umount_command(char* dst, char const* exe, char const* flags, cha
         strcat(dst, img);
     }
     strcat(dst, "'");
-}
-
-void construct_from_rel_path(launcher_data const* cfg, char* dst, char const* rel_path) {
-    strcpy(dst, cfg->game_path);
-    strcat(dst, rel_path);
 }
 
 bool header_name(char const* line, char* header) {

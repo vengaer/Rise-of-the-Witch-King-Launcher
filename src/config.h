@@ -37,8 +37,6 @@ void construct_mount_command(char* dst, char const* exe, char const* flags, char
 
 void construct_umount_command(char* dst, char const* exe, char const* flags, char const* img, bool spec_img);
 
-void construct_from_rel_path(launcher_data const* cfg, char* dst, char const* rel_path);
-
 static char const CONFIG_FILE[] = "launcher.toml";
 
 #ifdef __cplusplus

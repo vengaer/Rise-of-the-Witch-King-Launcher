@@ -25,14 +25,19 @@ void print_help(void) {
 }
 
 int cli_main(int argc, char** argv) {
-    UNUSED(argc);
-    UNUSED(argv);
-    #if false
     char const* lcfg = CONFIG_FILE;
 
     bool r_flag = false, s_flag = false, u_flag = false, h_flag = false, n_flag = false;
     char *scfg = NULL, *ucfg = NULL;
     int idx, opt;
+
+    char cwd[PATH_SIZE];
+    char rotwk_toml[PATH_SIZE];
+    char edain_toml[PATH_SIZE];
+    char botta_toml[PATH_SIZE];
+    char launch_cmd[PATH_SIZE];
+    char dat_file[PATH_SIZE];
+    char game_csum[64];
 
     while((opt = getopt(argc, argv, ":r:s:u:c:hnv")) != -1) {
         switch(opt) {
@@ -83,28 +88,45 @@ int cli_main(int argc, char** argv) {
     }
 
     launcher_data ld;
+    /* TODO: check cli_setup */
     if(!file_exists(lcfg))
         cli_setup(&ld, lcfg);
     else 
         read_launcher_config(&ld, lcfg);
 
+    if(!getcwd(cwd, sizeof(cwd))) {
+        fprintf(stderr, "Failed to get working directory\n");
+        return 1;
+    }
+
+    strcpy(rotwk_toml, cwd);
+    strcat(rotwk_toml, "/toml/rotwk.toml");
+
+    strcpy(edain_toml, cwd);
+    strcat(edain_toml, "/toml/edain.toml");
+
+    strcpy(botta_toml, cwd);
+    strcat(botta_toml, "/toml/botta.toml");
+
     chdir(ld.game_path);
 
-    char launch_cmd[256];
-    char rotwk_toml[128];
-    char edain_toml[128];
-    char botta_toml[128];
+    strcpy(launch_cmd, ld.game_path);
+    strcat(launch_cmd, "/lotrbfme2ep1.exe");
     
-    construct_from_rel_path(&ld, launch_cmd, "/lotrbfme2ep1.exe");
-    construct_from_rel_path(&ld, rotwk_toml, "/toml/rotwk.toml");
-    construct_from_rel_path(&ld, edain_toml, "/toml/edain.toml");
-    construct_from_rel_path(&ld, botta_toml, "/toml/botta.toml");
+    strcpy(dat_file, ld.game_path);
+    strcat(dat_file, "/game.dat");
+
+    
+    md5sum(dat_file, game_csum);
+    bool new_dat_enabled = strcmp(game_csum, NEW_DAT_CSUM) == 0;
 
     if(u_flag) {
-        // TODO: update
-        if(strcmp(ucfg, "rotwk") == 0) {}
-        else if(ld.edain_available && strcmp(ucfg, "edain") == 0) {}
-        else if(ld.botta_available && strcmp(ucfg, "botta") == 0) {}
+        if(strcmp(ucfg, "rotwk") == 0) 
+            update_config_file(rotwk_toml, !new_dat_enabled);
+        else if(ld.edain_available && strcmp(ucfg, "edain") == 0)
+            update_config_file(edain_toml, new_dat_enabled);
+        else if(ld.botta_available && strcmp(ucfg, "botta") == 0)
+            update_config_file(botta_toml, new_dat_enabled);
         else {
             fprintf(stderr, "Unknown configuration %s\n", ucfg);
             return 1;
@@ -112,11 +134,11 @@ int cli_main(int argc, char** argv) {
     }
     
     configuration active_config;
+    bool mounting_necessary;
     
     if(r_flag || s_flag) {
-    // TODO: set and run
         if(strcmp(scfg, "rotwk") == 0) {
-            set_active_configuration(rotwk_toml, !n_flag);
+            set_active_configuration(rotwk_toml, !new_dat_enabled);
             active_config = rotwk;
         }
         else if(ld.edain_available && strcmp(scfg, "edain") == 0) {
@@ -132,9 +154,8 @@ int cli_main(int argc, char** argv) {
             return 1;
         }
         if(r_flag) {
-            char game_csum[64];
-            md5sum("game.dat", game_csum);
-            bool mounting_necessary = strcmp(game_csum, NEW_DAT_CSUM);
+            md5sum(dat_file, game_csum);
+            mounting_necessary = strcmp(game_csum, NEW_DAT_CSUM);
             
             if(mounting_necessary && ld.automatic_mount) {
                 if(system(ld.mount_cmd) != 0) {
@@ -144,8 +165,8 @@ int cli_main(int argc, char** argv) {
             }
         
             if(active_config == botta) {
-                strcat(launch_cmd, " -mod ");
-                strcat(launch_cmd, ld.botta_path);
+                strcpy(launch_cmd, ld.botta_path);
+                strcat(launch_cmd, "/BotTa.lnk");
             }
 
             if(system(launch_cmd) != 0)
@@ -162,9 +183,5 @@ int cli_main(int argc, char** argv) {
             }
         }
     }
-
-
-    #endif
     return 0;
-    
 }
