@@ -246,12 +246,12 @@ void MainWindow::on_pref_save_clicked() {
         ui->launch_img->setPixmap(launch_img_.scaled(INITIAL_IMSIZE.width(), INITIAL_IMSIZE.height()));
         ui->upd_img->setPixmap(upd_img_.scaled(INITIAL_IMSIZE.width(), INITIAL_IMSIZE.height()));
 
-        update_all_configs();
         
         ui->tabWidget->setTabEnabled(0, true);
         ui->tabWidget->setTabEnabled(1, true);
         
         chdir(data_.game_path);
+        update_all_configs();
     }
     setup_paths();
 
