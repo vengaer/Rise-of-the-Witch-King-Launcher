@@ -9,6 +9,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define UNUSED(x) (void)(x)
+
 void print_help(void) {
     fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");
     fprintf(stderr, "    -r <config>,        Run the given configuration.\n");
@@ -23,6 +25,9 @@ void print_help(void) {
 }
 
 int cli_main(int argc, char** argv) {
+    UNUSED(argc);
+    UNUSED(argv);
+    #if false
     char const* lcfg = CONFIG_FILE;
 
     bool r_flag = false, s_flag = false, u_flag = false, h_flag = false, n_flag = false;
@@ -83,7 +88,7 @@ int cli_main(int argc, char** argv) {
     else 
         read_launcher_config(&ld, lcfg);
 
-    cd_to_game_path(&ld);
+    chdir(ld.game_path);
 
     char launch_cmd[256];
     char rotwk_toml[128];
@@ -96,12 +101,10 @@ int cli_main(int argc, char** argv) {
     construct_from_rel_path(&ld, botta_toml, "/toml/botta.toml");
 
     if(u_flag) {
-        if(strcmp(ucfg, "rotwk") == 0)
-            update_config_file(rotwk_toml);
-        else if(ld.edain_available && strcmp(ucfg, "edain") == 0)
-            update_config_file(edain_toml);
-        else if(ld.botta_available && strcmp(ucfg, "botta") == 0)
-            update_config_file(botta_toml);
+        // TODO: update
+        if(strcmp(ucfg, "rotwk") == 0) {}
+        else if(ld.edain_available && strcmp(ucfg, "edain") == 0) {}
+        else if(ld.botta_available && strcmp(ucfg, "botta") == 0) {}
         else {
             fprintf(stderr, "Unknown configuration %s\n", ucfg);
             return 1;
@@ -111,6 +114,7 @@ int cli_main(int argc, char** argv) {
     configuration active_config;
     
     if(r_flag || s_flag) {
+    // TODO: set and run
         if(strcmp(scfg, "rotwk") == 0) {
             set_active_configuration(rotwk_toml, !n_flag);
             active_config = rotwk;
@@ -160,5 +164,7 @@ int cli_main(int argc, char** argv) {
     }
 
 
+    #endif
     return 0;
+    
 }

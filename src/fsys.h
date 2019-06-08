@@ -11,7 +11,11 @@ extern "C" {
 
 bool md5sum(char const* filename, char* csum);
 
-void update_config_file(char const* filename);
+void prepare_progress(void);
+void reset_progress(void);
+double track_progress(void);
+
+void update_config_file(char const* filename, bool invert_dat_files);
 
 void set_active_configuration(char const* filename, bool should_swap);
 

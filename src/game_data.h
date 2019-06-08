@@ -6,7 +6,7 @@
 #define SWP_EXT "swp"
 #define OTHER_EXT "other"
 #define INVALID_EXT "invalid"
-#define NEW_DAT_CSUM ""
+#define NEW_DAT_CSUM "fbff091f6139eb05dc012d834e3eeb74"
 
 #include <stdbool.h>
 
@@ -55,6 +55,7 @@ typedef struct {
     bool automatic_mount;
     bool swap_dat_file;
     bool umount_imspec;
+    bool kill_on_launch;
 } launcher_data;
     
 void launcher_data_init(launcher_data* cfg);

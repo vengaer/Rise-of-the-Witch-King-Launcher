@@ -1,4 +1,5 @@
 #include "fsys.h"
+#include "command.h"
 #include "config.h"
 #include "game_data.h"
 
@@ -12,6 +13,8 @@
 #if defined __CYGWIN__ || _WIN32
 #include <windows.h>
 #endif
+
+int progress = 0, total_work = -1;
 
 void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
@@ -42,7 +45,21 @@ bool md5sum(char const* filename, char* checksum) {
     return true;
 }
 
-void update_config_file(char const* filename) {
+void prepare_progress(void) {
+    progress = 0;
+    total_work = 0;
+}
+
+void reset_progress(void) {
+    progress = 0;
+    total_work = -1;
+}
+
+double track_progress(void) {
+    return (double)progress / (double)total_work;
+}
+
+void update_config_file(char const* filename, bool invert_dat_files) {
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
     big_file* enable = malloc(enable_cap * sizeof(big_file));
@@ -52,7 +69,9 @@ void update_config_file(char const* filename) {
     read_game_config(filename, &enable, &enable_cap, &enable_size,
                                &disable, &disable_cap, &disable_size,
                                &swap, &swap_cap, &swap_size);
-    
+    #pragma omp atomic
+    total_work += enable_size + disable_size + swap_size;
+
     bool success = true;
 
     #pragma omp parallel 
@@ -74,6 +93,8 @@ void update_config_file(char const* filename) {
                 if(!md5sum(toggled, enable[i].checksum))
                    success = false;
             }
+            #pragma omp atomic
+            ++progress;
         }
         #pragma omp for reduction(&& : success)
         for(i = 0; i < disable_size; i++) {
@@ -88,13 +109,16 @@ void update_config_file(char const* filename) {
                 if(!md5sum(toggled, disable[i].checksum))
                     success = false;
             }
+            #pragma omp atomic
+            ++progress;
         }
         #pragma omp for reduction(&& : success)
         for(i = 0; i < swap_size; i++) {
             strcpy(toggled, swap[i].name);
             set_extension(toggled, OTHER_EXT);
+
             if(swap[i].state == active) {
-                if(config_enabled) {
+                if(config_enabled && !invert_dat_files) {
                     if(!md5sum(swap[i].name, swap[i].checksum))
                         success = false;
                 }
@@ -104,7 +128,7 @@ void update_config_file(char const* filename) {
                 }
             }
             else {
-                if(config_enabled) {
+                if(config_enabled && !invert_dat_files) {
                     if(!md5sum(toggled, swap[i].checksum))
                         success = false;
                 }
@@ -113,6 +137,8 @@ void update_config_file(char const* filename) {
                         success = false;
                 }
             }
+            #pragma omp atomic
+            ++progress;
         }
 
     }
@@ -146,7 +172,7 @@ void set_active_configuration(char const* filename, bool should_swap) {
 
     char toggled[64];
     char hash[64];
-    // inline instead
+
     toggle_big_files(enable, enable_size, disable, disable_size);
 
     if(!should_swap) {

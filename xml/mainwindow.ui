@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>443</width>
-    <height>339</height>
+    <height>346</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,11 +33,11 @@
        <attribute name="title">
         <string>Launch</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="1" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_15">
           <property name="topMargin">
-           <number>220</number>
+           <number>0</number>
           </property>
           <item>
            <widget class="QPushButton" name="launch_quit">
@@ -76,6 +76,28 @@
           </item>
          </layout>
         </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="launch_img">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="update_tab">
@@ -83,10 +105,10 @@
         <string>Update Configs</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="1" column="1">
+        <item row="1" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_14">
           <property name="topMargin">
-           <number>220</number>
+           <number>0</number>
           </property>
           <item>
            <widget class="QPushButton" name="cfg_quit">
@@ -125,6 +147,19 @@
           </item>
          </layout>
         </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="upd_img">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pref_tab">
@@ -141,40 +176,13 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-264</y>
              <width>382</width>
-             <height>429</height>
+             <height>483</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="gridLayout_6">
-            <item row="1" column="0">
-             <widget class="QGroupBox" name="groupBox_2">
-              <property name="title">
-               <string>Edain</string>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_9">
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_10">
-                 <item>
-                  <widget class="QLabel" name="label_4">
-                   <property name="text">
-                    <string>Installed</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QCheckBox" name="edain_installed">
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="3" column="0">
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="7" column="0" colspan="2">
              <widget class="QGroupBox" name="groupBox_4">
               <property name="title">
                <string>Mounting</string>
@@ -327,52 +335,7 @@
               </layout>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QGroupBox" name="groupBox">
-              <property name="title">
-               <string>Base Game</string>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_10">
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_7">
-                 <item>
-                  <widget class="QLabel" name="label_2">
-                   <property name="text">
-                    <string>Game Path</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="game_path_chooser">
-                   <property name="text">
-                    <string>Choose...</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_8">
-                 <item>
-                  <widget class="QLabel" name="label">
-                   <property name="text">
-                    <string>Swap .dat File</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QCheckBox" name="dat_swap">
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="2" column="0">
+            <item row="5" column="0" colspan="2">
              <widget class="QGroupBox" name="groupBox_3">
               <property name="title">
                <string>BotTA</string>
@@ -417,11 +380,110 @@
               </layout>
              </widget>
             </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QGroupBox" name="groupBox_2">
+              <property name="title">
+               <string>Edain</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_10">
+                 <item>
+                  <widget class="QLabel" name="label_4">
+                   <property name="text">
+                    <string>Installed</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="edain_installed">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="2" column="0" colspan="2">
+             <widget class="QGroupBox" name="groupBox">
+              <property name="title">
+               <string>Base Game</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_7">
+                 <item>
+                  <widget class="QLabel" name="label_2">
+                   <property name="text">
+                    <string>Game Path</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="game_path_chooser">
+                   <property name="text">
+                    <string>Choose...</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                 <item>
+                  <widget class="QLabel" name="label">
+                   <property name="text">
+                    <string>Swap .dat File</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="dat_swap">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="8" column="0" colspan="2">
+             <widget class="QGroupBox" name="groupBox_5">
+              <property name="title">
+               <string>Launcher</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_11">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_16">
+                 <item>
+                  <widget class="QLabel" name="label_11">
+                   <property name="text">
+                    <string>Terminate On Launch</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="kill_on_launch">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
            </layout>
           </widget>
          </widget>
         </item>
-        <item row="2" column="0" colspan="2">
+        <item row="3" column="0" colspan="2">
          <layout class="QGridLayout" name="gridLayout_8">
           <property name="leftMargin">
            <number>0</number>
@@ -435,13 +497,6 @@
           <property name="horizontalSpacing">
            <number>12</number>
           </property>
-          <item row="0" column="2">
-           <widget class="QPushButton" name="pref_save">
-            <property name="text">
-             <string>Save</string>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="0">
            <widget class="QPushButton" name="pref_quit">
             <property name="minimumSize">
@@ -461,11 +516,30 @@
             </property>
            </widget>
           </item>
+          <item row="0" column="2">
+           <widget class="QPushButton" name="pref_save">
+            <property name="maximumSize">
+             <size>
+              <width>75</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Save</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_23">
             <property name="minimumSize">
              <size>
               <width>225</width>
+              <height>23</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
               <height>23</height>
              </size>
             </property>

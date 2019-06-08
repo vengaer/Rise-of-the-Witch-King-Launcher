@@ -99,7 +99,6 @@ void read_game_config(char const* filename,
                 fclose(fp);
                 return;
             }
-
         }
         else {
             fprintf(stderr, "Unknown header %s\n", header);
@@ -272,7 +271,8 @@ void write_launcher_config(launcher_data const* cfg, char const* file) {
     }
 
     fprintf(fp, "[launcher]\n");
-    fprintf(fp, "swap = \"%s\"\n\n", cfg->swap_dat_file ? "true" : "false");
+    fprintf(fp, "swap = \"%s\"\n", cfg->swap_dat_file ? "true" : "false");
+    fprintf(fp, "kill_on_launch = \"%s\"\n\n", cfg->kill_on_launch ? "true" : "false");
     fprintf(fp, "[game]\n");
     fprintf(fp, "path = \"%s\"\n\n", cfg->game_path);
     fprintf(fp, "[edain]\n");
@@ -288,6 +288,7 @@ void write_launcher_config(launcher_data const* cfg, char const* file) {
     fprintf(fp, "umount_flags = \"%s\"\n", cfg->umount_flags);
     fprintf(fp, "mount_cmd = \"%s\"\n", cfg->mount_cmd);
     fprintf(fp, "umount_cmd = \"%s\"\n", cfg->umount_cmd);
+    fprintf(fp, "umount_imspec = \"%s\"\n", cfg->umount_imspec ? "true" : "false");
 
     fclose(fp);
 }
@@ -320,6 +321,8 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
         if(strcmp(header, "launcher") == 0) {
             if(strcmp(key, "swap") == 0)
                 cfg->swap_dat_file = strcmp(value, "true") == 0;
+            else if(strcmp(key, "kill_on_launch") == 0)
+                cfg->kill_on_launch = strcmp(value, "true") == 0;
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
@@ -358,6 +361,8 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
                 sys_format(cfg->mount_cmd, value);
             else if(strcmp(key, "umount_cmd") == 0)
                 sys_format(cfg->umount_cmd, value);
+            else if(strcmp(key, "umount_imspec") == 0)
+                cfg->umount_imspec = strcmp(value, "true") == 0;
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
@@ -386,7 +391,7 @@ void construct_umount_command(char* dst, char const* exe, char const* flags, cha
     dst[0] = '\'';
     strcpy(dst + 1, exe);
     if(flags[0] != '\0') {
-        strcat(dst, " ");
+        strcat(dst, "' '");
         strcat(dst, flags);
     }
 

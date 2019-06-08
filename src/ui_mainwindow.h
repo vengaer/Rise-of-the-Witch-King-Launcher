@@ -35,13 +35,14 @@ public:
     QGridLayout *gridLayout_2;
     QTabWidget *tabWidget;
     QWidget *launch_tab;
-    QGridLayout *gridLayout_4;
+    QGridLayout *gridLayout;
     QHBoxLayout *horizontalLayout_15;
     QPushButton *launch_quit;
     QLabel *label_8;
     QPushButton *botta_launch;
     QPushButton *edain_launch;
     QPushButton *rotwk_launch;
+    QLabel *launch_img;
     QWidget *update_tab;
     QGridLayout *gridLayout_3;
     QHBoxLayout *horizontalLayout_14;
@@ -50,16 +51,12 @@ public:
     QPushButton *botta_upd;
     QPushButton *edain_upd;
     QPushButton *rotwk_upd;
+    QLabel *upd_img;
     QWidget *pref_tab;
     QGridLayout *gridLayout_5;
     QScrollArea *pref_scroll;
     QWidget *scrollAreaWidgetContents;
-    QGridLayout *gridLayout_6;
-    QGroupBox *groupBox_2;
-    QVBoxLayout *verticalLayout_9;
-    QHBoxLayout *horizontalLayout_10;
-    QLabel *label_4;
-    QCheckBox *edain_installed;
+    QGridLayout *gridLayout_4;
     QGroupBox *groupBox_4;
     QVBoxLayout *verticalLayout_7;
     QHBoxLayout *horizontalLayout_17;
@@ -80,14 +77,6 @@ public:
     QHBoxLayout *horizontalLayout_12;
     QLabel *label_6;
     QCheckBox *imspec_umount;
-    QGroupBox *groupBox;
-    QVBoxLayout *verticalLayout_10;
-    QHBoxLayout *horizontalLayout_7;
-    QLabel *label_2;
-    QPushButton *game_path_chooser;
-    QHBoxLayout *horizontalLayout_8;
-    QLabel *label;
-    QCheckBox *dat_swap;
     QGroupBox *groupBox_3;
     QVBoxLayout *verticalLayout_8;
     QGridLayout *gridLayout_10;
@@ -96,9 +85,27 @@ public:
     QHBoxLayout *horizontalLayout_9;
     QLabel *label_3;
     QPushButton *botta_path_chooser;
+    QGroupBox *groupBox_2;
+    QVBoxLayout *verticalLayout_9;
+    QHBoxLayout *horizontalLayout_10;
+    QLabel *label_4;
+    QCheckBox *edain_installed;
+    QGroupBox *groupBox;
+    QVBoxLayout *verticalLayout_10;
+    QHBoxLayout *horizontalLayout_7;
+    QLabel *label_2;
+    QPushButton *game_path_chooser;
+    QHBoxLayout *horizontalLayout_8;
+    QLabel *label;
+    QCheckBox *dat_swap;
+    QGroupBox *groupBox_5;
+    QVBoxLayout *verticalLayout_11;
+    QHBoxLayout *horizontalLayout_16;
+    QLabel *label_11;
+    QCheckBox *kill_on_launch;
     QGridLayout *gridLayout_8;
-    QPushButton *pref_save;
     QPushButton *pref_quit;
+    QPushButton *pref_save;
     QLabel *label_23;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -107,7 +114,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(443, 339);
+        MainWindow->resize(443, 346);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         gridLayout_2 = new QGridLayout(centralWidget);
@@ -124,14 +131,14 @@ public:
         tabWidget->setTabPosition(QTabWidget::North);
         launch_tab = new QWidget();
         launch_tab->setObjectName(QString::fromUtf8("launch_tab"));
-        gridLayout_4 = new QGridLayout(launch_tab);
-        gridLayout_4->setSpacing(6);
-        gridLayout_4->setContentsMargins(11, 11, 11, 11);
-        gridLayout_4->setObjectName(QString::fromUtf8("gridLayout_4"));
+        gridLayout = new QGridLayout(launch_tab);
+        gridLayout->setSpacing(6);
+        gridLayout->setContentsMargins(11, 11, 11, 11);
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         horizontalLayout_15 = new QHBoxLayout();
         horizontalLayout_15->setSpacing(6);
         horizontalLayout_15->setObjectName(QString::fromUtf8("horizontalLayout_15"));
-        horizontalLayout_15->setContentsMargins(-1, 220, -1, -1);
+        horizontalLayout_15->setContentsMargins(-1, 0, -1, -1);
         launch_quit = new QPushButton(launch_tab);
         launch_quit->setObjectName(QString::fromUtf8("launch_quit"));
 
@@ -158,7 +165,19 @@ public:
         horizontalLayout_15->addWidget(rotwk_launch);
 
 
-        gridLayout_4->addLayout(horizontalLayout_15, 0, 0, 1, 1);
+        gridLayout->addLayout(horizontalLayout_15, 1, 0, 1, 1);
+
+        launch_img = new QLabel(launch_tab);
+        launch_img->setObjectName(QString::fromUtf8("launch_img"));
+        launch_img->setEnabled(true);
+        QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+        sizePolicy1.setHorizontalStretch(0);
+        sizePolicy1.setVerticalStretch(0);
+        sizePolicy1.setHeightForWidth(launch_img->sizePolicy().hasHeightForWidth());
+        launch_img->setSizePolicy(sizePolicy1);
+        launch_img->setMinimumSize(QSize(0, 0));
+
+        gridLayout->addWidget(launch_img, 0, 0, 1, 1);
 
         tabWidget->addTab(launch_tab, QString());
         update_tab = new QWidget();
@@ -170,7 +189,7 @@ public:
         horizontalLayout_14 = new QHBoxLayout();
         horizontalLayout_14->setSpacing(6);
         horizontalLayout_14->setObjectName(QString::fromUtf8("horizontalLayout_14"));
-        horizontalLayout_14->setContentsMargins(-1, 220, -1, -1);
+        horizontalLayout_14->setContentsMargins(-1, 0, -1, -1);
         cfg_quit = new QPushButton(update_tab);
         cfg_quit->setObjectName(QString::fromUtf8("cfg_quit"));
 
@@ -197,7 +216,14 @@ public:
         horizontalLayout_14->addWidget(rotwk_upd);
 
 
-        gridLayout_3->addLayout(horizontalLayout_14, 1, 1, 1, 1);
+        gridLayout_3->addLayout(horizontalLayout_14, 1, 0, 1, 1);
+
+        upd_img = new QLabel(update_tab);
+        upd_img->setObjectName(QString::fromUtf8("upd_img"));
+        sizePolicy1.setHeightForWidth(upd_img->sizePolicy().hasHeightForWidth());
+        upd_img->setSizePolicy(sizePolicy1);
+
+        gridLayout_3->addWidget(upd_img, 0, 0, 1, 1);
 
         tabWidget->addTab(update_tab, QString());
         pref_tab = new QWidget();
@@ -211,36 +237,11 @@ public:
         pref_scroll->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName(QString::fromUtf8("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 382, 429));
-        gridLayout_6 = new QGridLayout(scrollAreaWidgetContents);
-        gridLayout_6->setSpacing(6);
-        gridLayout_6->setContentsMargins(11, 11, 11, 11);
-        gridLayout_6->setObjectName(QString::fromUtf8("gridLayout_6"));
-        groupBox_2 = new QGroupBox(scrollAreaWidgetContents);
-        groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
-        verticalLayout_9 = new QVBoxLayout(groupBox_2);
-        verticalLayout_9->setSpacing(6);
-        verticalLayout_9->setContentsMargins(11, 11, 11, 11);
-        verticalLayout_9->setObjectName(QString::fromUtf8("verticalLayout_9"));
-        horizontalLayout_10 = new QHBoxLayout();
-        horizontalLayout_10->setSpacing(6);
-        horizontalLayout_10->setObjectName(QString::fromUtf8("horizontalLayout_10"));
-        label_4 = new QLabel(groupBox_2);
-        label_4->setObjectName(QString::fromUtf8("label_4"));
-
-        horizontalLayout_10->addWidget(label_4);
-
-        edain_installed = new QCheckBox(groupBox_2);
-        edain_installed->setObjectName(QString::fromUtf8("edain_installed"));
-
-        horizontalLayout_10->addWidget(edain_installed);
-
-
-        verticalLayout_9->addLayout(horizontalLayout_10);
-
-
-        gridLayout_6->addWidget(groupBox_2, 1, 0, 1, 1);
-
+        scrollAreaWidgetContents->setGeometry(QRect(0, -264, 382, 483));
+        gridLayout_4 = new QGridLayout(scrollAreaWidgetContents);
+        gridLayout_4->setSpacing(6);
+        gridLayout_4->setContentsMargins(11, 11, 11, 11);
+        gridLayout_4->setObjectName(QString::fromUtf8("gridLayout_4"));
         groupBox_4 = new QGroupBox(scrollAreaWidgetContents);
         groupBox_4->setObjectName(QString::fromUtf8("groupBox_4"));
         verticalLayout_7 = new QVBoxLayout(groupBox_4);
@@ -306,11 +307,11 @@ public:
 
         mount_opt = new QLineEdit(groupBox_4);
         mount_opt->setObjectName(QString::fromUtf8("mount_opt"));
-        QSizePolicy sizePolicy1(QSizePolicy::Minimum, QSizePolicy::Fixed);
-        sizePolicy1.setHorizontalStretch(0);
-        sizePolicy1.setVerticalStretch(0);
-        sizePolicy1.setHeightForWidth(mount_opt->sizePolicy().hasHeightForWidth());
-        mount_opt->setSizePolicy(sizePolicy1);
+        QSizePolicy sizePolicy2(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        sizePolicy2.setHorizontalStretch(0);
+        sizePolicy2.setVerticalStretch(0);
+        sizePolicy2.setHeightForWidth(mount_opt->sizePolicy().hasHeightForWidth());
+        mount_opt->setSizePolicy(sizePolicy2);
         mount_opt->setLayoutDirection(Qt::RightToLeft);
         mount_opt->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         mount_opt->setClearButtonEnabled(false);
@@ -331,8 +332,8 @@ public:
 
         umount_opt = new QLineEdit(groupBox_4);
         umount_opt->setObjectName(QString::fromUtf8("umount_opt"));
-        sizePolicy1.setHeightForWidth(umount_opt->sizePolicy().hasHeightForWidth());
-        umount_opt->setSizePolicy(sizePolicy1);
+        sizePolicy2.setHeightForWidth(umount_opt->sizePolicy().hasHeightForWidth());
+        umount_opt->setSizePolicy(sizePolicy2);
         umount_opt->setLayoutDirection(Qt::RightToLeft);
         umount_opt->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
         umount_opt->setClearButtonEnabled(false);
@@ -359,48 +360,7 @@ public:
         verticalLayout_7->addLayout(horizontalLayout_12);
 
 
-        gridLayout_6->addWidget(groupBox_4, 3, 0, 1, 1);
-
-        groupBox = new QGroupBox(scrollAreaWidgetContents);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        verticalLayout_10 = new QVBoxLayout(groupBox);
-        verticalLayout_10->setSpacing(6);
-        verticalLayout_10->setContentsMargins(11, 11, 11, 11);
-        verticalLayout_10->setObjectName(QString::fromUtf8("verticalLayout_10"));
-        horizontalLayout_7 = new QHBoxLayout();
-        horizontalLayout_7->setSpacing(6);
-        horizontalLayout_7->setObjectName(QString::fromUtf8("horizontalLayout_7"));
-        label_2 = new QLabel(groupBox);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
-
-        horizontalLayout_7->addWidget(label_2);
-
-        game_path_chooser = new QPushButton(groupBox);
-        game_path_chooser->setObjectName(QString::fromUtf8("game_path_chooser"));
-
-        horizontalLayout_7->addWidget(game_path_chooser);
-
-
-        verticalLayout_10->addLayout(horizontalLayout_7);
-
-        horizontalLayout_8 = new QHBoxLayout();
-        horizontalLayout_8->setSpacing(6);
-        horizontalLayout_8->setObjectName(QString::fromUtf8("horizontalLayout_8"));
-        label = new QLabel(groupBox);
-        label->setObjectName(QString::fromUtf8("label"));
-
-        horizontalLayout_8->addWidget(label);
-
-        dat_swap = new QCheckBox(groupBox);
-        dat_swap->setObjectName(QString::fromUtf8("dat_swap"));
-
-        horizontalLayout_8->addWidget(dat_swap);
-
-
-        verticalLayout_10->addLayout(horizontalLayout_8);
-
-
-        gridLayout_6->addWidget(groupBox, 0, 0, 1, 1);
+        gridLayout_4->addWidget(groupBox_4, 7, 0, 1, 2);
 
         groupBox_3 = new QGroupBox(scrollAreaWidgetContents);
         groupBox_3->setObjectName(QString::fromUtf8("groupBox_3"));
@@ -441,7 +401,98 @@ public:
         verticalLayout_8->addLayout(horizontalLayout_9);
 
 
-        gridLayout_6->addWidget(groupBox_3, 2, 0, 1, 1);
+        gridLayout_4->addWidget(groupBox_3, 5, 0, 1, 2);
+
+        groupBox_2 = new QGroupBox(scrollAreaWidgetContents);
+        groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
+        verticalLayout_9 = new QVBoxLayout(groupBox_2);
+        verticalLayout_9->setSpacing(6);
+        verticalLayout_9->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_9->setObjectName(QString::fromUtf8("verticalLayout_9"));
+        horizontalLayout_10 = new QHBoxLayout();
+        horizontalLayout_10->setSpacing(6);
+        horizontalLayout_10->setObjectName(QString::fromUtf8("horizontalLayout_10"));
+        label_4 = new QLabel(groupBox_2);
+        label_4->setObjectName(QString::fromUtf8("label_4"));
+
+        horizontalLayout_10->addWidget(label_4);
+
+        edain_installed = new QCheckBox(groupBox_2);
+        edain_installed->setObjectName(QString::fromUtf8("edain_installed"));
+
+        horizontalLayout_10->addWidget(edain_installed);
+
+
+        verticalLayout_9->addLayout(horizontalLayout_10);
+
+
+        gridLayout_4->addWidget(groupBox_2, 3, 0, 1, 2);
+
+        groupBox = new QGroupBox(scrollAreaWidgetContents);
+        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        verticalLayout_10 = new QVBoxLayout(groupBox);
+        verticalLayout_10->setSpacing(6);
+        verticalLayout_10->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_10->setObjectName(QString::fromUtf8("verticalLayout_10"));
+        horizontalLayout_7 = new QHBoxLayout();
+        horizontalLayout_7->setSpacing(6);
+        horizontalLayout_7->setObjectName(QString::fromUtf8("horizontalLayout_7"));
+        label_2 = new QLabel(groupBox);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
+
+        horizontalLayout_7->addWidget(label_2);
+
+        game_path_chooser = new QPushButton(groupBox);
+        game_path_chooser->setObjectName(QString::fromUtf8("game_path_chooser"));
+
+        horizontalLayout_7->addWidget(game_path_chooser);
+
+
+        verticalLayout_10->addLayout(horizontalLayout_7);
+
+        horizontalLayout_8 = new QHBoxLayout();
+        horizontalLayout_8->setSpacing(6);
+        horizontalLayout_8->setObjectName(QString::fromUtf8("horizontalLayout_8"));
+        label = new QLabel(groupBox);
+        label->setObjectName(QString::fromUtf8("label"));
+
+        horizontalLayout_8->addWidget(label);
+
+        dat_swap = new QCheckBox(groupBox);
+        dat_swap->setObjectName(QString::fromUtf8("dat_swap"));
+
+        horizontalLayout_8->addWidget(dat_swap);
+
+
+        verticalLayout_10->addLayout(horizontalLayout_8);
+
+
+        gridLayout_4->addWidget(groupBox, 2, 0, 1, 2);
+
+        groupBox_5 = new QGroupBox(scrollAreaWidgetContents);
+        groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
+        verticalLayout_11 = new QVBoxLayout(groupBox_5);
+        verticalLayout_11->setSpacing(6);
+        verticalLayout_11->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_11->setObjectName(QString::fromUtf8("verticalLayout_11"));
+        horizontalLayout_16 = new QHBoxLayout();
+        horizontalLayout_16->setSpacing(6);
+        horizontalLayout_16->setObjectName(QString::fromUtf8("horizontalLayout_16"));
+        label_11 = new QLabel(groupBox_5);
+        label_11->setObjectName(QString::fromUtf8("label_11"));
+
+        horizontalLayout_16->addWidget(label_11);
+
+        kill_on_launch = new QCheckBox(groupBox_5);
+        kill_on_launch->setObjectName(QString::fromUtf8("kill_on_launch"));
+
+        horizontalLayout_16->addWidget(kill_on_launch);
+
+
+        verticalLayout_11->addLayout(horizontalLayout_16);
+
+
+        gridLayout_4->addWidget(groupBox_5, 8, 0, 1, 2);
 
         pref_scroll->setWidget(scrollAreaWidgetContents);
 
@@ -452,11 +503,6 @@ public:
         gridLayout_8->setObjectName(QString::fromUtf8("gridLayout_8"));
         gridLayout_8->setHorizontalSpacing(12);
         gridLayout_8->setContentsMargins(0, -1, 0, 1);
-        pref_save = new QPushButton(pref_tab);
-        pref_save->setObjectName(QString::fromUtf8("pref_save"));
-
-        gridLayout_8->addWidget(pref_save, 0, 2, 1, 1);
-
         pref_quit = new QPushButton(pref_tab);
         pref_quit->setObjectName(QString::fromUtf8("pref_quit"));
         pref_quit->setMinimumSize(QSize(75, 23));
@@ -464,14 +510,21 @@ public:
 
         gridLayout_8->addWidget(pref_quit, 0, 0, 1, 1);
 
+        pref_save = new QPushButton(pref_tab);
+        pref_save->setObjectName(QString::fromUtf8("pref_save"));
+        pref_save->setMaximumSize(QSize(75, 23));
+
+        gridLayout_8->addWidget(pref_save, 0, 2, 1, 1);
+
         label_23 = new QLabel(pref_tab);
         label_23->setObjectName(QString::fromUtf8("label_23"));
         label_23->setMinimumSize(QSize(225, 23));
+        label_23->setMaximumSize(QSize(16777215, 23));
 
         gridLayout_8->addWidget(label_23, 0, 1, 1, 1);
 
 
-        gridLayout_5->addLayout(gridLayout_8, 2, 0, 1, 2);
+        gridLayout_5->addLayout(gridLayout_8, 3, 0, 1, 2);
 
         tabWidget->addTab(pref_tab, QString());
 
@@ -501,16 +554,15 @@ public:
         botta_launch->setText(QApplication::translate("MainWindow", "BotTA", nullptr));
         edain_launch->setText(QApplication::translate("MainWindow", "Edain", nullptr));
         rotwk_launch->setText(QApplication::translate("MainWindow", "RotWK", nullptr));
+        launch_img->setText(QString());
         tabWidget->setTabText(tabWidget->indexOf(launch_tab), QApplication::translate("MainWindow", "Launch", nullptr));
         cfg_quit->setText(QApplication::translate("MainWindow", "Quit", nullptr));
         all_upd->setText(QApplication::translate("MainWindow", "All", nullptr));
         botta_upd->setText(QApplication::translate("MainWindow", "BotTA", nullptr));
         edain_upd->setText(QApplication::translate("MainWindow", "Edain", nullptr));
         rotwk_upd->setText(QApplication::translate("MainWindow", "RotWK", nullptr));
+        upd_img->setText(QString());
         tabWidget->setTabText(tabWidget->indexOf(update_tab), QApplication::translate("MainWindow", "Update Configs", nullptr));
-        groupBox_2->setTitle(QApplication::translate("MainWindow", "Edain", nullptr));
-        label_4->setText(QApplication::translate("MainWindow", "Installed", nullptr));
-        edain_installed->setText(QString());
         groupBox_4->setTitle(QApplication::translate("MainWindow", "Mounting", nullptr));
         label_10->setText(QApplication::translate("MainWindow", "Automatic", nullptr));
         auto_mount->setText(QString());
@@ -522,18 +574,24 @@ public:
         label_21->setText(QApplication::translate("MainWindow", "Unmounting Options", nullptr));
         label_6->setText(QApplication::translate("MainWindow", "Specify Image When Unmounting", nullptr));
         imspec_umount->setText(QString());
-        groupBox->setTitle(QApplication::translate("MainWindow", "Base Game", nullptr));
-        label_2->setText(QApplication::translate("MainWindow", "Game Path", nullptr));
-        game_path_chooser->setText(QApplication::translate("MainWindow", "Choose...", nullptr));
-        label->setText(QApplication::translate("MainWindow", "Swap .dat File", nullptr));
-        dat_swap->setText(QString());
         groupBox_3->setTitle(QApplication::translate("MainWindow", "BotTA", nullptr));
         label_5->setText(QApplication::translate("MainWindow", "Installed", nullptr));
         botta_installed->setText(QString());
         label_3->setText(QApplication::translate("MainWindow", "BotTA Path", nullptr));
         botta_path_chooser->setText(QApplication::translate("MainWindow", "Choose...", nullptr));
-        pref_save->setText(QApplication::translate("MainWindow", "Save", nullptr));
+        groupBox_2->setTitle(QApplication::translate("MainWindow", "Edain", nullptr));
+        label_4->setText(QApplication::translate("MainWindow", "Installed", nullptr));
+        edain_installed->setText(QString());
+        groupBox->setTitle(QApplication::translate("MainWindow", "Base Game", nullptr));
+        label_2->setText(QApplication::translate("MainWindow", "Game Path", nullptr));
+        game_path_chooser->setText(QApplication::translate("MainWindow", "Choose...", nullptr));
+        label->setText(QApplication::translate("MainWindow", "Swap .dat File", nullptr));
+        dat_swap->setText(QString());
+        groupBox_5->setTitle(QApplication::translate("MainWindow", "Launcher", nullptr));
+        label_11->setText(QApplication::translate("MainWindow", "Terminate On Launch", nullptr));
+        kill_on_launch->setText(QString());
         pref_quit->setText(QApplication::translate("MainWindow", "Quit", nullptr));
+        pref_save->setText(QApplication::translate("MainWindow", "Save", nullptr));
         label_23->setText(QString());
         tabWidget->setTabText(tabWidget->indexOf(pref_tab), QApplication::translate("MainWindow", "Preferences", nullptr));
     } // retranslateUi

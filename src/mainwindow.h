@@ -1,11 +1,12 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef MAINWINDOW_HPP
+#define MAINWINDOW_HPP
 
-#ifndef GTK_GUI
 #pragma once
 #include "game_data.h"
 #include <array>
+#include <QLabel>
 #include <QMainWindow>
+#include <QPixmap>
 
 namespace Ui {
     class MainWindow;
@@ -37,28 +38,38 @@ private slots:
     void on_edain_upd_clicked();
     void on_rotwk_upd_clicked();
     void on_pref_save_clicked();
+    void on_tabWidget_currentChanged(int index);
+    void resizeEvent(QResizeEvent* event);
 
 private:
     Ui::MainWindow *ui;
     launcher_data data_{};
-    std::array<char, 64> game_md5{};
-    bool mounting_necessary_{true};
+    std::array<char, 64> game_hash{};
+    QString dat_file_location_{};
     bool config_exists_{};
-    QString botta_toml{}, edain_toml{}, rotwk_toml{};
+    QString botta_toml_{}, edain_toml_{}, rotwk_toml_{};
     QString game_path_{}, botta_path_{}, mount_exe_{}, mount_image_{};
     QString config_file_{};
+    QPixmap launch_img_, upd_img_;
+    QLabel* active_img_{nullptr};
 
-    static int constexpr WRAP_SIZE{24u};
+    static int constexpr WRAP_SIZE{24};
+    static QSize constexpr INITIAL_IMSIZE{400, 220};
     static QString const NEW_DAT_MD5;
     static QString const GAME_EXE;
+    static QString const BOTTA_LNK;
 
     void init();
     bool setup_launcher();
     void launch(configuration config) noexcept;
-    void setup_toml_paths();
+    void setup_paths();
+    void update_gui_functionality();
+
+    void update_single_config(configuration config);
+    void update_all_configs();
 
     static QString wrap_text(QString const& text);
+    static void monitor_progress(QWidget* parent);
 };
 
-#endif
 #endif // MAINWINDOW_H

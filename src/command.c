@@ -16,10 +16,3 @@ void sleep_for(size_t ms) {
 #endif
 }
 
-void cd_to_game_path(launcher_data const* cfg) {
-    char game_path[128];
-    game_path[0] = '\"';
-    strcpy(game_path + 1, cfg->game_path);
-    strcat(game_path, "\"");
-    chdir(game_path);
-}

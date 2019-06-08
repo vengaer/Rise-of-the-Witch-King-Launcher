@@ -15,4 +15,5 @@ void launcher_data_init(launcher_data* cfg) {
     cfg->automatic_mount = false;
     cfg->swap_dat_file   = true;
     cfg->umount_imspec   = false;
+    cfg->kill_on_launch  = true;
 }
