@@ -203,7 +203,8 @@ void MainWindow::on_pref_save_clicked() {
         }
     }
 
-    if(ui->auto_mount->isChecked()) {
+    data_.automatic_mount = ui->auto_mount->isChecked();
+    if(data_.automatic_mount) {
         if(!file_exists(mount_exe_.toLatin1().data())) {
             QMessageBox::information(this, tr("File Does Not Exist"), "Could not locate specified mounting executable");
             return;
@@ -216,7 +217,6 @@ void MainWindow::on_pref_save_clicked() {
         strcpy(data_.disc_image, mount_image_.toLatin1().data());
         strcpy(data_.mount_exe, mount_exe_.toLatin1().data());
 
-        data_.automatic_mount = true;
         strcpy(data_.mount_flags, ui->mount_opt->text().toLatin1().data());
         strcpy(data_.umount_flags, ui->umount_opt->text().toLatin1().data());
         data_.umount_imspec = ui->imspec_umount->isChecked();
