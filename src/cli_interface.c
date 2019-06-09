@@ -232,8 +232,20 @@ int cli_main(int argc, char** argv) {
             if(system(launch) != 0)
                 fprintf(stderr, "Failed to launch game.\n");
 
-            while(game_running())
-                sleep_for(SLEEP_TIME);
+            #pragma omp parallel num_threads(2)
+            {
+                #pragma omp master 
+                {
+                    #pragma omp task
+                    {
+                        new_dat_enabled = strcmp(game_csum, NEW_DAT_CSUM) == 0;
+                        swap = ld.swap_dat_file ? new_dat_enabled : !new_dat_enabled;
+                    }
+
+                    while(game_running())
+                        sleep_for(SLEEP_TIME);
+                }
+            }
             
             switch(ld.default_state) {
                 case rotwk:

@@ -355,8 +355,20 @@ void MainWindow::launch(configuration config) {
     if(system(launch_cmd.toLatin1().data()) != 0)
         fprintf(stderr, "Failed to launch game.\n");
 
-    while(game_running())
-        sleep_for(SLEEP_TIME);
+    #pragma omp parallel num_threads(2) 
+    {
+        #pragma omp master
+        {
+            #pragma omp task
+            {
+                new_dat_enabled = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
+                swap = data_.swap_dat_file ? new_dat_enabled : !new_dat_enabled;
+            }
+
+            while(game_running())
+                sleep_for(SLEEP_TIME);
+        }
+    }
 
     if(mounting_necessary && data_.automatic_mount) {
         if(system(data_.umount_cmd) != 0)
