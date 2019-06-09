@@ -263,41 +263,41 @@ void set_extension(char* filename, char const* extension) {
 }
 
 bool file_exists(char const* filename) {
-#ifdef __linux__
-    return access(filename, F_OK) != -1;
-#else
-    FILE* fp = fopen(filename, "r");
-    bool exists = fp != NULL;
-    if(exists)
-        fclose(fp);
+    #ifdef __linux__
+        return access(filename, F_OK) != -1;
+    #else
+        FILE* fp = fopen(filename, "r");
+        bool exists = fp != NULL;
+        if(exists)
+            fclose(fp);
 
-    return exists;
-#endif
+        return exists;
+    #endif
 
     return false;
 }
 
 void game_path_from_registry(char* path) {
     path[0] = '\0';
-#if !defined __CYGWIN__ && !defined(_WIN32)
-    return;
-#else
-    DWORD dw_size = 1024;
-    RegGetValue(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\lotrbfme2ep1.exe", "Path", RRF_RT_ANY, NULL, (PVOID)path, &dw_size);
-#endif
+    #if !defined __CYGWIN__ && !defined(_WIN32)
+        return;
+    #else
+        DWORD dw_size = 1024;
+        RegGetValue(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\lotrbfme2ep1.exe", "Path", RRF_RT_ANY, NULL, (PVOID)path, &dw_size);
+    #endif
 }
 
 void sys_format(char* syscall, char const* orig_command) {
     #if defined __CYGWIN__ || defined _WIN32
-    syscall[0] = '\"';
-    strcpy(syscall + 1, orig_command);
-    replace_char(syscall, '\'', '\"');
-    int len = strlen(syscall);
-    syscall[len] = '\"';
-    syscall[len + 1] = '\0';
+        syscall[0] = '\"';
+        strcpy(syscall + 1, orig_command);
+        replace_char(syscall, '\'', '\"');
+        int len = strlen(syscall);
+        syscall[len] = '\"';
+        syscall[len + 1] = '\0';
     #else
-    strcpy(syscall, orig_command);
-    replace_char(syscall, '\'', ' ');
+        strcpy(syscall, orig_command);
+        replace_char(syscall, '\'', ' ');
     #endif
 }
 

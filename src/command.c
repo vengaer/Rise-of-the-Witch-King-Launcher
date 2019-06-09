@@ -9,18 +9,18 @@ bool game_running(void) {
 }
 
 void sleep_for(size_t ms) {
-#ifdef __linux__
-    sleep(ms / 1000);
-#elif defined __CYGWIN__ || defined _WIN32
-    Sleep(ms);
-#endif
+    #ifdef __linux__
+        sleep(ms / 1000);
+    #elif defined __CYGWIN__ || defined _WIN32
+        Sleep(ms);
+    #endif
 }
 
 void show_console(bool show) {
     #if defined __CYGWIN__ || defined _WIN32
-    if(show)
-        ShowWindow(GetConsoleWindow(), SW_SHOW);
-    else
-        ShowWindow(GetConsoleWindow(), SW_HIDE);
+        if(show)
+            ShowWindow(GetConsoleWindow(), SW_SHOW);
+        else
+            ShowWindow(GetConsoleWindow(), SW_HIDE);
     #endif
 }
