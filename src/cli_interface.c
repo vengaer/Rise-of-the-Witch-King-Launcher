@@ -31,7 +31,7 @@ int cli_main(int argc, char** argv) {
     char *scfg = NULL, *ucfg = NULL;
     int idx, opt, sync;
     bool mounting_necessary = true; 
-    bool new_dat_enabled, swap;
+    bool new_dat_enabled;
     
     char cwd[PATH_SIZE];
     char rotwk_toml[PATH_SIZE];
@@ -174,7 +174,6 @@ int cli_main(int argc, char** argv) {
     
     configuration active_config;
     
-    swap = ld.swap_dat_file ? new_dat_enabled : !new_dat_enabled;
     if(r_flag || s_flag) {
         /* Set active config */
         if(strcmp(scfg, "rotwk") == 0) {
@@ -189,7 +188,7 @@ int cli_main(int argc, char** argv) {
                     return 1;
                 }
 
-                set_active_configuration(edain_toml, swap);
+                set_active_configuration(edain_toml, ld.swap_dat_file);
 
                 active_config = edain;
             }
@@ -199,7 +198,7 @@ int cli_main(int argc, char** argv) {
                     return 1;
                 }
 
-                set_active_configuration(botta_toml, swap);
+                set_active_configuration(botta_toml, ld.swap_dat_file);
                 active_config = botta;
             }
             else {
@@ -232,30 +231,18 @@ int cli_main(int argc, char** argv) {
             if(system(launch) != 0)
                 fprintf(stderr, "Failed to launch game.\n");
 
-            #pragma omp parallel num_threads(2)
-            {
-                #pragma omp master 
-                {
-                    #pragma omp task
-                    {
-                        new_dat_enabled = strcmp(game_csum, NEW_DAT_CSUM) == 0;
-                        swap = ld.swap_dat_file ? new_dat_enabled : !new_dat_enabled;
-                    }
-
-                    while(game_running())
-                        sleep_for(SLEEP_TIME);
-                }
-            }
+            while(game_running())
+                sleep_for(SLEEP_TIME);
             
             switch(ld.default_state) {
                 case rotwk:
-                    set_active_configuration(rotwk_toml, !new_dat_enabled);
+                    set_active_configuration(rotwk_toml, true);
                     break;
                 case edain:
-                    set_active_configuration(edain_toml, swap);
+                    set_active_configuration(edain_toml, ld.swap_dat_file);
                     break;
                 case botta:
-                    set_active_configuration(botta_toml, swap);
+                    set_active_configuration(botta_toml, ld.swap_dat_file);
                     break;
                 default:
                     break;

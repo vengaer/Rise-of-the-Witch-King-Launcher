@@ -316,17 +316,15 @@ void MainWindow::launch(configuration config) {
         hide();
 
     md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
-    bool new_dat_enabled = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
-    bool swap = data_.swap_dat_file ? new_dat_enabled : !new_dat_enabled;
 
     if(config == rotwk) 
         set_active_configuration(rotwk_toml_.toLatin1().data(), true);
     else {
 
         if(config == edain)
-            set_active_configuration(edain_toml_.toLatin1().data(), swap);
+            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file);
         else
-            set_active_configuration(botta_toml_.toLatin1().data(), swap);
+            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file);
 
         if(data_.automatic_mount) {
             md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
@@ -355,20 +353,8 @@ void MainWindow::launch(configuration config) {
     if(system(launch_cmd.toLatin1().data()) != 0)
         fprintf(stderr, "Failed to launch game.\n");
 
-    #pragma omp parallel num_threads(2) 
-    {
-        #pragma omp master
-        {
-            #pragma omp task
-            {
-                new_dat_enabled = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
-                swap = data_.swap_dat_file ? new_dat_enabled : !new_dat_enabled;
-            }
-
-            while(game_running())
-                sleep_for(SLEEP_TIME);
-        }
-    }
+    while(game_running())
+        sleep_for(SLEEP_TIME);
 
     if(mounting_necessary && data_.automatic_mount) {
         if(system(data_.umount_cmd) != 0)
@@ -377,13 +363,13 @@ void MainWindow::launch(configuration config) {
 
     switch(data_.default_state) {
         case rotwk:
-            set_active_configuration(rotwk_toml_.toLatin1().data(), !new_dat_enabled);
+            set_active_configuration(rotwk_toml_.toLatin1().data(), true);
             break;
         case edain:
-            set_active_configuration(edain_toml_.toLatin1().data(), swap);
+            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file);
             break;
         case botta:
-            set_active_configuration(botta_toml_.toLatin1().data(), swap);
+            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file);
             break;
         default:
             break;
