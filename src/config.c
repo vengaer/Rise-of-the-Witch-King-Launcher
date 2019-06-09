@@ -1,4 +1,5 @@
 #include "config.h"
+#include "bitop.h"
 #include "fsys.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -159,7 +160,7 @@ void write_launcher_config(launcher_data const* cfg, char const* file) {
     fprintf(fp, "swap = \"%s\"\n", cfg->swap_dat_file ? "true" : "false");
     fprintf(fp, "kill_on_launch = \"%s\"\n", cfg->kill_on_launch ? "true" : "false");
     fprintf(fp, "show_console = \"%s\"\n", cfg->show_console ? "true" : "false");
-    fprintf(fp, "default_state = \"%d\"\n\n", cfg->default_state);
+    fprintf(fp, "default_state = \"%d\"\n\n", trailing_zeros(cfg->default_state));
     fprintf(fp, "[game]\n");
     fprintf(fp, "path = \"%s\"\n\n", cfg->game_path);
     fprintf(fp, "[edain]\n");
@@ -212,7 +213,7 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
             else if(strcmp(key, "show_console") == 0)
                 cfg->show_console = strcmp(value, "true") == 0;
             else if(strcmp(key, "default_state") == 0) 
-                cfg->default_state = atoi(value);
+                cfg->default_state = (0x1 << atoi(value));
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
