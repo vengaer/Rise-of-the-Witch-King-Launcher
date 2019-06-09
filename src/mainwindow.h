@@ -55,13 +55,12 @@ private:
 
     static int constexpr WRAP_SIZE{24};
     static QSize constexpr INITIAL_IMSIZE{400, 220};
-    static QString const NEW_DAT_MD5;
     static QString const GAME_EXE;
     static QString const BOTTA_LNK;
 
     void init();
     bool setup_launcher();
-    void launch(configuration config) noexcept;
+    void launch(configuration config);
     void setup_paths();
     void update_gui_functionality();
 

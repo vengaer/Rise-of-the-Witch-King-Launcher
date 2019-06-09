@@ -12,9 +12,6 @@ bool read_big_entry(char* line, big_file* entry);
 bool read_dat_entry(char* line, dat_file* entry);
 bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry);
 bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry);
-void remove_newline(char* line);
-void replace_char(char* line, char orig, char repl);
-void sys_format(char* syscall, char const* orig_command);
 
 void read_game_config(char const* filename,
                       big_file** enable,
@@ -37,9 +34,9 @@ void read_game_config(char const* filename,
         return;
     }
 
-    char line[128];
-    char header[32];
-    char tmp_header[32];
+    char line[LINE_SIZE];
+    char header[HEADER_SIZE];
+    char tmp_header[HEADER_SIZE];
     
     do{ 
         if(fgets(line, sizeof line, fp) == NULL) {
@@ -149,161 +146,6 @@ void write_game_config(char const* filename,
     fclose(fp);
 }
 
-void cli_setup(launcher_data* cfg, char const* file) {
-    launcher_data_init(cfg);
-    bool input_ok = false;
-    char c;
-
-    char path[PATH_SIZE];
-
-    game_path_from_registry(cfg->game_path);
-    printf("Unofficial Rise of the Witch-King Launcher setup\n");
-    if(!cfg->game_path[0]) {
-        while(!input_ok) {
-            printf("Enter the path to the game directory (directory containing lotrbfme2ep1.exe).\n");
-            fgets(cfg->game_path, sizeof cfg->game_path, stdin);
-            remove_newline(cfg->game_path);
-
-            strcpy(path, cfg->game_path);
-            strcat(path, "/lotrbfme2ep1.exe");
-            
-            if(!file_exists(path)) 
-                fprintf(stderr, "Could not locate lotrbfme2ep1.exe at given path. Try again");
-            else
-                input_ok = true;
-        }
-    }
-    input_ok = false;
-    printf("Game path set to '%s'.\n", cfg->game_path);
-    printf("Is the Edain mod installed? (y/n)\n");
-
-    while(!input_ok) {
-        c = getchar();
-        while(getchar() != '\n') { }
-        if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-            input_ok = true;
-        else 
-            printf("Please enter 'y' or 'n'.\n");
-    }
-    cfg->edain_available = c == 'y' || c == 'Y';
-    input_ok = false;
-
-    printf("Is the Battles of the Third Age (BotTa) mod installed? (y/n)\n");
-
-    while(!input_ok) {
-        c = getchar();
-        while(getchar() != '\n') { }
-        if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-            input_ok = true;
-        else 
-            printf("Please enter 'y' or 'n'.\n");
-    }
-    cfg->botta_available = c == 'y' || c == 'Y';
-    input_ok = false;
-
-    if(cfg->botta_available) {
-        printf("Enter the path to the BotTa directory.\n");
-        while(!input_ok) {
-            fgets(cfg->botta_path, sizeof cfg->botta_path, stdin);
-            remove_newline(cfg->botta_path);
-            
-            strcpy(path, cfg->botta_path);
-            strcat(path, "/BotTa.lnk");
-
-            if(!file_exists(path))
-                fprintf(stderr, "Could not locate BotTa.lnk at given path. Try again.");
-            else
-                input_ok = true;
-
-        }
-        printf("BotTa path set to '%s'.\n", cfg->botta_path);
-        input_ok = false;
-    }
-    else
-        cfg->botta_path[0] = '\0';
-
-    printf("Should the launcher mount a disk image automatically? (y/n)\n");
-    while(!input_ok) {
-        c = getchar();
-        while(getchar() != '\n') { }
-        if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-            input_ok = true;
-        else 
-            printf("Please enter 'y' or 'n'.\n");
-    }
-    input_ok = false;
-    cfg->automatic_mount = c == 'y' || c == 'Y';
-    
-    if(cfg->automatic_mount) {
-        printf("Enter path to mount executable (without quotes or escaping any chars)\n");
-        while(!input_ok) {
-            fgets(cfg->mount_exe, sizeof cfg->mount_exe, stdin);
-            remove_newline(cfg->mount_exe);
-            
-            if(!file_exists(cfg->mount_exe))
-                fprintf(stderr, "%s does not exist\n", cfg->mount_exe);
-            else
-                input_ok = true;
-            
-        }
-        printf("Mount executable set to '%s'.\n", cfg->mount_exe);
-        input_ok = false;
-
-        printf("Enter path to the disc image that should be mounted (without quotes or escaping chars)\n");
-        while(!input_ok) {
-            fgets(cfg->disc_image, sizeof cfg->disc_image, stdin);
-            remove_newline(cfg->disc_image);
-            
-            if(!file_exists(cfg->disc_image))
-                fprintf(stderr, "%s does not exist\n", cfg->disc_image);
-            else 
-                input_ok = true;
-        }
-        printf("Disc image set to '%s'.\n", cfg->disc_image);
-        input_ok = false;
-
-        printf("Enter mounting flags (if none, leave empty)\n");
-        fgets(cfg->mount_flags, sizeof cfg->mount_flags, stdin);
-        remove_newline(cfg->mount_flags);
-        printf("Mounting flags set to '%s'.\n", cfg->mount_flags);
-
-        printf("Enter unmounting flags (if non, leave empty)\n");
-        fgets(cfg->umount_flags, sizeof cfg->umount_flags, stdin);
-        remove_newline(cfg->umount_flags);
-        printf("Unmounting flags set to '%s'.\n", cfg->umount_flags);
-
-        printf("Should the disc image be specified when invoking the unmoung command?\n");
-        while(!input_ok) {
-            c = getchar();
-            while(getchar() != '\n') { }
-            if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-                input_ok = true;
-            else 
-                printf("Please enter 'y' or 'n'.\n");
-        }
-        input_ok = false;
-        cfg->umount_imspec = c == 'y' || c == 'Y';
-
-        construct_mount_command(cfg->mount_cmd, cfg->mount_exe, cfg->mount_flags, cfg->disc_image);
-        construct_umount_command(cfg->umount_cmd, cfg->mount_exe, cfg->umount_flags, cfg->disc_image, cfg->umount_imspec);
-        printf("Mount command set ot '%s'.\n", cfg->mount_cmd);
-        printf("Unmount command set ot '%s'.\n", cfg->umount_cmd);
-    }
-
-    printf("Should the launcher swap dat files? (Recommended).");
-
-    while(!input_ok) {
-        c = getchar();
-        while(getchar() != '\n') { }
-        if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-            input_ok = true;
-        else 
-            printf("Please enter 'y' or 'n'.\n");
-    }
-    cfg->swap_dat_file = c == 'y' || c == 'Y';
-
-    write_launcher_config(cfg, file);
-}
 
 void write_launcher_config(launcher_data const* cfg, char const* file) {
     FILE* fp = fopen(file, "w");
@@ -315,7 +157,9 @@ void write_launcher_config(launcher_data const* cfg, char const* file) {
 
     fprintf(fp, "[launcher]\n");
     fprintf(fp, "swap = \"%s\"\n", cfg->swap_dat_file ? "true" : "false");
-    fprintf(fp, "kill_on_launch = \"%s\"\n\n", cfg->kill_on_launch ? "true" : "false");
+    fprintf(fp, "kill_on_launch = \"%s\"\n", cfg->kill_on_launch ? "true" : "false");
+    fprintf(fp, "show_console = \"%s\"\n", cfg->show_console ? "true" : "false");
+    fprintf(fp, "default_state = \"%d\"\n\n", cfg->default_state);
     fprintf(fp, "[game]\n");
     fprintf(fp, "path = \"%s\"\n\n", cfg->game_path);
     fprintf(fp, "[edain]\n");
@@ -340,15 +184,14 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
     launcher_data_init(cfg);
 
     FILE* fp = fopen(file, "r");
-    if(!fp) {
-        fprintf(stderr, "Could not read config file\n");
+    if(!fp) 
         return false;
-    }
-    char line[256];
-    char header[32];
-    char tmp_header[32];
-    char key[32];
-    char value[128];
+
+    char line[PATH_SIZE];
+    char header[HEADER_SIZE];
+    char tmp_header[HEADER_SIZE];
+    char key[OPT_SIZE];
+    char value[PATH_SIZE];
 
     while(fgets(line, sizeof line, fp)) {
         if(line[0] == '\n')
@@ -366,6 +209,10 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
                 cfg->swap_dat_file = strcmp(value, "true") == 0;
             else if(strcmp(key, "kill_on_launch") == 0)
                 cfg->kill_on_launch = strcmp(value, "true") == 0;
+            else if(strcmp(key, "show_console") == 0)
+                cfg->show_console = strcmp(value, "true") == 0;
+            else if(strcmp(key, "default_state") == 0) 
+                cfg->default_state = atoi(value);
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
@@ -428,6 +275,7 @@ void construct_mount_command(char* dst, char const* exe, char const* flags, char
     strcat(dst, "' '");
     strcat(dst, img);
     strcat(dst, "'");
+    strcat(dst, SUPPRESS_OUTPUT);
 }
 
 void construct_umount_command(char* dst, char const* exe, char const* flags, char const* img, bool spec_img) {
@@ -443,6 +291,7 @@ void construct_umount_command(char* dst, char const* exe, char const* flags, cha
         strcat(dst, img);
     }
     strcat(dst, "'");
+    strcat(dst, SUPPRESS_OUTPUT);
 }
 
 bool header_name(char const* line, char* header) {
@@ -496,10 +345,10 @@ void get_table_value(char const* entry, char* value) {
 }
 
 bool read_big_entry(char* line, big_file* entry) {
-    char key[32];
+    char key[OPT_SIZE];
     get_table_key(line, key);
 
-    char value[64];
+    char value[FSTR_SIZE];
     get_table_value(line, value);
 
     if(strcmp(key, "name") == 0)
@@ -516,10 +365,10 @@ bool read_big_entry(char* line, big_file* entry) {
 }
 
 bool read_dat_entry(char* line, dat_file* entry) {
-    char key[32];
+    char key[OPT_SIZE];
     get_table_key(line, key);
 
-    char value[64];
+    char value[FSTR_SIZE];
     get_table_value(line, value);
 
     if(strcmp(key, "name") == 0)
@@ -553,8 +402,8 @@ bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry) {
 
 bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry) {
     int i;
-    char subheader[32];
-    char tmp_header[32];
+    char subheader[HEADER_SIZE];
+    char tmp_header[HEADER_SIZE];
     subheader_name(line, tmp_header);
     char* start = strchr(tmp_header, '.');
     ++start;
@@ -593,11 +442,3 @@ void replace_char(char* line, char orig, char repl) {
             line[i] = repl;
 }
 
-void sys_format(char* syscall, char const* orig_command) {
-    syscall[0] = '\"';
-    strcpy(syscall + 1, orig_command);
-    replace_char(syscall, '\'', '\"');
-    int len = strlen(syscall);
-    syscall[len - 1] = '\"';
-    syscall[len] = '\0';
-}

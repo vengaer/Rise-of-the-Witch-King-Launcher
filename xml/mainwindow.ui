@@ -27,7 +27,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="launch_tab">
        <attribute name="title">
@@ -176,9 +176,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-215</y>
+             <y>0</y>
              <width>382</width>
-             <height>483</height>
+             <height>532</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
@@ -275,7 +275,7 @@
                     </sizepolicy>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Command line options for mounting with chosen executable. Leave empty if none are required.&lt;/p&gt;&lt;p&gt;(e.g. -m for DTCommandLine.exe, leave blank for batchmnt.exe)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Command line options for mounting with chosen executable. Leave empty if none are required.&lt;br&gt;(e.g. -m for DTCommandLine.exe, leave blank for batchmnt.exe)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="layoutDirection">
                     <enum>Qt::RightToLeft</enum>
@@ -314,7 +314,7 @@
                     </sizepolicy>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Command line options for unmounting with chosen executable. Leave empty if none are required. &lt;/p&gt;&lt;p&gt;(e.g. -u or -U for DTCommandLine.exe, /unmount or /unmountall for batchmnt.exe)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Command line options for unmounting with chosen executable. Leave empty if none are required. &lt;br&gt;(e.g. -u or -U for DTCommandLine.exe, /unmount or /unmountall for batchmnt.exe)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="layoutDirection">
                     <enum>Qt::RightToLeft</enum>
@@ -341,7 +341,7 @@
                  <item>
                   <widget class="QCheckBox" name="imspec_umount">
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether the disc image should be specified when unmounting. Generally, this should be checked for any unmount command that does not unmount all mounted images.&lt;/p&gt;&lt;p&gt;(e.g. turn on if using -u with DTCommandLine.exe or /unmount with batchmnt.exe, leave off if using -U with DTCommandLine.exe or /unmountall with batchmnt.exe)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether the disc image should be specified when unmounting. Generally, this should be checked for any unmount command that does not unmount all mounted images.&lt;br&gt;(e.g. turn on if using -u with DTCommandLine.exe or /unmount with batchmnt.exe, leave off if using -U with DTCommandLine.exe or /unmountall with batchmnt.exe)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string/>
@@ -439,8 +439,29 @@
               <property name="title">
                <string>Base Game</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_10">
-               <item>
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="2" column="0">
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                 <item>
+                  <widget class="QLabel" name="label">
+                   <property name="text">
+                    <string>Swap .dat File</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="dat_swap">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.&lt;br&gt;(Recommended: On)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item row="0" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_7">
                  <item>
                   <widget class="QLabel" name="label_2">
@@ -461,22 +482,19 @@
                  </item>
                 </layout>
                </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_8">
+               <item row="1" column="0">
+                <layout class="QHBoxLayout" name="horizontalLayout_11">
                  <item>
-                  <widget class="QLabel" name="label">
+                  <widget class="QLabel" name="label_9">
                    <property name="text">
-                    <string>Swap .dat File</string>
+                    <string>Default State</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QCheckBox" name="dat_swap">
+                  <widget class="QComboBox" name="default_state">
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.&lt;/p&gt;&lt;p&gt;(Recommended: On)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                   <property name="text">
-                    <string/>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;State in which the game is left after launch. Options are:&lt;br&gt;RotWK - patch 2.02 (Recommended for maximum compatibility)&lt;br&gt;Edain - patch 2.01 with Edain enabled&lt;br&gt;BotTA - patch 2.01&lt;br&gt; Last Launched - Whatever version was launched last&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                   </widget>
                  </item>
@@ -490,8 +508,8 @@
               <property name="title">
                <string>Launcher</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_11">
-               <item>
+              <layout class="QGridLayout" name="gridLayout_6">
+               <item row="0" column="0">
                 <layout class="QHBoxLayout" name="horizontalLayout_16">
                  <item>
                   <widget class="QLabel" name="label_11">
@@ -503,7 +521,28 @@
                  <item>
                   <widget class="QCheckBox" name="kill_on_launch">
                    <property name="toolTip">
-                    <string>Terminate launcher after launching the game</string>
+                    <string>Terminate launcher after starting the game</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item row="1" column="0">
+                <layout class="QHBoxLayout" name="horizontalLayout_19">
+                 <item>
+                  <widget class="QLabel" name="label_12">
+                   <property name="text">
+                    <string>Show Console</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="show_console">
+                   <property name="toolTip">
+                    <string>Show console</string>
                    </property>
                    <property name="text">
                     <string/>

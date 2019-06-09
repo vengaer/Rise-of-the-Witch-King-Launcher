@@ -1,7 +1,5 @@
 #include "fsys.h"
-#include "command.h"
 #include "config.h"
-#include "game_data.h"
 
 #include <openssl/md5.h>
 #include <omp.h>
@@ -14,7 +12,7 @@
 #include <windows.h>
 #endif
 
-int progress = 0, total_work = -1;
+static int progress = 0, total_work = -1;
 
 void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
@@ -59,7 +57,7 @@ double track_progress(void) {
     return (double)progress / (double)total_work;
 }
 
-void update_config_file(char const* filename, bool invert_dat_files) {
+bool update_config_file(char const* filename, bool invert_dat_files, int* sync, launcher_data const* cfg) {
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
     big_file* enable = malloc(enable_cap * sizeof(big_file));
@@ -71,17 +69,23 @@ void update_config_file(char const* filename, bool invert_dat_files) {
                                &swap, &swap_cap, &swap_size);
     #pragma omp atomic
     total_work += enable_size + disable_size + swap_size;
+    #pragma omp flush
+
+    TASKSYNC(sync)
 
     bool success = true;
 
-    #pragma omp parallel 
+    #pragma omp parallel reduction(&& : success)
     {
         size_t i;
-        char toggled[64];
+        char toggled[FSTR_SIZE];
         bool config_enabled;
 
-        #pragma omp for reduction(&& : success)
+        #pragma omp for schedule(dynamic)
         for(i = 0; i < enable_size; i++) {
+            if(!cfg->edain_available && strstr(enable[i].name, "edain"))
+                continue;
+
             if(file_exists(enable[i].name)) {
                 if(!md5sum(enable[i].name, enable[i].checksum))
                     success = false;
@@ -91,13 +95,16 @@ void update_config_file(char const* filename, bool invert_dat_files) {
                 strcpy(toggled, enable[i].name);
                 set_extension(toggled, enable[i].extension);
                 if(!md5sum(toggled, enable[i].checksum))
-                   success = false;
+                    success = false;
             }
             #pragma omp atomic
             ++progress;
         }
-        #pragma omp for reduction(&& : success)
+        #pragma omp for schedule(dynamic)
         for(i = 0; i < disable_size; i++) {
+            if(!cfg->edain_available && strstr(disable[i].name, "edain"))
+                continue;
+
             if(file_exists(disable[i].name)) {
                 if(!md5sum(disable[i].name, disable[i].checksum))
                     success = false;
@@ -112,7 +119,7 @@ void update_config_file(char const* filename, bool invert_dat_files) {
             #pragma omp atomic
             ++progress;
         }
-        #pragma omp for reduction(&& : success)
+        #pragma omp for schedule(dynamic)
         for(i = 0; i < swap_size; i++) {
             strcpy(toggled, swap[i].name);
             set_extension(toggled, OTHER_EXT);
@@ -154,11 +161,13 @@ void update_config_file(char const* filename, bool invert_dat_files) {
     free(enable);
     free(disable);
     free(swap);
+
+    return success;
 }
 
 
 
-void set_active_configuration(char const* filename, bool should_swap) {
+void set_active_configuration(char const* filename, bool use_version_dat) {
     size_t i;
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
@@ -170,20 +179,22 @@ void set_active_configuration(char const* filename, bool should_swap) {
                                &disable, &disable_cap, &disable_size,
                                &swap, &swap_cap, &swap_size);
 
-    char toggled[64];
-    char hash[64];
+    char toggled[FSTR_SIZE];
+    char hash[FSTR_SIZE];
 
     toggle_big_files(enable, enable_size, disable, disable_size);
 
-    if(!should_swap) {
+    if(!use_version_dat) {
         free(enable);
         free(disable);
         free(swap);
         return;
     }
+    
+    file_state target_state = use_version_dat ? active : inactive;
 
     for(i = 0; i < swap_size; i++) {
-        if(swap[i].state == active) {
+        if(swap[i].state == target_state) {
             md5sum(swap[i].name, hash);
             if(file_exists(swap[i].name) && strcmp(swap[i].checksum, hash) == 0) {
                 free(enable);
@@ -195,7 +206,7 @@ void set_active_configuration(char const* filename, bool should_swap) {
     }
 
     for(i = 0; i < swap_size; i++) {
-        if(swap[i].state == inactive) {
+        if(swap[i].state != target_state) {
             md5sum(swap[i].name, hash);
             if(strcmp(swap[i].checksum, hash) != 0) {
                 fprintf(stderr, "Checksum for %s is incorrect. Reverting changes\n", swap[i].name);
@@ -212,7 +223,7 @@ void set_active_configuration(char const* filename, bool should_swap) {
         }
     }
     for(i = 0; i < swap_size; i++) {
-        if(swap[i].state == active) {
+        if(swap[i].state == target_state) {
             strcpy(toggled, swap[i].name);
             set_extension(toggled, OTHER_EXT);
             md5sum(toggled, hash);
@@ -228,7 +239,7 @@ void set_active_configuration(char const* filename, bool should_swap) {
         }
     }
     for(i = 0; i < swap_size; i++) {
-        if(swap[i].state == inactive) {
+        if(swap[i].state != target_state) {
             strcpy(toggled, swap[i].name);
             set_extension(toggled, OTHER_EXT);
             rename(swap[i].name, toggled);
@@ -276,22 +287,36 @@ void game_path_from_registry(char* path) {
 #endif
 }
 
+void sys_format(char* syscall, char const* orig_command) {
+    #if defined __CYGWIN__ || defined _WIN32
+    syscall[0] = '\"';
+    strcpy(syscall + 1, orig_command);
+    replace_char(syscall, '\'', '\"');
+    int len = strlen(syscall);
+    syscall[len] = '\"';
+    syscall[len + 1] = '\0';
+    #else
+    strcpy(syscall, orig_command);
+    replace_char(syscall, '\'', ' ');
+    #endif
+}
+
 void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size) {
 
     #pragma omp parallel 
     {
         size_t i;
-        char toggled[64];
-        char hash[64];
+        char toggled[FSTR_SIZE];
+        char hash[FSTR_SIZE];
 
-        #pragma omp for
+        #pragma omp for schedule(static)
         for(i = 0; i < enable_size; i++) {
             strcpy(toggled, enable[i].name);
             set_extension(toggled, enable[i].extension);
             if(file_exists(enable[i].name)) {
                 md5sum(enable[i].name, hash);
                 if(strcmp(enable[i].checksum, hash) != 0) {
-                    char invalid[64];
+                    char invalid[FSTR_SIZE];
                     strcpy(invalid, enable[i].name);
                     set_extension(invalid, INVALID_EXT);
                     fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", enable[i].name, invalid);
@@ -308,14 +333,14 @@ void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, s
             rename(toggled, enable[i].name);
         }
 
-        #pragma omp for
+        #pragma omp for schedule(static)
         for(i = 0; i < disable_size; i++) {
             strcpy(toggled, disable[i].name);
             set_extension(toggled, disable[i].extension);
             if(file_exists(toggled)) {
                 md5sum(toggled, hash);
                 if(strcmp(disable[i].checksum, hash) != 0) {
-                    char invalid[64];
+                    char invalid[FSTR_SIZE];
                     strcpy(invalid, toggled);
                     set_extension(invalid, INVALID_EXT);
                     fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid);
@@ -339,7 +364,7 @@ void revert_changes(big_file* enable, size_t enable_size, big_file* disable, siz
     toggle_big_files(disable, disable_size, enable, enable_size);
     
     char const* swp = "game.swp";
-    char toggled[64];
+    char toggled[FSTR_SIZE];
     strcpy(toggled, swp);
     set_extension(toggled, DAT_EXT);
     if(file_exists(swp))

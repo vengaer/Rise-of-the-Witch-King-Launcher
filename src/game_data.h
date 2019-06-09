@@ -11,7 +11,9 @@
 #include <stdbool.h>
 
 #define PATH_SIZE 1024
+#define LINE_SIZE 256
 #define FSTR_SIZE 64
+#define HEADER_SIZE 32
 #define OPT_SIZE 32
 
 #ifdef __clpusplus
@@ -19,14 +21,15 @@ extern "C" {
 #endif
 
 typedef enum {
-    active,
-    inactive
-} target_state;
+    inactive, 
+    active
+} file_state;
 
 typedef enum {
-    rotwk,
-    edain,
-    botta
+    rotwk = 0x1,
+    edain = 0x2,
+    botta = 0x4,
+    any   = 0x8
 } configuration;
 
 typedef struct {
@@ -38,7 +41,7 @@ typedef struct {
 typedef struct {
     char name[FSTR_SIZE];
     char checksum[FSTR_SIZE];
-    target_state state;
+    file_state state;
 } dat_file;
 
 typedef struct {
@@ -56,6 +59,8 @@ typedef struct {
     bool swap_dat_file;
     bool umount_imspec;
     bool kill_on_launch;
+    bool show_console;
+    configuration default_state;
 } launcher_data;
     
 void launcher_data_init(launcher_data* cfg);

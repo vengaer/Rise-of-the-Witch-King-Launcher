@@ -16,4 +16,6 @@ void launcher_data_init(launcher_data* cfg) {
     cfg->swap_dat_file   = true;
     cfg->umount_imspec   = false;
     cfg->kill_on_launch  = true;
+    cfg->show_console    = false;
+    cfg->default_state   = rotwk;
 }

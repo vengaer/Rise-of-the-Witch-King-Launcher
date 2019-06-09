@@ -12,6 +12,7 @@
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHBoxLayout>
@@ -91,18 +92,24 @@ public:
     QLabel *label_4;
     QCheckBox *edain_installed;
     QGroupBox *groupBox;
-    QVBoxLayout *verticalLayout_10;
-    QHBoxLayout *horizontalLayout_7;
-    QLabel *label_2;
-    QPushButton *game_path_chooser;
+    QGridLayout *gridLayout_7;
     QHBoxLayout *horizontalLayout_8;
     QLabel *label;
     QCheckBox *dat_swap;
+    QHBoxLayout *horizontalLayout_7;
+    QLabel *label_2;
+    QPushButton *game_path_chooser;
+    QHBoxLayout *horizontalLayout_11;
+    QLabel *label_9;
+    QComboBox *default_state;
     QGroupBox *groupBox_5;
-    QVBoxLayout *verticalLayout_11;
+    QGridLayout *gridLayout_6;
     QHBoxLayout *horizontalLayout_16;
     QLabel *label_11;
     QCheckBox *kill_on_launch;
+    QHBoxLayout *horizontalLayout_19;
+    QLabel *label_12;
+    QCheckBox *show_console;
     QGridLayout *gridLayout_8;
     QPushButton *pref_quit;
     QPushButton *pref_save;
@@ -237,7 +244,7 @@ public:
         pref_scroll->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName(QString::fromUtf8("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, -215, 382, 483));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 382, 532));
         gridLayout_4 = new QGridLayout(scrollAreaWidgetContents);
         gridLayout_4->setSpacing(6);
         gridLayout_4->setContentsMargins(11, 11, 11, 11);
@@ -430,26 +437,10 @@ public:
 
         groupBox = new QGroupBox(scrollAreaWidgetContents);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        verticalLayout_10 = new QVBoxLayout(groupBox);
-        verticalLayout_10->setSpacing(6);
-        verticalLayout_10->setContentsMargins(11, 11, 11, 11);
-        verticalLayout_10->setObjectName(QString::fromUtf8("verticalLayout_10"));
-        horizontalLayout_7 = new QHBoxLayout();
-        horizontalLayout_7->setSpacing(6);
-        horizontalLayout_7->setObjectName(QString::fromUtf8("horizontalLayout_7"));
-        label_2 = new QLabel(groupBox);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
-
-        horizontalLayout_7->addWidget(label_2);
-
-        game_path_chooser = new QPushButton(groupBox);
-        game_path_chooser->setObjectName(QString::fromUtf8("game_path_chooser"));
-
-        horizontalLayout_7->addWidget(game_path_chooser);
-
-
-        verticalLayout_10->addLayout(horizontalLayout_7);
-
+        gridLayout_7 = new QGridLayout(groupBox);
+        gridLayout_7->setSpacing(6);
+        gridLayout_7->setContentsMargins(11, 11, 11, 11);
+        gridLayout_7->setObjectName(QString::fromUtf8("gridLayout_7"));
         horizontalLayout_8 = new QHBoxLayout();
         horizontalLayout_8->setSpacing(6);
         horizontalLayout_8->setObjectName(QString::fromUtf8("horizontalLayout_8"));
@@ -464,17 +455,49 @@ public:
         horizontalLayout_8->addWidget(dat_swap);
 
 
-        verticalLayout_10->addLayout(horizontalLayout_8);
+        gridLayout_7->addLayout(horizontalLayout_8, 2, 0, 1, 1);
+
+        horizontalLayout_7 = new QHBoxLayout();
+        horizontalLayout_7->setSpacing(6);
+        horizontalLayout_7->setObjectName(QString::fromUtf8("horizontalLayout_7"));
+        label_2 = new QLabel(groupBox);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
+
+        horizontalLayout_7->addWidget(label_2);
+
+        game_path_chooser = new QPushButton(groupBox);
+        game_path_chooser->setObjectName(QString::fromUtf8("game_path_chooser"));
+
+        horizontalLayout_7->addWidget(game_path_chooser);
+
+
+        gridLayout_7->addLayout(horizontalLayout_7, 0, 0, 1, 1);
+
+        horizontalLayout_11 = new QHBoxLayout();
+        horizontalLayout_11->setSpacing(6);
+        horizontalLayout_11->setObjectName(QString::fromUtf8("horizontalLayout_11"));
+        label_9 = new QLabel(groupBox);
+        label_9->setObjectName(QString::fromUtf8("label_9"));
+
+        horizontalLayout_11->addWidget(label_9);
+
+        default_state = new QComboBox(groupBox);
+        default_state->setObjectName(QString::fromUtf8("default_state"));
+
+        horizontalLayout_11->addWidget(default_state);
+
+
+        gridLayout_7->addLayout(horizontalLayout_11, 1, 0, 1, 1);
 
 
         gridLayout_4->addWidget(groupBox, 2, 0, 1, 2);
 
         groupBox_5 = new QGroupBox(scrollAreaWidgetContents);
         groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
-        verticalLayout_11 = new QVBoxLayout(groupBox_5);
-        verticalLayout_11->setSpacing(6);
-        verticalLayout_11->setContentsMargins(11, 11, 11, 11);
-        verticalLayout_11->setObjectName(QString::fromUtf8("verticalLayout_11"));
+        gridLayout_6 = new QGridLayout(groupBox_5);
+        gridLayout_6->setSpacing(6);
+        gridLayout_6->setContentsMargins(11, 11, 11, 11);
+        gridLayout_6->setObjectName(QString::fromUtf8("gridLayout_6"));
         horizontalLayout_16 = new QHBoxLayout();
         horizontalLayout_16->setSpacing(6);
         horizontalLayout_16->setObjectName(QString::fromUtf8("horizontalLayout_16"));
@@ -489,7 +512,23 @@ public:
         horizontalLayout_16->addWidget(kill_on_launch);
 
 
-        verticalLayout_11->addLayout(horizontalLayout_16);
+        gridLayout_6->addLayout(horizontalLayout_16, 0, 0, 1, 1);
+
+        horizontalLayout_19 = new QHBoxLayout();
+        horizontalLayout_19->setSpacing(6);
+        horizontalLayout_19->setObjectName(QString::fromUtf8("horizontalLayout_19"));
+        label_12 = new QLabel(groupBox_5);
+        label_12->setObjectName(QString::fromUtf8("label_12"));
+
+        horizontalLayout_19->addWidget(label_12);
+
+        show_console = new QCheckBox(groupBox_5);
+        show_console->setObjectName(QString::fromUtf8("show_console"));
+
+        horizontalLayout_19->addWidget(show_console);
+
+
+        gridLayout_6->addLayout(horizontalLayout_19, 1, 0, 1, 1);
 
 
         gridLayout_4->addWidget(groupBox_5, 8, 0, 1, 2);
@@ -540,7 +579,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabWidget->setCurrentIndex(2);
+        tabWidget->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -581,15 +620,15 @@ public:
         mount_image->setText(QApplication::translate("MainWindow", "Choose...", nullptr));
         label_22->setText(QApplication::translate("MainWindow", "Mounting Options", nullptr));
 #ifndef QT_NO_TOOLTIP
-        mount_opt->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Command line options for mounting with chosen executable. Leave empty if none are required.</p><p>(e.g. -m for DTCommandLine.exe, leave blank for batchmnt.exe)</p></body></html>", nullptr));
+        mount_opt->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Command line options for mounting with chosen executable. Leave empty if none are required.<br>(e.g. -m for DTCommandLine.exe, leave blank for batchmnt.exe)</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
         label_21->setText(QApplication::translate("MainWindow", "Unmounting Options", nullptr));
 #ifndef QT_NO_TOOLTIP
-        umount_opt->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Command line options for unmounting with chosen executable. Leave empty if none are required. </p><p>(e.g. -u or -U for DTCommandLine.exe, /unmount or /unmountall for batchmnt.exe)</p></body></html>", nullptr));
+        umount_opt->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Command line options for unmounting with chosen executable. Leave empty if none are required. <br>(e.g. -u or -U for DTCommandLine.exe, /unmount or /unmountall for batchmnt.exe)</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
         label_6->setText(QApplication::translate("MainWindow", "Specify Image When Unmounting", nullptr));
 #ifndef QT_NO_TOOLTIP
-        imspec_umount->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Whether the disc image should be specified when unmounting. Generally, this should be checked for any unmount command that does not unmount all mounted images.</p><p>(e.g. turn on if using -u with DTCommandLine.exe or /unmount with batchmnt.exe, leave off if using -U with DTCommandLine.exe or /unmountall with batchmnt.exe)</p></body></html>", nullptr));
+        imspec_umount->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Whether the disc image should be specified when unmounting. Generally, this should be checked for any unmount command that does not unmount all mounted images.<br>(e.g. turn on if using -u with DTCommandLine.exe or /unmount with batchmnt.exe, leave off if using -U with DTCommandLine.exe or /unmountall with batchmnt.exe)</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
         imspec_umount->setText(QString());
         groupBox_3->setTitle(QApplication::translate("MainWindow", "BotTA", nullptr));
@@ -610,22 +649,31 @@ public:
 #endif // QT_NO_TOOLTIP
         edain_installed->setText(QString());
         groupBox->setTitle(QApplication::translate("MainWindow", "Base Game", nullptr));
+        label->setText(QApplication::translate("MainWindow", "Swap .dat File", nullptr));
+#ifndef QT_NO_TOOLTIP
+        dat_swap->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.<br>(Recommended: On)</p></body></html>", nullptr));
+#endif // QT_NO_TOOLTIP
+        dat_swap->setText(QString());
         label_2->setText(QApplication::translate("MainWindow", "Game Path", nullptr));
 #ifndef QT_NO_TOOLTIP
         game_path_chooser->setToolTip(QApplication::translate("MainWindow", "Path to game directory (directory containing lotrbfme2ep1.exe)", nullptr));
 #endif // QT_NO_TOOLTIP
         game_path_chooser->setText(QApplication::translate("MainWindow", "Choose...", nullptr));
-        label->setText(QApplication::translate("MainWindow", "Swap .dat File", nullptr));
+        label_9->setText(QApplication::translate("MainWindow", "Default State", nullptr));
 #ifndef QT_NO_TOOLTIP
-        dat_swap->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.</p><p>(Recommended: On)</p></body></html>", nullptr));
+        default_state->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>State in which the game is left after launch. Options are:<br>RotWK - patch 2.02 (Recommended for maximum compatibility)<br>Edain - patch 2.01 with Edain enabled<br>BotTA - patch 2.01<br> Last Launched - Whatever version was launched last</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
-        dat_swap->setText(QString());
         groupBox_5->setTitle(QApplication::translate("MainWindow", "Launcher", nullptr));
         label_11->setText(QApplication::translate("MainWindow", "Terminate On Launch", nullptr));
 #ifndef QT_NO_TOOLTIP
-        kill_on_launch->setToolTip(QApplication::translate("MainWindow", "Terminate launcher after launching the game", nullptr));
+        kill_on_launch->setToolTip(QApplication::translate("MainWindow", "Terminate launcher after starting the game", nullptr));
 #endif // QT_NO_TOOLTIP
         kill_on_launch->setText(QString());
+        label_12->setText(QApplication::translate("MainWindow", "Show Console", nullptr));
+#ifndef QT_NO_TOOLTIP
+        show_console->setToolTip(QApplication::translate("MainWindow", "Show console", nullptr));
+#endif // QT_NO_TOOLTIP
+        show_console->setText(QString());
         pref_quit->setText(QApplication::translate("MainWindow", "Quit", nullptr));
         pref_save->setText(QApplication::translate("MainWindow", "Save", nullptr));
         label_23->setText(QString());
