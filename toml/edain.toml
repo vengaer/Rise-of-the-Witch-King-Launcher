@@ -1,282 +1,282 @@
 [[enable]]
 name = "_____english_ini.big"
-checksum = "092A68D435FF31DD45B3104FE0B1377FB22B707B"
+checksum = "789b5703c0b7f3650083e98e0c3be64e"
 extension = "disabled"
 
 [[enable]]
 name = "_____voice_english.big"
-checksum = "135F58266F00F2761D443B2DDB919867F9DBFDBD"
+checksum = "2fd8fb943c0b23f796320fd0a659dbc5"
 extension = "disabled"
 
 [[enable]]
 name = "____edain_maps.big"
-checksum = "11FC88B52B7A2B15DF0EFCD1B298994F116F11F4"
+checksum = "60859f6f532308ac789dffb22bf671df"
 extension = "big.bak"
 
 [[enable]]
 name = "___edain_apt_widescreen.big"
-checksum = "7AA3C42795AAA37236FF73FFC5CED5D775DBD1EC"
+checksum = "1b279cce80908532353f2a339f086cd6"
 extension = "big.bak"
 
 [[enable]]
 name = "__edain_apt.big"
-checksum = "D75A63FA3BE5381EDA8001DE51147D4A468FDA4A"
+checksum = "aff5650bdb16f7313b7ac3fff714e9a0"
 extension = "big.bak"
 
 [[enable]]
 name = "__edain_data.big"
-checksum = "487CA53AB4BE8E92B520E73333238BDEBE4899EA"
+checksum = "6fa677548534d461844c11cd4f322939"
 extension = "big.bak"
 
 [[enable]]
 name = "__edain_german.big"
-checksum = "282FA49D10ED1B0EB9B2383BAA2F93C9067FB040"
+checksum = "a24531c93645ba9e48c4262b838b7154"
 extension = "big.bak"
 
 [[enable]]
 name = "__edain_music.big"
-checksum = "85BA3E3EEB425E4F47E0A465DCA844C127DEA126"
+checksum = "bebd25f429aad91327d68306ab51c9f6"
 extension = "big.bak"
 
 [[enable]]
 name = "__edain_terrain.big"
-checksum = "E33261D69CAB9772A6A072846D1BE2778F5ADFC7"
+checksum = "d9612b94a572c40a5a4afc32769d1358"
 extension = "big.bak"
 
 [[enable]]
 name = "__edain_textures1.big"
-checksum = "6B81F3D5EDBF99B88CE63D71650458CB0D086FEA"
+checksum = "28885fa54988722e440502dbf1f07f75"
 extension = "big.bak"
 
 [[enable]]
 name = "__edain_textures2.big"
-checksum = "1572B2D96CAB2AF787D22088EE76C8952AD4588D"
+checksum = "26f08eb619dd65804b60e63dc8820b25"
 extension = "big.bak"
 
 [[enable]]
 name = "__edain_w3d.big"
-checksum = "4F0CBD01BC8EE7280B21B7B4EF4A4DF4D566997D"
+checksum = "f4622dbf4b3251d80ff7215d52fe2c2a"
 extension = "big.bak"
 
 [[disable]]
 name = "########202_v6.0.0.big"
-checksum = "A442469E20185D8FA9F8D22F3A6EC383541D9917"
+checksum = "30d4ffc5ff682a1638264f58010d560f"
 extension = "disabled"
 
 [[disable]]
 name = "######202_v5.0.1.big"
-checksum = "9C6A45E5801922E28C8662CFC6A67E9F82CF87DB"
+checksum = "39432b55bd6ec358d704056d118b3a93"
 extension = "disabled"
 
 [[disable]]
 name = "#####202_v5.0.0.big"
-checksum = "7DF96E554A8BF1839E135109720411393749AC54"
+checksum = "bf7bb2783bdf17f799ecc9eadd607496"
 extension = "disabled"
 
 [[disable]]
 name = "####unofficialpatch202_v3.6.1.big"
-checksum = "F938D64B761B9AE0DB2D988FA809A5A7530342C7"
+checksum = "b6ee0519e040d5a1234e021e40b6df58"
 extension = "disabled"
 
 [[disable]]
 name = "###unofficialpatch202_v3.6.0.big"
-checksum = "1DB7C6603E640747AB5B0116B32A6F83D6F8A4C5"
+checksum = "d2689ed3c83d88fee455b82630f88a5c"
 extension = "disabled"
 
 [[disable]]
 name = "##unofficialpatch202_v3.0.5.2.big"
-checksum = "4D084A006C1B898A67DA502CD079C659BAE7C2B8"
+checksum = "bfa61d1dd53a8cb8bf2b7f34fb8b5dc4"
 extension = "disabled"
 
 [[disable]]
 name = "#unofficialpatch202_v3.0.5.1.big"
-checksum = "F4D8F67ADE0636D45CAAD1F1A639F7E502A1546C"
+checksum = "178de3c576f0ee854bebee13929cc70c"
 extension = "disabled"
 
 [[disable]]
 name = "______________unofficialpatch202_v3.0.5.0.big"
-checksum = "C377CFA2C83C504B2926AD06C298618ABF1BFF8E"
+checksum = "7f10f80d17b130d288d1249ace03323e"
 extension = "disabled"
 
 [[disable]]
 name = "_____________unofficialpatch202_v3.0.4.0.big"
-checksum = "370FDB50B382D4EC5EEAAA10216A0216839A35AD"
+checksum = "2ae5a157f7e5a60adcf163d1fd4c5631"
 extension = "disabled"
 
 [[disable]]
 name = "____________unofficialpatch202_v3.0.3.1.big"
-checksum = "4DFC34FE5E3BA7E57467BAD9BE00648FF49071F0"
+checksum = "5acbf2053c526e979bbe7c168d67d894"
 extension = "disabled"
 
 [[disable]]
 name = "___________unofficialpatch202_v3.0.3.0.big"
-checksum = "765F13379D2D44B82EC07AA8436FDC3040598245"
+checksum = "b7a6636956afea218e0411fff01f97f3"
 extension = "disabled"
 
 [[disable]]
 name = "__________unofficialpatch202_v3.0.2.2.big"
-checksum = "7E769A8641FE811581D7768FC5AEB12805CE39A1"
+checksum = "d5b65c9b27a1d3346ace2388a9b34d57"
 extension = "disabled"
 
 [[disable]]
 name = "_________unofficialpatch202_v3.0.2.1.big"
-checksum = "91BC298A566C4C1B872188F42ABC5BC95649A8ED"
+checksum = "5c4e4b5a2ce07efab1062ac6c1678711"
 extension = "disabled"
 
 [[disable]]
 name = "________unofficialpatch202_v3.0.2.0.big"
-checksum = "C726F54A7F14F1AD03796220489B78263C5D7442"
+checksum = "c8aa03fce53654d41e8dc1faf42f30bc"
 extension = "disabled"
 
 [[disable]]
 name = "_______unofficialpatch202_v3.0.1.2.big"
-checksum = "6FC6B2E4CEE0F55A94FCE137CBB4AAE0301BDDE2"
+checksum = "60b441752572ef83c320e058eedb03bb"
 extension = "disabled"
 
 [[disable]]
 name = "______unofficialpatch202_v3.0.1.1.big"
-checksum = "5E463597BDF803CE1C0ED4A1C5228030131613AE"
+checksum = "4151f6a535870cd5baa36cfe2a4abb12"
 extension = "disabled"
 
 [[disable]]
 name = "_____unofficialpatch202_v3.0.1.0.big"
-checksum = "0794ED8B8C20B2E279AE176916DEFA69DBDD2317"
+checksum = "acb8d16a9260d712a35282a84bf0a61c"
 extension = "disabled"
 
 [[disable]]
 name = "____unofficialpatch202_v3.0.0.1.big"
-checksum = "4B28662EF83E53E876494C5E0E07991D37F1DE79"
+checksum = "2cc434d4e24ddc1633db42a932c55b63"
 extension = "disabled"
 
 [[disable]]
 name = "___unofficialpatch202_v3.0.0.0.big"
-checksum = "F5F3232EF7B18868AD74DDB4E81008CD1AD91723"
+checksum = "7ec6b049f4eb3477242ef348590b12dd"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.0.0.big"
-checksum = "B1F4C8A0C6720B313105CAA87871B1DFD41C473B"
+checksum = "d0a15323375eba0aaaaef12e9feb0352"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.0.1.big"
-checksum = "B38E77F47856B57AF461366986EF0D0B640ACB8C"
+checksum = "a410ff55f3d293d1b7289f36d98d4cf3"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.1.0.big"
-checksum = "47AA91E636608753E5E2B7951ADBC181381FBF3B"
+checksum = "33cea1b51697fcff237d6f736457434a"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.1.1.big"
-checksum = "B4FEA1159777DF1CFEAE22F2522B9C40B3E0A140"
+checksum = "6ce4105e45dbe544c0629885e2d1474f"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.1.2.big"
-checksum = "0BAFA96B4936D10A080B53F50259CE5F6654F2F2"
+checksum = "39a50f8ab0dcb9f4783c49024c3d1d9d"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.2.0.big"
-checksum = "65390FA9FEFD468E9740DC3A554E95F058A98C3C"
+checksum = "0be8f48c327222be5506725408e31583"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.2.1.big"
-checksum = "6D1C416AA1D3D28973A34197DD479FB23F4C782E"
+checksum = "ae405e6483424c046cd21f4b994ee819"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.2.2.big"
-checksum = "22FAEB385AE31884BFF241DAAEEF9BE2917A7069"
+checksum = "dba29fa69ba9b269b7e915b53c71c73c"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.3.0.big"
-checksum = "34A3B9605604B35CC5031487D89892DE8208B32C"
+checksum = "415469e1deb51b405f521be7597b2484"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.3.1.big"
-checksum = "2C47FF2C401742D1A32D478AE52F8F331E65C40A"
+checksum = "03bf314bceb94b9f33fef4e577f1dd4c"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.4.0.big"
-checksum = "26309955C0C62CE58968007CFEC1C10E6F2B2E39"
+checksum = "9a43ab09007c4ea4c35e732e7026ea08"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.5.0.big"
-checksum = "8F3BAA096D8FCF7DA27C0AE06D91A884DC6F17E5"
+checksum = "5742c51324588b56aa276a11a2be76aa"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.5.1.big"
-checksum = "A2218165BD8A463C384A37AF67D8D9CA5B9FC664"
+checksum = "a03f7c31613c53438827d19999d6f83c"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.5.2.big"
-checksum = "2B85554F4AF7055D7EFBDAFC02D75FE9477F10DC"
+checksum = "e9e5927e253592c09fe637c9ac41a9e3"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.0.6.big"
-checksum = "4B349C0CF853CB3099BCFB7DE795290EC01BD26C"
+checksum = "aa785c6888e905f26cce7df2deebd751"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.6.1.big"
-checksum = "93412B7B535AB9F39A0FD06DA3B154D466C35BB3"
+checksum = "4e2b54e0d9e8977ed1e75d8b637c6d8f"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v3.6.2.big"
-checksum = "42E0C03D69629B68EB4A7E35A14173CA5F792EA0"
+checksum = "b7aa9bf40ce074cd98488d7d07853750"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v5.0.0.big"
-checksum = "4CE9F6F850A27721C508CD9C69D6F63BC6A812B7"
+checksum = "d6e493a21840ab3690e7a9e47a3ca9f7"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v5.0.1.big"
-checksum = "6564AA2AE7474512B5DD8ACA9D4431C4DD5071E1"
+checksum = "c8db9cfa955a8aa971291d9c539aef38"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v6.0.0.big"
-checksum = "AB2F8CD3B3EF1D92C1A57D6633109CF082CEAF3B"
+checksum = "d9dc2d3e244cffad31c49fe673b7cf96"
 extension = "disabled"
 
 [[disable]]
 name = "#########202_v7.0.0.big"
-checksum = "927A303BB70A75C80D4E0E8EE0A72F1EF678E2A4"
+checksum = "75eea4740fc6ab777ef576291e11f020"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishstrings202_v7.0.0.big"
-checksum = "0EC47F890066E3283C6EC7A19B585A726FB60FE9"
+checksum = "f00ac12b0a99cbf95c6bd0019aebe322"
 extension = "disabled"
 
 [[disable]]
 name = "lang/English.big"
-checksum = "DC6FD3FB3C7EE3C5173F6A3E3A8BDC05EB7415D3"
+checksum = "6e821860d8f6cb87212eafd64df47821"
 extension = "disabled"
 
 [[disable]]
 name = "lang/englishpatch201.big"
-checksum = "2ADBE5780109A389AF56D8D2D11160A58FD8240C"
+checksum = "640671ec736134eccf112e83659cf6d2"
 extension = "disabled"
 
 [[swap]]
     [swap.activate]
-		name = "game.dat"
-		checksum = "BF52BF0B7430AFCF1CC823FD58943CE830919D41"
+        name = "game.dat"
+        checksum = "84659690d2b47506bb23b2b43bd3b238"
     [swap.deactivate]
         name = "game.dat"
-        checksum = "37326974A91724B8A98ED6C7841C20C9B7BE2AD7"
+        checksum = "fbff091f6139eb05dc012d834e3eeb74"
