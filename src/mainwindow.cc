@@ -213,6 +213,8 @@ void MainWindow::on_rotwk_upd_clicked() {
 }
 
 void MainWindow::on_pref_save_clicked() {
+    QApplication::setOverrideCursor(Qt::BusyCursor);
+
     QString exe = game_path_ + "/" + GAME_EXE;
     
     if(!file_exists(exe.toLatin1().data())) {
@@ -285,6 +287,7 @@ void MainWindow::on_pref_save_clicked() {
     }
     setup_paths();
     md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
+    QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::resizeEvent(QResizeEvent*) {
@@ -381,10 +384,13 @@ void MainWindow::launch(configuration config) {
 }
 
 void MainWindow::update_single_config(configuration config) {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
     QString version;
     QString const* toml;
     bool new_dat_enabled = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
     bool invert_dat;
+
 
     switch(config) {
         case edain:
@@ -446,11 +452,15 @@ void MainWindow::update_single_config(configuration config) {
         }
     }
 
+    QApplication::restoreOverrideCursor();
+
     if(!update_successful) 
         QMessageBox::warning(this, tr("Warning"), "Failed to update the " + version + " config.\nNo changes will be written");
 }
 
 void MainWindow::update_all_configs() {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
     int tasks_running = 1, sync = 2;
     bool invert_dat = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
     if(data_.edain_available) {
@@ -549,6 +559,7 @@ void MainWindow::update_all_configs() {
         QMessageBox::warning(this, tr("Warning"), msg);
     }
 
+    QApplication::restoreOverrideCursor();
 }
 
 QString MainWindow::wrap_text(QString const& text) {
