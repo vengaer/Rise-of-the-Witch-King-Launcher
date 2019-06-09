@@ -320,7 +320,7 @@ void MainWindow::launch(configuration config) {
     bool swap = data_.swap_dat_file ? new_dat_enabled : !new_dat_enabled;
 
     if(config == rotwk) 
-        set_active_configuration(rotwk_toml_.toLatin1().data(), !new_dat_enabled);
+        set_active_configuration(rotwk_toml_.toLatin1().data(), true);
     else {
 
         if(config == edain)
