@@ -634,7 +634,7 @@ public:
         groupBox_3->setTitle(QApplication::translate("MainWindow", "BotTA", nullptr));
         label_5->setText(QApplication::translate("MainWindow", "Installed", nullptr));
 #ifndef QT_NO_TOOLTIP
-        botta_installed->setToolTip(QApplication::translate("MainWindow", "Enables BotTA-related actions. Works only if the BotTA mod is installed and the correct path to its install directory is specified below", nullptr));
+        botta_installed->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Enables BotTA-related actions. Works only if the BotTA mod is installed and the correct path to its install directory is specified below</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
         botta_installed->setText(QString());
         label_3->setText(QApplication::translate("MainWindow", "BotTA Path", nullptr));
@@ -645,7 +645,7 @@ public:
         groupBox_2->setTitle(QApplication::translate("MainWindow", "Edain", nullptr));
         label_4->setText(QApplication::translate("MainWindow", "Installed", nullptr));
 #ifndef QT_NO_TOOLTIP
-        edain_installed->setToolTip(QApplication::translate("MainWindow", "Enables Edain-related actions. Works only if the Edain mod is installed", nullptr));
+        edain_installed->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Enables Edain-related actions.  Works only if the Edain mod is installed</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
         edain_installed->setText(QString());
         groupBox->setTitle(QApplication::translate("MainWindow", "Base Game", nullptr));

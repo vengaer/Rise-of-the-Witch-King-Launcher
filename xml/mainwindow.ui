@@ -371,7 +371,7 @@
                  <item row="0" column="1">
                   <widget class="QCheckBox" name="botta_installed">
                    <property name="toolTip">
-                    <string>Enables BotTA-related actions. Works only if the BotTA mod is installed and the correct path to its install directory is specified below</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables BotTA-related actions. Works only if the BotTA mod is installed and the correct path to its install directory is specified below&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string/>
@@ -422,7 +422,7 @@
                  <item>
                   <widget class="QCheckBox" name="edain_installed">
                    <property name="toolTip">
-                    <string>Enables Edain-related actions. Works only if the Edain mod is installed</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables Edain-related actions.  Works only if the Edain mod is installed&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string/>
