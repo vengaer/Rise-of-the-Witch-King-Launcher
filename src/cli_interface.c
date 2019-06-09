@@ -178,7 +178,7 @@ int cli_main(int argc, char** argv) {
     if(r_flag || s_flag) {
         /* Set active config */
         if(strcmp(scfg, "rotwk") == 0) {
-            set_active_configuration(rotwk_toml, !new_dat_enabled);
+            set_active_configuration(rotwk_toml, true);
             active_config = rotwk;
         }
         else {
