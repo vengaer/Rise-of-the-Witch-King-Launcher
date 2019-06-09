@@ -183,13 +183,6 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
     char hash[FSTR_SIZE];
 
     toggle_big_files(enable, enable_size, disable, disable_size);
-
-    if(!use_version_dat) {
-        free(enable);
-        free(disable);
-        free(swap);
-        return;
-    }
     
     file_state target_state = use_version_dat ? active : inactive;
 
