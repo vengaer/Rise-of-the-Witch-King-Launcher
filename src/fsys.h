@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-/* Barrier-like construct. Sync anywhere in a task */
+/* Barrier-like construct. Sync anywhere in tasks */
 #define TASKSYNC(x) \
     _Pragma("omp atomic") \
     --(*x); \

@@ -69,7 +69,7 @@ bool update_config_file(char const* filename, bool invert_dat_files, int* sync, 
                                &swap, &swap_cap, &swap_size);
     #pragma omp atomic
     total_work += enable_size + disable_size + swap_size;
-    #pragma omp flush
+    #pragma omp flush(total_work)
 
     TASKSYNC(sync)
 
