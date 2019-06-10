@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int trailing_zeros(unsigned value);
+int trailing_zerobits(unsigned value);
 
 #ifdef __cplusplus
 }

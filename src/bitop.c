@@ -1,7 +1,7 @@
 #include "bitop.h"
 #include <limits.h>
 
-int trailing_zeros(unsigned value) {
+int trailing_zerobits(unsigned value) {
     int count;
 
     if(value) {

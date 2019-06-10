@@ -139,7 +139,7 @@ void MainWindow::init() {
     ui->default_state->addItem("BotTA");
     ui->default_state->addItem("Last Launched");
 
-    ui->default_state->setCurrentIndex(trailing_zeros(data_.default_state));
+    ui->default_state->setCurrentIndex(trailing_zerobits(data_.default_state));
     
     show_console(data_.show_console);
 
