@@ -7,3 +7,4 @@ rotwkl
 *.swp
 *.a
 *.dll
+src/moc/**

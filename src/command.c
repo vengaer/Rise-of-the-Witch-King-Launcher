@@ -22,5 +22,7 @@ void show_console(bool show) {
             ShowWindow(GetConsoleWindow(), SW_SHOW);
         else
             ShowWindow(GetConsoleWindow(), SW_HIDE);
+    #else
+        UNUSED(show)
     #endif
 }

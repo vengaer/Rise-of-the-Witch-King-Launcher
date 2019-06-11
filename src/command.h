@@ -6,6 +6,8 @@
 #include <stddef.h>
 #include <unistd.h>
 
+#define UNUSED(x) (void)x;
+
 #if defined __CYGWIN__ || defined _WIN32
 #include <windows.h>
 #endif

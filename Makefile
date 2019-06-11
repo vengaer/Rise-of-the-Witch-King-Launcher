@@ -37,7 +37,7 @@ ifeq ($(OS), Windows_NT)
     LDFLAGS := -L "C:/msys64/mingw64/lib" -static $(LDFLAGS) 
 endif
 
-.PHONY: clean run release setup 
+.PHONY: clean run release setup lib
 
 $(BIN): INC += -I $(QT_PATH)/include -I $(QT_PATH)/include/QtWidgets -I $(QT_PATH)/include/QtGui -I $(QT_PATH)/include/QtCore
 $(BIN): CXXFLAGS += $(INC)
@@ -59,6 +59,8 @@ $(LIB): $(OBJ) setup
 
 release: CXXFLAGS += -O3
 release: $(BIN)
+
+lib: $(LIB)
 
 clean:
 	rm -f $(OBJ) $(BIN) $(LIB) $(MOC_HEADERS) $(MOC_OBJ) $(CXXOBJ); rm -rf $(LIB_DIR) $(MOC_DIR)

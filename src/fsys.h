@@ -11,13 +11,17 @@
 extern "C" {
 #endif
 
-/* Barrier-like construct. Sync anywhere in tasks */
+/* Spin lock */
 #define TASKSYNC(x) \
-    _Pragma("omp atomic") \
-    --(*x); \
-    _Pragma("omp flush") \
-    while(*x) \
-        sleep_for(100);
+_Pragma("omp atomic") \
+--(*x); \
+_Pragma("omp flush") \
+while(*x) \
+    sleep_for(100);
+
+#define MUTEX_FPRINTF(file, str, ...) \
+_Pragma("omp critical(print_lock)") \
+fprintf((file), (str), __VA_ARGS__);
     
 
 bool md5sum(char const* filename, char* csum);
