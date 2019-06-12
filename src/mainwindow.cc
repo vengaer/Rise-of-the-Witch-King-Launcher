@@ -422,7 +422,7 @@ void MainWindow::update_single_config(configuration config) {
             prepare_progress();
             #pragma omp task
             {
-                update_successful = update_config_file(toml->toLatin1().data(), invert_dat, &sync, &data_);
+                update_successful = update_game_config(toml->toLatin1().data(), invert_dat, &sync, &data_);
 
                 #pragma omp atomic
                 --tasks_running;
@@ -481,7 +481,7 @@ void MainWindow::update_all_configs() {
 
             #pragma omp task if(data_.edain_available)
             {
-                if(!update_config_file(edain_toml_.toLatin1().data(), invert_dat, &sync, &data_)) {
+                if(!update_game_config(edain_toml_.toLatin1().data(), invert_dat, &sync, &data_)) {
                     #pragma omp atomic
                     failed |= edain;
                 }
@@ -491,7 +491,7 @@ void MainWindow::update_all_configs() {
             }
             #pragma omp task if(data_.botta_available)
             {
-                if(!update_config_file(botta_toml_.toLatin1().data(), invert_dat, &sync, &data_)) {
+                if(!update_game_config(botta_toml_.toLatin1().data(), invert_dat, &sync, &data_)) {
                     #pragma omp atomic  
                     failed |= botta;
                 }
@@ -501,7 +501,7 @@ void MainWindow::update_all_configs() {
             }   
             #pragma omp task
             {
-                if(!update_config_file(rotwk_toml_.toLatin1().data(), !invert_dat, &sync, &data_)) {
+                if(!update_game_config(rotwk_toml_.toLatin1().data(), !invert_dat, &sync, &data_)) {
                     #pragma omp atomic
                     failed |= rotwk;
                 }

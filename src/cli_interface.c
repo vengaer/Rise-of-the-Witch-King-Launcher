@@ -124,7 +124,7 @@ int cli_main(int argc, char** argv) {
     sync = 1;
     if(u_flag) {
         if(strcmp(ucfg, "rotwk") == 0) 
-            update_config_file(rotwk_toml, !new_dat_enabled, &sync, &ld);
+            update_game_config(rotwk_toml, !new_dat_enabled, &sync, &ld);
         else if(strcmp(ucfg, "edain") == 0) {
 
             if(!ld.edain_available) {
@@ -132,7 +132,7 @@ int cli_main(int argc, char** argv) {
                 return 1;
             }
 
-            update_config_file(edain_toml, new_dat_enabled, &sync, &ld);
+            update_game_config(edain_toml, new_dat_enabled, &sync, &ld);
         }
         else if(ld.botta_available && strcmp(ucfg, "botta") == 0) {
 
@@ -141,7 +141,7 @@ int cli_main(int argc, char** argv) {
                 return 1;
             }
 
-            update_config_file(botta_toml, new_dat_enabled, &sync, &ld);
+            update_game_config(botta_toml, new_dat_enabled, &sync, &ld);
         }
         else if(strcmp(ucfg, "all") == 0) {
             if(ld.edain_available)
@@ -155,12 +155,12 @@ int cli_main(int argc, char** argv) {
                     prepare_progress();
 
                     #pragma omp task if(ld.edain_available)
-                        update_config_file(edain_toml, new_dat_enabled, &sync, &ld);
+                        update_game_config(edain_toml, new_dat_enabled, &sync, &ld);
 
                     #pragma omp task if(ld.botta_available)
-                        update_config_file(botta_toml, new_dat_enabled, &sync, &ld);
+                        update_game_config(botta_toml, new_dat_enabled, &sync, &ld);
                     
-                    update_config_file(rotwk_toml, !new_dat_enabled, &sync, &ld);
+                    update_game_config(rotwk_toml, !new_dat_enabled, &sync, &ld);
 
                     reset_progress();
                 }

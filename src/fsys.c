@@ -13,8 +13,6 @@
 #include <windows.h>
 #endif
 
-static int progress = 0, total_work = -1;
-
 void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
 
@@ -43,130 +41,6 @@ bool md5sum(char const* filename, char* checksum) {
 
     return true;
 }
-
-void prepare_progress(void) {
-    progress = 0;
-    total_work = 0;
-}
-
-void reset_progress(void) {
-    progress = 0;
-    total_work = -1;
-}
-
-double track_progress(void) {
-    return (double)progress / (double)total_work;
-}
-
-bool update_config_file(char const* filename, bool invert_dat_files, int* sync, launcher_data const* cfg) {
-    size_t enable_size, disable_size, swap_size;
-    size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
-    big_file* enable = malloc(enable_cap * sizeof(big_file));
-    big_file* disable = malloc(disable_cap * sizeof(big_file));
-    dat_file* swap = malloc(swap_cap * sizeof(dat_file));
-    
-    read_game_config(filename, &enable, &enable_cap, &enable_size,
-                               &disable, &disable_cap, &disable_size,
-                               &swap, &swap_cap, &swap_size);
-    #pragma omp atomic
-    total_work += enable_size + disable_size + swap_size;
-    #pragma omp flush(total_work)
-
-    TASKSYNC(sync)
-
-    bool success = true;
-
-    #pragma omp parallel reduction(&& : success)
-    {
-        size_t i;
-        char toggled[FSTR_SIZE];
-        bool config_enabled;
-
-        #pragma omp for schedule(dynamic)
-        for(i = 0; i < enable_size; i++) {
-            if(!cfg->edain_available && strstr(enable[i].name, "edain"))
-                continue;
-
-            if(file_exists(enable[i].name)) {
-                if(!md5sum(enable[i].name, enable[i].checksum))
-                    success = false;
-            }
-            else {
-                config_enabled = false;
-                strcpy(toggled, enable[i].name);
-                set_extension(toggled, enable[i].extension);
-                if(!md5sum(toggled, enable[i].checksum))
-                    success = false;
-            }
-            #pragma omp atomic
-            ++progress;
-        }
-        #pragma omp for schedule(dynamic)
-        for(i = 0; i < disable_size; i++) {
-            if(!cfg->edain_available && strstr(disable[i].name, "edain"))
-                continue;
-
-            if(file_exists(disable[i].name)) {
-                if(!md5sum(disable[i].name, disable[i].checksum))
-                    success = false;
-            }
-            else {
-                config_enabled = true;
-                strcpy(toggled, disable[i].name);
-                set_extension(toggled, disable[i].extension);
-                if(!md5sum(toggled, disable[i].checksum))
-                    success = false;
-            }
-            #pragma omp atomic
-            ++progress;
-        }
-        #pragma omp for schedule(dynamic)
-        for(i = 0; i < swap_size; i++) {
-            strcpy(toggled, swap[i].name);
-            set_extension(toggled, OTHER_EXT);
-
-            if(swap[i].state == active) {
-                if(config_enabled && !invert_dat_files) {
-                    if(!md5sum(swap[i].name, swap[i].checksum))
-                        success = false;
-                }
-                else {
-                    if(!md5sum(toggled, swap[i].checksum))
-                        success = false;
-                }
-            }
-            else {
-                if(config_enabled && !invert_dat_files) {
-                    if(!md5sum(toggled, swap[i].checksum))
-                        success = false;
-                }
-                else {
-                    if(!md5sum(swap[i].name, swap[i].checksum))
-                        success = false;
-                }
-            }
-            #pragma omp atomic
-            ++progress;
-        }
-
-    }
-
-    if(success) {
-        write_game_config(filename, enable, enable_size, 
-                                    disable, disable_size, 
-                                    swap, swap_size);
-    }
-    else 
-        SAFE_FPRINTF(stderr, "Errors were encountered during hashing, config file will remain unchanged\n")
-
-    free(enable);
-    free(disable);
-    free(swap);
-
-    return success;
-}
-
-
 
 void set_active_configuration(char const* filename, bool use_version_dat) {
     size_t i;

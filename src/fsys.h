@@ -13,12 +13,6 @@ extern "C" {
 
 bool md5sum(char const* filename, char* csum);
 
-void prepare_progress(void);
-void reset_progress(void);
-double track_progress(void);
-
-bool update_config_file(char const* filename, bool invert_dat_files, int* sync, launcher_data const* cfg);
-
 void set_active_configuration(char const* filename, bool use_version_dat);
 
 void set_extension(char* filename, char const* extension);
