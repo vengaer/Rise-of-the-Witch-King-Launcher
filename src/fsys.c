@@ -61,6 +61,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
     
     file_state target_state = use_version_dat ? active : inactive;
 
+    /* Already active? */
     for(i = 0; i < swap_size; i++) {
         if(swap[i].state == target_state) {
             md5sum(swap[i].name, hash);
@@ -73,6 +74,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
         }
     }
 
+    /* .dat -> .swp */
     for(i = 0; i < swap_size; i++) {
         if(swap[i].state != target_state) {
             md5sum(swap[i].name, hash);
@@ -90,6 +92,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
             strcpy(swap[i].name, toggled);
         }
     }
+    /* .other -> .dat */
     for(i = 0; i < swap_size; i++) {
         if(swap[i].state == target_state) {
             strcpy(toggled, swap[i].name);
@@ -106,6 +109,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
             rename(toggled, swap[i].name);
         }
     }
+    /* .swp -> .other */
     for(i = 0; i < swap_size; i++) {
         if(swap[i].state != target_state) {
             strcpy(toggled, swap[i].name);
