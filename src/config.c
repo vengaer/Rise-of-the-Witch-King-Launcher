@@ -195,17 +195,15 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
             if(!cfg->edain_available && strstr(enable[i].name, "edain"))
                 continue;
 
-            if(file_exists(enable[i].name)) {
-                if(!md5sum(enable[i].name, enable[i].checksum))
-                    success = false;
-            }
-            else {
+            if(!file_exists(enable[i].name)) {
                 config_enabled = false;
                 strcpy(toggled, enable[i].name);
                 set_extension(toggled, enable[i].extension);
                 if(!md5sum(toggled, enable[i].checksum))
                     success = false;
             }
+            else if(!md5sum(enable[i].name, enable[i].checksum))
+                    success = false;
             #pragma omp atomic
             ++progress;
         }
@@ -214,17 +212,15 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
             if(!cfg->edain_available && strstr(disable[i].name, "edain"))
                 continue;
 
-            if(file_exists(disable[i].name)) {
-                if(!md5sum(disable[i].name, disable[i].checksum))
-                    success = false;
-            }
-            else {
+            if(!file_exists(disable[i].name)) {
                 config_enabled = true;
                 strcpy(toggled, disable[i].name);
                 set_extension(toggled, disable[i].extension);
                 if(!md5sum(toggled, disable[i].checksum))
                     success = false;
             }
+            else if(!md5sum(disable[i].name, disable[i].checksum))
+                    success = false;
             #pragma omp atomic
             ++progress;
         }
@@ -248,10 +244,8 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
                     if(!md5sum(toggled, swap[i].checksum))
                         success = false;
                 }
-                else {
-                    if(!md5sum(swap[i].name, swap[i].checksum))
+                else if(!md5sum(swap[i].name, swap[i].checksum))
                         success = false;
-                }
             }
             #pragma omp atomic
             ++progress;
