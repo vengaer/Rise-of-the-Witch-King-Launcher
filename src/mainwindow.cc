@@ -4,6 +4,7 @@
 #include "config.h"
 #include "fsys.h"
 #include "game_data.h"
+#include "thread_lock.h"
 #include "ui_mainwindow.h"
 #include <omp.h>
 #include <stdio.h>

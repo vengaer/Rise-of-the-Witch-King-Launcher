@@ -1,5 +1,6 @@
 #include "fsys.h"
 #include "config.h"
+#include "thread_lock.h"
 
 #include <openssl/md5.h>
 #include <omp.h>
@@ -22,7 +23,7 @@ bool md5sum(char const* filename, char* checksum) {
     FILE* fp = fopen(filename, "rb");
     
     if(!fp) {
-        fprintf(stderr, "%s could not be opened for hashing\n", filename);
+        SAFE_FPRINTF(stderr, "%s could not be opened for hashing\n", filename)
         return false;
     }
 
@@ -156,7 +157,7 @@ bool update_config_file(char const* filename, bool invert_dat_files, int* sync, 
                                     swap, swap_size);
     }
     else 
-        fprintf(stderr, "Errors were encountered during hashing, config file will remain unchanged\n");
+        SAFE_FPRINTF(stderr, "Errors were encountered during hashing, config file will remain unchanged\n")
 
     free(enable);
     free(disable);
@@ -202,7 +203,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
         if(swap[i].state != target_state) {
             md5sum(swap[i].name, hash);
             if(strcmp(swap[i].checksum, hash) != 0) {
-                fprintf(stderr, "Checksum for %s is incorrect. Reverting changes\n", swap[i].name);
+                SAFE_FPRINTF(stderr, "Checksum for %s is incorrect. Reverting changes\n", swap[i].name)
                 revert_changes(enable, enable_size, disable, disable_size);
                 free(enable);
                 free(disable);
@@ -221,7 +222,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
             set_extension(toggled, OTHER_EXT);
             md5sum(toggled, hash);
             if(strcmp(swap[i].checksum, hash) != 0) {
-                fprintf(stderr, "Checksum for %s is incorrect. Reverting changes\n", swap[i].name);
+                SAFE_FPRINTF(stderr, "Checksum for %s is incorrect. Reverting changes\n", swap[i].name)
                 revert_changes(enable, enable_size, disable, disable_size);
                 free(enable);
                 free(disable);
@@ -312,7 +313,7 @@ void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, s
                     char invalid[FSTR_SIZE];
                     strcpy(invalid, enable[i].name);
                     set_extension(invalid, INVALID_EXT);
-                    fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", enable[i].name, invalid);
+                    SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", enable[i].name, invalid)
 
                     rename(enable[i].name, invalid);
                 }
@@ -336,7 +337,7 @@ void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, s
                     char invalid[FSTR_SIZE];
                     strcpy(invalid, toggled);
                     set_extension(invalid, INVALID_EXT);
-                    fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid);
+                    SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid)
 
                     rename(toggled, invalid);
                 }
@@ -363,6 +364,6 @@ void revert_changes(big_file* enable, size_t enable_size, big_file* disable, siz
     if(file_exists(swp))
         rename(swp, toggled);
     else
-        fprintf(stderr, "Failed to restore .dat file\n");
+        SAFE_FPRINTF(stderr, "Failed to restore .dat file\n")
 }
 

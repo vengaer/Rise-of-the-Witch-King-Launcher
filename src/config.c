@@ -1,6 +1,7 @@
 #include "config.h"
 #include "bitop.h"
 #include "fsys.h"
+#include "thread_lock.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +32,7 @@ void read_game_config(char const* filename,
 
     FILE* fp = fopen(filename, "r");
     if(!fp) {
-        fprintf(stderr, "%s could not be opened\n", filename);
+        SAFE_FPRINTF(stderr, "%s could not be opened\n", filename)
         return;
     }
 
@@ -41,13 +42,13 @@ void read_game_config(char const* filename,
     
     do{ 
         if(fgets(line, sizeof line, fp) == NULL) {
-            fprintf(stderr, "%s is empty\n", filename);
+            SAFE_FPRINTF(stderr, "%s is empty\n", filename)
             return;
         }
     } while(line[0] == '\0');
 
     if(!header_name(line, tmp_header)) {
-        fprintf(stderr, "%s does not start with a header", filename);
+        SAFE_FPRINTF(stderr, "%s does not start with a header", filename)
         return;
     }
     strcpy(header, tmp_header);
@@ -69,7 +70,7 @@ void read_game_config(char const* filename,
             }
             
             if(!read_big_table(&fp, line, sizeof line, &(*enable)[(*enable_size)++])) {
-                fprintf(stderr, "Missing entry for %s in %s\n", header, filename);
+                SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
                 fclose(fp);
                 return;
             }
@@ -81,7 +82,7 @@ void read_game_config(char const* filename,
             }
             
             if(!read_big_table(&fp, line, sizeof line, &(*disable)[(*disable_size)++])) {
-                fprintf(stderr, "Missing entry for %s in %s\n", header, filename);
+                SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
                 fclose(fp);
                 return;
             }
@@ -93,13 +94,13 @@ void read_game_config(char const* filename,
                 *swap_capacity *= 2;
             }
             if(!read_dat_table(&fp, line, sizeof line, &(*swap)[(*swap_size)++])) {
-                fprintf(stderr, "Missing entry for %s in %s\n", header, filename);
+                SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
                 fclose(fp);
                 return;
             }
         }
         else {
-            fprintf(stderr, "Unknown header %s\n", header);
+            SAFE_FPRINTF(stderr, "Unknown header %s\n", header)
             fclose(fp);
             return;
         }
@@ -118,7 +119,7 @@ void write_game_config(char const* filename,
                        size_t swap_size) {
     FILE* fp = fopen(filename, "w");
     if(!fp) {
-        fprintf(stderr, "%s could not be opened\n", filename);
+        SAFE_FPRINTF(stderr, "%s could not be opened\n", filename)
         return;
     }
     size_t i;
