@@ -16,8 +16,8 @@
 #define HEADER_SIZE 32
 #define OPT_SIZE 32
 
-#ifdef __clpusplus
-extern "C" {
+#ifdef __cplusplus
+extern "C" {,
 #endif
 
 typedef enum {
@@ -65,7 +65,7 @@ typedef struct {
     
 void launcher_data_init(launcher_data* cfg);
 
-#ifdef __clpusplus
+#ifdef __cplusplus
 }
 #endif
 
