@@ -10,9 +10,10 @@
 #include "bitop.h"
 
 int main(int argc, char *argv[]) {
-    show_console(false);
     if(argc > 1)
         return cli_main(argc, argv);
+
+    show_console(false);
     
     QApplication a(argc, argv);
     MainWindow w;
