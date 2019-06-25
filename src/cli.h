@@ -1,5 +1,5 @@
-#ifndef CLI_INTERFACE
-#define CLI_INTERFACE
+#ifndef CLI_H
+#define CLI_H
 
 #include "game_data.h"
 

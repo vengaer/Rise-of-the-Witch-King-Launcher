@@ -1,4 +1,4 @@
-#include "cli_interface.h"
+#include "cli.h"
 #include "config.h"
 #include "command.h"
 #include "fsys.h"

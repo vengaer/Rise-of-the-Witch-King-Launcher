@@ -3,7 +3,7 @@
 
 #include <omp.h>
 
-/* Spin lock */
+/* Modified spin lock */
 #define TASKSYNC(x) \
 _Pragma("omp atomic") \
 --(*x); \
@@ -12,7 +12,7 @@ while(*x) \
     sleep_for(100);
 
 #define SAFE_FPRINTF(file, ...) \
-_Pragma("omp critical(print_lock)") \
+_Pragma("omp critical(SP_print_lock)") \
 fprintf(file, __VA_ARGS__);
 
 #endif

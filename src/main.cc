@@ -1,4 +1,4 @@
-#include "cli_interface.h"
+#include "cli.h"
 #include "command.h"
 #include "mainwindow.h"
 #include <QApplication>
