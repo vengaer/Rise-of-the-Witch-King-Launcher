@@ -7,7 +7,6 @@
 #if defined __CYGWIN__ || defined _WIN32
 #include <windows.h>
 #endif
-#include "bitop.h"
 
 int main(int argc, char *argv[]) {
     if(argc > 1)
