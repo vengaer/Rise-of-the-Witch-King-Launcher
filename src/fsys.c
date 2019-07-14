@@ -139,11 +139,10 @@ bool file_exists(char const* filename) {
         return access(filename, F_OK) != -1;
     #else
         FILE* fp = fopen(filename, "r");
-        bool exists = fp != NULL;
-        if(exists)
+        if(fp) {
             fclose(fp);
-
-        return exists;
+            return true;
+        }
     #endif
 
     return false;

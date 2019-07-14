@@ -528,9 +528,8 @@ bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry) {
                 return false;
         } while(line[0] == '\n');
 
-        if(!read_dat_entry(line, entry)) {
+        if(!read_dat_entry(line, entry))
             return false;
-        }
     }
 
     if(strcmp(subheader, "activate") == 0)
@@ -549,8 +548,9 @@ void remove_newline(char* line) {
 
 void replace_char(char* line, char orig, char repl) {
     size_t i;
-    for(i = 0; i < strlen(line); i++)
+    for(i = 0; i < strlen(line); i++) {
         if(line[i] == orig)
             line[i] = repl;
+    }
 }
 
