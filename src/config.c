@@ -548,9 +548,8 @@ void remove_newline(char* line) {
 }
 
 void replace_char(char* line, char orig, char repl) {
-    int len = strlen(line);
-    int i;
-    for(i = 0; i < len; i++)
+    size_t i;
+    for(i = 0; i < strlen(line); i++)
         if(line[i] == orig)
             line[i] = repl;
 }

@@ -21,7 +21,7 @@ bool file_exists(char const* filename);
 
 void game_path_from_registry(char* path);
 
-void sys_format(char* syscall, char const* orig_command);
+void sys_format(char* dst, char const* command);
 
 #ifdef __cplusplus
 }

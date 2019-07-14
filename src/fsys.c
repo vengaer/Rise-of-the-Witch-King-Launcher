@@ -151,25 +151,19 @@ bool file_exists(char const* filename) {
 
 void game_path_from_registry(char* path) {
     path[0] = '\0';
-    #if !defined __CYGWIN__ && !defined(_WIN32)
-        return;
-    #else
+    #if defined __CYGWIN__ || defined _WIN32
         DWORD dw_size = 1024;
         RegGetValue(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\lotrbfme2ep1.exe", "Path", RRF_RT_ANY, NULL, (PVOID)path, &dw_size);
     #endif
 }
 
-void sys_format(char* syscall, char const* orig_command) {
+void sys_format(char* dst, char const* command) {
     #if defined __CYGWIN__ || defined _WIN32
-        syscall[0] = '\"';
-        strcpy(syscall + 1, orig_command);
-        replace_char(syscall, '\'', '\"');
-        int len = strlen(syscall);
-        syscall[len] = '\"';
-        syscall[len + 1] = '\0';
+        sprintf(dst, "\"%s\"", command);
+        replace_char(dst, '\'', "\"");
     #else
-        strcpy(syscall, orig_command);
-        replace_char(syscall, '\'', ' ');
+        strcpy(dst, command);
+        replace_char(dst, '\'', ' ');
     #endif
 }
 
