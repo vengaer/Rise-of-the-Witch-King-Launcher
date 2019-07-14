@@ -259,7 +259,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
                                     swap, swap_size);
     }
     else 
-        SAFE_FPRINTF(stderr, "Errors were encountered during hashing, config file will remain unchanged\n")
+        SAFE_FPRINTF(stderr, "Errors were encountered during hashing of %s, config file will remain unchanged\n", filename)
 
     free(enable);
     free(disable);
