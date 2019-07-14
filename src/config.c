@@ -390,32 +390,21 @@ bool read_launcher_config(launcher_data* cfg, char const* file) {
 }
 
 void construct_mount_command(char* dst, char const* exe, char const* flags, char const* img) {
-    dst[0] = '\'';
-    strcpy(dst + 1, exe);
-    if(flags[0] != '\0') {
-        strcat(dst, " ");
-        strcat(dst, flags);
-    }
-    strcat(dst, "' '");
-    strcat(dst, img);
-    strcat(dst, "'");
-    strcat(dst, SUPPRESS_OUTPUT);
+    if(flags[0]) 
+        sprintf(dst, "\'%s %s\' \'%s\'"SUPPRESS_OUTPUT, exe, flags, img);
+    else
+        sprintf(dst, "\'%s\' \'%s\'"SUPPRESS_OUTPUT, exe, img);
 }
 
 void construct_umount_command(char* dst, char const* exe, char const* flags, char const* img, bool spec_img) {
-    dst[0] = '\'';
-    strcpy(dst + 1, exe);
-    if(flags[0] != '\0') {
-        strcat(dst, "' '");
-        strcat(dst, flags);
-    }
-
-    if(spec_img) {
-        strcat(dst, "' '");
-        strcat(dst, img);
-    }
-    strcat(dst, "'");
-    strcat(dst, SUPPRESS_OUTPUT);
+    if(flags[0] && spec_img)
+        sprintf(dst, "\'%s\' \'%s\' \'%s\'"SUPPRESS_OUTPUT, exe, flags, img);
+    else if(flags[0])
+        sprintf(dst, "\'%s\' \'%s\'"SUPPRESS_OUTPUT, exe, flags);
+    else if(spec_img)
+        sprintf(dst, "\'%s\' \'%s\'"SUPPRESS_OUTPUT, exe, img);
+    else
+        sprintf(dst, "\'%s\'"SUPPRESS_OUTPUT, exe);
 }
 
 bool header_name(char const* line, char* header) {
