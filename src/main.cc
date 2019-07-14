@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
         return cli_main(argc, argv);
 
     show_console(false);
-    
+
     QApplication a(argc, argv);
     MainWindow w;
     w.show();

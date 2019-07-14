@@ -62,7 +62,7 @@ typedef struct {
     bool show_console;
     configuration default_state;
 } launcher_data;
-    
+
 void launcher_data_init(launcher_data* cfg);
 
 #ifdef __cplusplus

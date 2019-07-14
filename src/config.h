@@ -13,7 +13,6 @@ void prepare_progress(void);
 void reset_progress(void);
 double track_progress(void);
 
-
 void read_game_config(char const* filename, 
                       big_file** enable, 
                       size_t* enable_capacity, 
@@ -34,8 +33,6 @@ void write_game_config(char const* filename,
                        size_t swap_size);
 
 bool update_game_config(char const* filename, bool invert_dat_files, int* sync, launcher_data const* cfg);
-
-
 
 void write_launcher_config(launcher_data const* cfg, char const* file);
 bool read_launcher_config(launcher_data* cfg, char const* file);

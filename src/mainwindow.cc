@@ -72,7 +72,7 @@ void MainWindow::on_auto_mount_stateChanged(int arg1) {
     ui->mount_opt->setEnabled(arg1);
     ui->umount_opt->setEnabled(arg1);
     ui->imspec_umount->setEnabled(arg1);
-    
+
     if(arg1 && data_.mount_exe[0]) {
         ui->mount_exec->setText(wrap_text(data_.mount_exe));
         ui->mount_image->setText(wrap_text(data_.disc_image));
@@ -84,14 +84,14 @@ void MainWindow::on_auto_mount_stateChanged(int arg1) {
 
 void MainWindow::on_botta_installed_stateChanged(int arg1) {
     ui->botta_path_chooser->setEnabled(arg1);
-    
+
     if(arg1 && data_.botta_path[0])
         ui->botta_path_chooser->setText(wrap_text(data_.botta_path));
 }
 
 void MainWindow::init() {
     game_hash[0] = '\0';
-    
+
     ui->launch_img->setMinimumSize(1,1);
     ui->upd_img->setMinimumSize(1,1);
 
@@ -102,7 +102,7 @@ void MainWindow::init() {
     rotwk_toml_ += "/toml/rotwk.toml";
 
     config_exists_ = setup_launcher();
-    
+
     ui->dat_swap->setChecked(data_.swap_dat_file);
 
     update_gui_functionality();
@@ -134,14 +134,14 @@ void MainWindow::init() {
 
     ui->kill_on_launch->setChecked(data_.kill_on_launch);
     ui->show_console->setChecked(data_.show_console);
-    
+
     ui->default_state->addItem("RotWK");
     ui->default_state->addItem("Edain");
     ui->default_state->addItem("BotTA");
     ui->default_state->addItem("Last Launched");
 
     ui->default_state->setCurrentIndex(trailing_zerobits(data_.default_state));
-    
+
     show_console(data_.show_console);
 
     game_path_ = data_.game_path;
@@ -167,7 +167,7 @@ bool MainWindow::setup_launcher() {
 
     bool config_found = read_launcher_config(&data_, config_file_.toLatin1().data());
 
-    if(config_found)    
+    if(config_found)
         chdir(data_.game_path);
 
     return config_found;
@@ -217,12 +217,12 @@ void MainWindow::on_pref_save_clicked() {
     QApplication::setOverrideCursor(Qt::BusyCursor);
 
     QString exe = game_path_ + "/" + GAME_EXE;
-    
+
     if(!file_exists(exe.toLatin1().data())) {
         QMessageBox::information(this, tr("Invalid Game Path"), "Could not locate lotrbfme2ep1.exe at specified path");
         return;
     }
-    
+
     if(ui->botta_installed->isChecked()) {
         exe = botta_path_ + "/" + BOTTA_LNK;
         if(!file_exists(exe.toLatin1().data())) {
@@ -248,10 +248,9 @@ void MainWindow::on_pref_save_clicked() {
         strcpy(data_.mount_flags, ui->mount_opt->text().toLatin1().data());
         strcpy(data_.umount_flags, ui->umount_opt->text().toLatin1().data());
         data_.umount_imspec = ui->imspec_umount->isChecked();
-    
+
         construct_mount_command(data_.mount_cmd, data_.mount_exe, data_.mount_flags, data_.disc_image);
         construct_umount_command(data_.umount_cmd, data_.mount_exe, data_.umount_flags, data_.disc_image, data_.umount_imspec);
-        
     }
     data_.botta_available = ui->botta_installed->isChecked();
     if(data_.botta_available)
@@ -271,7 +270,7 @@ void MainWindow::on_pref_save_clicked() {
     data_.edain_available = ui->edain_installed->isChecked();
 
     update_gui_functionality();
-    
+
     write_launcher_config(&data_, config_file_.toLatin1().data());
 
     if(!config_exists_) {
@@ -279,10 +278,10 @@ void MainWindow::on_pref_save_clicked() {
 
         ui->launch_img->setPixmap(launch_img_.scaled(INITIAL_IMSIZE.width(), INITIAL_IMSIZE.height()));
         ui->upd_img->setPixmap(upd_img_.scaled(INITIAL_IMSIZE.width(), INITIAL_IMSIZE.height()));
-        
+
         ui->tabWidget->setTabEnabled(0, true);
         ui->tabWidget->setTabEnabled(1, true);
-        
+
         chdir(data_.game_path);
         update_all_configs();
     }
@@ -339,8 +338,8 @@ void MainWindow::launch(configuration config) {
             return;
         }
     }
-    
-    QString launch_cmd{"\""};    
+
+    QString launch_cmd{"\""};
 
     if(config == botta) {
         launch_cmd += data_.botta_path;
@@ -389,7 +388,6 @@ void MainWindow::update_single_config(configuration config) {
     QString const* toml;
     bool new_dat_enabled = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
     bool invert_dat;
-
 
     switch(config) {
         case edain:
@@ -446,7 +444,7 @@ void MainWindow::update_single_config(configuration config) {
             }
             dialog.setValue(total);
             dialog.close();
-            
+
             reset_progress();
         }
     }
@@ -485,33 +483,33 @@ void MainWindow::update_all_configs() {
                     #pragma omp atomic
                     failed |= edain;
                 }
-                
+
                 #pragma omp atomic
                 --tasks_running;
             }
             #pragma omp task if(data_.botta_available)
             {
                 if(!update_game_config(botta_toml_.toLatin1().data(), invert_dat, &sync, &data_)) {
-                    #pragma omp atomic  
+                    #pragma omp atomic
                     failed |= botta;
                 }
 
                 #pragma omp atomic
                 --tasks_running;
-            }   
+            }
             #pragma omp task
             {
                 if(!update_game_config(rotwk_toml_.toLatin1().data(), !invert_dat, &sync, &data_)) {
                     #pragma omp atomic
                     failed |= rotwk;
                 }
-                
+
                 #pragma omp atomic
                 --tasks_running;
             }
 
             TASKSYNC(&sync)
-    
+
             int total = 100;
             QProgressDialog dialog("Updating config files...", "Cancel", 0, total, this);
             dialog.setWindowModality(Qt::WindowModal);
@@ -528,7 +526,7 @@ void MainWindow::update_all_configs() {
             }
             dialog.setValue(total);
             dialog.close();
-            
+
             reset_progress();
         }
     }
@@ -543,10 +541,10 @@ void MainWindow::update_all_configs() {
             failed_files.push_back("BotTA");
 
         QString msg = "Failed to update the ";
-    
+
         for(int i = 0; i < failed_files.size(); i++) {
             msg += failed_files[i];
-            
+
             if(i == failed_files.size() - 2)
                 msg += " and ";
             else if(i < failed_files.size() - 2)
@@ -570,7 +568,6 @@ QString MainWindow::wrap_text(QString const& text) {
     }
     else
         wrapped = text;
-
 
     return wrapped;
 }

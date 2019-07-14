@@ -19,7 +19,7 @@ void revert_changes(big_file* enable, size_t enable_size, big_file* disable, siz
 bool md5sum(char const* filename, char* checksum) {
     int i, num_bytes;
     FILE* fp = fopen(filename, "rb");
-    
+
     if(!fp) {
         SAFE_FPRINTF(stderr, "%s could not be opened for hashing\n", filename)
         return false;
@@ -49,7 +49,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
     big_file* enable = malloc(enable_cap * sizeof(big_file));
     big_file* disable = malloc(disable_cap * sizeof(big_file));
     dat_file* swap = malloc(swap_cap * sizeof(dat_file));
-    
+
     read_game_config(filename, &enable, &enable_cap, &enable_size,
                                &disable, &disable_cap, &disable_size,
                                &swap, &swap_cap, &swap_size);
@@ -58,7 +58,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
     char hash[FSTR_SIZE];
 
     toggle_big_files(enable, enable_size, disable, disable_size);
-    
+
     file_state target_state = use_version_dat ? active : inactive;
 
     /* Already active? */
@@ -166,7 +166,8 @@ void sys_format(char* dst, char const* command) {
     #endif
 }
 
-void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size) {
+void toggle_big_files(big_file* enable, size_t enable_size, 
+                      big_file* disable, size_t disable_size) {
 
     #pragma omp parallel 
     {
@@ -194,7 +195,7 @@ void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, s
                     continue;
                 }
             }
-            
+
             rename(toggled, enable[i].name);
         }
 
@@ -225,9 +226,10 @@ void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, s
 
 }
 
-void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size) {
+void revert_changes(big_file* enable, size_t enable_size, 
+                    big_file* disable, size_t disable_size) {
     toggle_big_files(disable, disable_size, enable, enable_size);
-    
+
     char const* swp = "game.swp";
     char toggled[FSTR_SIZE];
     strcpy(toggled, swp);
@@ -237,4 +239,3 @@ void revert_changes(big_file* enable, size_t enable_size, big_file* disable, siz
     else
         SAFE_FPRINTF(stderr, "Failed to restore .dat file\n")
 }
-

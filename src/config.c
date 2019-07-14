@@ -18,7 +18,6 @@ bool read_dat_entry(char* line, dat_file* entry);
 bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry);
 bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry);
 
-
 void prepare_progress(void) {
     progress = 0;
     total_work = 0;
@@ -57,7 +56,7 @@ void read_game_config(char const* filename,
     char line[LINE_SIZE];
     char header[HEADER_SIZE];
     char tmp_header[HEADER_SIZE];
-    
+
     do{ 
         if(fgets(line, sizeof line, fp) == NULL) {
             SAFE_FPRINTF(stderr, "%s is empty\n", filename)
@@ -70,7 +69,6 @@ void read_game_config(char const* filename,
         return;
     }
     strcpy(header, tmp_header);
-        
 
     while(fgets(line, sizeof line, fp)) {
         if(line[0] == '\n')
@@ -86,7 +84,7 @@ void read_game_config(char const* filename,
                 *enable = realloc(*enable, 2 * (*enable_capacity) * sizeof(big_file));
                 *enable_capacity *= 2;
             }
-            
+
             if(!read_big_table(&fp, line, sizeof line, &(*enable)[(*enable_size)++])) {
                 SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
                 fclose(fp);
@@ -98,7 +96,7 @@ void read_game_config(char const* filename,
                 *disable = realloc(*disable, 2 * (*disable_capacity) * sizeof(big_file));
                 *disable_capacity *= 2;
             }
-            
+
             if(!read_big_table(&fp, line, sizeof line, &(*disable)[(*disable_size)++])) {
                 SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
                 fclose(fp);
@@ -123,10 +121,9 @@ void read_game_config(char const* filename,
             return;
         }
     }
-    
+
     fclose(fp);
 }
-
 
 void write_game_config(char const* filename, 
                        big_file* enable, 
@@ -172,7 +169,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
     big_file* enable = malloc(enable_cap * sizeof(big_file));
     big_file* disable = malloc(disable_cap * sizeof(big_file));
     dat_file* swap = malloc(swap_cap * sizeof(dat_file));
-    
+
     read_game_config(filename, &enable, &enable_cap, &enable_size,
                                &disable, &disable_cap, &disable_size,
                                &swap, &swap_cap, &swap_size);
@@ -267,9 +264,6 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
 
     return success;
 }
-
-
-
 
 void write_launcher_config(launcher_data const* cfg, char const* file) {
     FILE* fp = fopen(file, "w");
@@ -472,8 +466,7 @@ bool read_big_entry(char* line, big_file* entry) {
         strcpy(entry->extension, value);
     else 
         return false;
-    
-    
+
     return true;
 }
 
@@ -490,7 +483,7 @@ bool read_dat_entry(char* line, dat_file* entry) {
         strcpy(entry->checksum, value);
     else 
         return false;
-    
+
     return true;
 }
 
@@ -498,13 +491,12 @@ bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry) {
     int i;
     if(!read_big_entry(line, entry))
         return false;
-    
+
     for(i = 0; i < 2; i++) {
         do{
             if(fgets(line, line_size, *fp) == NULL)
                 return false;
         } while(line[0] == '\n');
-
 
         if(!read_big_entry(line, entry))
             return false;
@@ -534,9 +526,9 @@ bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry) {
 
     if(strcmp(subheader, "activate") == 0)
         entry->state = active;
-    else  
+    else
         entry->state = inactive;
-    
+
     return true;
 }
 

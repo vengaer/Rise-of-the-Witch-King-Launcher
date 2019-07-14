@@ -32,7 +32,7 @@ int cli_main(int argc, char** argv) {
     int idx, opt, sync;
     bool mounting_necessary = true; 
     bool new_dat_enabled;
-    
+
     char cwd[PATH_SIZE];
     char rotwk_toml[PATH_SIZE];
     char edain_toml[PATH_SIZE];
@@ -81,7 +81,7 @@ int cli_main(int argc, char** argv) {
 
     for(idx = optind; idx < argc; idx++)
         printf("Non-option argument %s ignored.\n", argv[idx]);
-    
+
     if(h_flag) {
         print_help();
         return 1;
@@ -113,10 +113,10 @@ int cli_main(int argc, char** argv) {
 
     strcpy(launch_cmd, ld.game_path);
     strcat(launch_cmd, "/lotrbfme2ep1.exe");
-    
+
     strcpy(dat_file, ld.game_path);
     strcat(dat_file, "/game.dat");
-    
+
     md5sum(dat_file, game_csum);
     new_dat_enabled = strcmp(game_csum, NEW_DAT_CSUM) == 0;
 
@@ -159,7 +159,7 @@ int cli_main(int argc, char** argv) {
 
                     #pragma omp task if(ld.botta_available)
                         update_game_config(botta_toml, new_dat_enabled, &sync, &ld);
-                    
+
                     update_game_config(rotwk_toml, !new_dat_enabled, &sync, &ld);
 
                     reset_progress();
@@ -171,9 +171,9 @@ int cli_main(int argc, char** argv) {
             return 1;
         }
     }
-    
+
     configuration active_config;
-    
+
     if(r_flag || s_flag) {
         /* Set active config */
         if(strcmp(scfg, "rotwk") == 0) {
@@ -181,9 +181,8 @@ int cli_main(int argc, char** argv) {
             active_config = rotwk;
         }
         else {
-
             if(strcmp(scfg, "edain") == 0) {
-                if(!ld.edain_available) {   
+                if(!ld.edain_available) {
                     fprintf(stderr, "Edain is not available\n");
                     return 1;
                 }
@@ -212,7 +211,7 @@ int cli_main(int argc, char** argv) {
             if(ld.automatic_mount) {
                 md5sum(dat_file, game_csum);
                 mounting_necessary = strcmp(game_csum, NEW_DAT_CSUM);
-                
+
                 if(mounting_necessary) {
                     if(system(ld.mount_cmd) != 0) {
                         fprintf(stderr, "'%s' returned an error\n", ld.mount_cmd);
@@ -220,12 +219,12 @@ int cli_main(int argc, char** argv) {
                     }
                 }
             }
-        
+
             if(active_config == botta) {
                 strcpy(launch_cmd, ld.botta_path);
                 strcat(launch_cmd, "/BotTa.lnk");
             }
-            
+
             sys_format(launch, launch_cmd);
 
             if(system(launch) != 0)
@@ -233,7 +232,7 @@ int cli_main(int argc, char** argv) {
 
             while(game_running())
                 sleep_for(SLEEP_TIME);
-            
+
             switch(ld.default_state) {
                 case rotwk:
                     set_active_configuration(rotwk_toml, true);
@@ -277,7 +276,7 @@ void cli_setup(launcher_data* cfg, char const* file) {
 
             strcpy(path, cfg->game_path);
             strcat(path, "/lotrbfme2ep1.exe");
-            
+
             if(!file_exists(path)) 
                 fprintf(stderr, "Could not locate lotrbfme2ep1.exe at given path. Try again");
             else
@@ -317,7 +316,7 @@ void cli_setup(launcher_data* cfg, char const* file) {
         while(!input_ok) {
             fgets(cfg->botta_path, sizeof cfg->botta_path, stdin);
             remove_newline(cfg->botta_path);
-            
+
             strcpy(path, cfg->botta_path);
             strcat(path, "/BotTa.lnk");
 
@@ -344,18 +343,18 @@ void cli_setup(launcher_data* cfg, char const* file) {
     }
     input_ok = false;
     cfg->automatic_mount = c == 'y' || c == 'Y';
-    
+
     if(cfg->automatic_mount) {
         printf("Enter path to mount executable (without quotes or escaping any chars)\n");
         while(!input_ok) {
             fgets(cfg->mount_exe, sizeof cfg->mount_exe, stdin);
             remove_newline(cfg->mount_exe);
-            
+
             if(!file_exists(cfg->mount_exe))
                 fprintf(stderr, "%s does not exist\n", cfg->mount_exe);
             else
                 input_ok = true;
-            
+
         }
         printf("Mount executable set to '%s'.\n", cfg->mount_exe);
         input_ok = false;
@@ -364,7 +363,7 @@ void cli_setup(launcher_data* cfg, char const* file) {
         while(!input_ok) {
             fgets(cfg->disc_image, sizeof cfg->disc_image, stdin);
             remove_newline(cfg->disc_image);
-            
+
             if(!file_exists(cfg->disc_image))
                 fprintf(stderr, "%s does not exist\n", cfg->disc_image);
             else 
