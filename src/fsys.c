@@ -12,7 +12,7 @@
 #include <windows.h>
 #endif
 
-void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size);
+void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, bool verify_active);
 void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size);
 
 bool md5sum(char const* filename, char* checksum) {
@@ -41,7 +41,7 @@ bool md5sum(char const* filename, char* checksum) {
     return true;
 }
 
-void set_active_configuration(char const* filename, bool use_version_dat) {
+void set_active_configuration(char const* filename, bool use_version_dat, bool verify_active) {
     size_t i;
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
@@ -56,7 +56,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
     char toggled[FSTR_SIZE];
     char hash[FSTR_SIZE];
 
-    toggle_big_files(enable, enable_size, disable, disable_size);
+    toggle_big_files(enable, enable_size, disable, disable_size, verify_active);
 
     enum file_state target_state = use_version_dat ? active : inactive;
 
@@ -166,7 +166,7 @@ void sys_format(char* dst, char const* command) {
 }
 
 void toggle_big_files(struct big_file* enable, size_t enable_size, 
-                      struct big_file* disable, size_t disable_size) {
+                      struct big_file* disable, size_t disable_size, bool verify_active) {
 
     #pragma omp parallel 
     {
@@ -178,7 +178,7 @@ void toggle_big_files(struct big_file* enable, size_t enable_size,
         for(i = 0; i < enable_size; i++) {
             strcpy(toggled, enable[i].name);
             set_extension(toggled, enable[i].extension);
-            if(file_exists(enable[i].name)) {
+            if(file_exists(enable[i].name) && verify_active) {
                 md5sum(enable[i].name, hash);
                 if(strcmp(enable[i].checksum, hash) != 0) {
                     char invalid[FSTR_SIZE];
@@ -202,7 +202,7 @@ void toggle_big_files(struct big_file* enable, size_t enable_size,
         for(i = 0; i < disable_size; i++) {
             strcpy(toggled, disable[i].name);
             set_extension(toggled, disable[i].extension);
-            if(file_exists(toggled)) {
+            if(file_exists(toggled) && verify_active) {
                 md5sum(toggled, hash);
                 if(strcmp(disable[i].checksum, hash) != 0) {
                     char invalid[FSTR_SIZE];
@@ -227,7 +227,7 @@ void toggle_big_files(struct big_file* enable, size_t enable_size,
 
 void revert_changes(struct big_file* enable, size_t enable_size, 
                     struct big_file* disable, size_t disable_size) {
-    toggle_big_files(disable, disable_size, enable, enable_size);
+    toggle_big_files(disable, disable_size, enable, enable_size, false);
 
     char const* swp = "game.swp";
     char toggled[FSTR_SIZE];

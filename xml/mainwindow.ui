@@ -178,7 +178,7 @@
              <x>0</x>
              <y>0</y>
              <width>382</width>
-             <height>532</height>
+             <height>553</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
@@ -439,29 +439,8 @@
               <property name="title">
                <string>Base Game</string>
               </property>
-              <layout class="QGridLayout" name="gridLayout_7">
-               <item row="2" column="0">
-                <layout class="QHBoxLayout" name="horizontalLayout_8">
-                 <item>
-                  <widget class="QLabel" name="label">
-                   <property name="text">
-                    <string>Swap .dat File</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QCheckBox" name="dat_swap">
-                   <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.&lt;br&gt;(Recommended: On)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item row="0" column="0">
+              <layout class="QVBoxLayout" name="verticalLayout_2">
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_7">
                  <item>
                   <widget class="QLabel" name="label_2">
@@ -482,7 +461,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="1" column="0">
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_11">
                  <item>
                   <widget class="QLabel" name="label_9">
@@ -500,6 +479,48 @@
                  </item>
                 </layout>
                </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                 <item>
+                  <widget class="QLabel" name="label">
+                   <property name="text">
+                    <string>Swap .dat File</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="dat_swap">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.&lt;br&gt;(Recommended: On)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_20">
+                 <item>
+                  <widget class="QLabel" name="label_14">
+                   <property name="text">
+                    <string>Verify Active Configuration</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="verify_active">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether the launcher should verify the integrity of the active version. Enabling this adds to the startup time.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
               </layout>
              </widget>
             </item>
@@ -508,8 +529,8 @@
               <property name="title">
                <string>Launcher</string>
               </property>
-              <layout class="QGridLayout" name="gridLayout_6">
-               <item row="0" column="0">
+              <layout class="QVBoxLayout" name="verticalLayout">
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_16">
                  <item>
                   <widget class="QLabel" name="label_11">
@@ -530,7 +551,7 @@
                  </item>
                 </layout>
                </item>
-               <item row="1" column="0">
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_19">
                  <item>
                   <widget class="QLabel" name="label_12">

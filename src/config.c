@@ -281,6 +281,7 @@ void write_launcher_config(struct launcher_data const* cfg, char const* file) {
     fprintf(fp, "kill_on_launch = \"%s\"\n", cfg->kill_on_launch ? "true" : "false");
     fprintf(fp, "show_console = \"%s\"\n", cfg->show_console ? "true" : "false");
     fprintf(fp, "default_state = \"%d\"\n\n", trailing_zerobits(cfg->default_state));
+    fprintf(fp, "verify_active = \"%s\"\n", cfg->verify_active ? "true" : "false");
     fprintf(fp, "[game]\n");
     fprintf(fp, "path = \"%s\"\n\n", cfg->game_path);
     fprintf(fp, "[edain]\n");
@@ -334,6 +335,8 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
                 cfg->show_console = strcmp(value, "true") == 0;
             else if(strcmp(key, "default_state") == 0) 
                 cfg->default_state = (0x1 << atoi(value));
+            else if(strcmp(key, "verify_active") == 0)
+                cfg->verify_active = strcmp(value, "true") == 0;
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }

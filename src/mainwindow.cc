@@ -107,6 +107,7 @@ void MainWindow::init() {
     config_exists_ = setup_launcher();
 
     ui->dat_swap->setChecked(data_.swap_dat_file);
+    ui->verify_active->setChecked(data_.verify_active);
 
     update_gui_functionality();
 
@@ -263,6 +264,7 @@ void MainWindow::on_pref_save_clicked() {
     chdir(data_.game_path);
 
     data_.swap_dat_file = ui->dat_swap->isChecked();
+    data_.verify_active = ui->verify_active->isChecked();
     data_.default_state = static_cast<configuration>(0x1 << ui->default_state->currentIndex());
 
     data_.kill_on_launch = ui->kill_on_launch->isChecked();
@@ -321,13 +323,13 @@ void MainWindow::launch(configuration config) {
     md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
 
     if(config == rotwk) 
-        set_active_configuration(rotwk_toml_.toLatin1().data(), true);
+        set_active_configuration(rotwk_toml_.toLatin1().data(), true, data_.verify_active);
     else {
 
         if(config == edain)
-            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file);
+            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file, data_.verify_active);
         else
-            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file);
+            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file, data_.verify_active);
 
         if(data_.automatic_mount) {
             md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
@@ -366,13 +368,13 @@ void MainWindow::launch(configuration config) {
 
     switch(data_.default_state) {
         case rotwk:
-            set_active_configuration(rotwk_toml_.toLatin1().data(), true);
+            set_active_configuration(rotwk_toml_.toLatin1().data(), true, false);
             break;
         case edain:
-            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file);
+            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file, false);
             break;
         case botta:
-            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file);
+            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file, false);
             break;
         default:
             break;

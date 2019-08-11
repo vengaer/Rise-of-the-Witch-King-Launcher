@@ -60,6 +60,7 @@ struct launcher_data {
     bool umount_imspec;
     bool kill_on_launch;
     bool show_console;
+    bool verify_active;
     enum configuration default_state;
 };
 

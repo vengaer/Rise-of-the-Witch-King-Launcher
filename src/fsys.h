@@ -13,7 +13,7 @@ extern "C" {
 
 bool md5sum(char const* filename, char* csum);
 
-void set_active_configuration(char const* filename, bool use_version_dat);
+void set_active_configuration(char const* filename, bool use_version_dat, bool verify_active);
 
 void set_extension(char* filename, char const* extension);
 

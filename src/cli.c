@@ -182,7 +182,7 @@ int cli_main(int argc, char** argv) {
     if(r_flag || s_flag) {
         /* Set active config */
         if(strcmp(scfg, "rotwk") == 0) {
-            set_active_configuration(rotwk_toml, true);
+            set_active_configuration(rotwk_toml, true, ld.verify_active);
             active_config = rotwk;
         }
         else {
@@ -192,7 +192,7 @@ int cli_main(int argc, char** argv) {
                     return 1;
                 }
 
-                set_active_configuration(edain_toml, ld.swap_dat_file);
+                set_active_configuration(edain_toml, ld.swap_dat_file, ld.verify_active);
 
                 active_config = edain;
             }
@@ -202,7 +202,7 @@ int cli_main(int argc, char** argv) {
                     return 1;
                 }
 
-                set_active_configuration(botta_toml, ld.swap_dat_file);
+                set_active_configuration(botta_toml, ld.swap_dat_file, ld.verify_active);
                 active_config = botta;
             }
             else {
@@ -240,13 +240,13 @@ int cli_main(int argc, char** argv) {
 
             switch(ld.default_state) {
                 case rotwk:
-                    set_active_configuration(rotwk_toml, true);
+                    set_active_configuration(rotwk_toml, true, false);
                     break;
                 case edain:
-                    set_active_configuration(edain_toml, ld.swap_dat_file);
+                    set_active_configuration(edain_toml, ld.swap_dat_file, false);
                     break;
                 case botta:
-                    set_active_configuration(botta_toml, ld.swap_dat_file);
+                    set_active_configuration(botta_toml, ld.swap_dat_file, false);
                     break;
                 default:
                     break;

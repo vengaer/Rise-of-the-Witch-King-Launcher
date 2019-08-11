@@ -17,5 +17,6 @@ void launcher_data_init(struct launcher_data* cfg) {
     cfg->umount_imspec   = false;
     cfg->kill_on_launch  = true;
     cfg->show_console    = false;
+    cfg->verify_active   = true;
     cfg->default_state   = rotwk;
 }
