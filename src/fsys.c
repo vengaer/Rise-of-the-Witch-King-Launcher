@@ -159,7 +159,7 @@ void game_path_from_registry(char* path) {
 void sys_format(char* dst, char const* command) {
     #if defined __CYGWIN__ || defined _WIN32
         sprintf(dst, "\"%s\"", command);
-        replace_char(dst, '\'', "\"");
+        replace_char(dst, '\'', '\"');
     #else
         strcpy(dst, command);
         replace_char(dst, '\'', ' ');

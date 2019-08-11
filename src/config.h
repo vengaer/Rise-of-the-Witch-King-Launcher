@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include "game_data.h"
+#include "latch.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -32,7 +33,7 @@ void write_game_config(char const* filename,
                        dat_file* swap,
                        size_t swap_size);
 
-bool update_game_config(char const* filename, bool invert_dat_files, int* sync, launcher_data const* cfg);
+bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, launcher_data const* cfg);
 
 void write_launcher_config(launcher_data const* cfg, char const* file);
 bool read_launcher_config(launcher_data* cfg, char const* file);

@@ -1,4 +1,5 @@
 #include "config.h"
+#include "atomic.h"
 #include "bitop.h"
 #include "fsys.h"
 #include "thread_lock.h"
@@ -19,17 +20,19 @@ bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry);
 bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry);
 
 void prepare_progress(void) {
-    progress = 0;
-    total_work = 0;
+    atomic_write(&progress, 0);
+    atomic_write(&total_work, 0);
 }
 
 void reset_progress(void) {
-    progress = 0;
-    total_work = -1;
+    atomic_write(&progress, 0);
+    atomic_write(&total_work, -1);
 }
 
 double track_progress(void) {
-    return (double)progress / (double)total_work;
+    double const cp = (double) atomic_read(&progress);
+    double const total = (double) atomic_read(&total_work);
+    return cp / total;
 }
 
 void read_game_config(char const* filename,
@@ -163,7 +166,7 @@ void write_game_config(char const* filename,
     fclose(fp);
 }
 
-bool update_game_config(char const* filename, bool invert_dat_files, int* sync, launcher_data const* cfg) {
+bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, launcher_data const* cfg) {
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
     big_file* enable = malloc(enable_cap * sizeof(big_file));
@@ -173,11 +176,11 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
     read_game_config(filename, &enable, &enable_cap, &enable_size,
                                &disable, &disable_cap, &disable_size,
                                &swap, &swap_cap, &swap_size);
-    #pragma omp atomic
-    total_work += enable_size + disable_size + swap_size;
-    #pragma omp flush(total_work)
 
-    TASKSYNC(sync)
+
+    atomic_add(&total_work, enable_size + disable_size + swap_size);
+
+    latch_count_down(latch);
 
     bool success = true;
 
@@ -201,8 +204,8 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
             }
             else if(!md5sum(enable[i].name, enable[i].checksum))
                     success = false;
-            #pragma omp atomic
-            ++progress;
+
+            atomic_inc(&progress);
         }
         #pragma omp for schedule(dynamic)
         for(i = 0; i < disable_size; i++) {
@@ -218,8 +221,8 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
             }
             else if(!md5sum(disable[i].name, disable[i].checksum))
                     success = false;
-            #pragma omp atomic
-            ++progress;
+
+            atomic_inc(&progress);
         }
         #pragma omp for schedule(dynamic)
         for(i = 0; i < swap_size; i++) {
@@ -244,8 +247,8 @@ bool update_game_config(char const* filename, bool invert_dat_files, int* sync, 
                 else if(!md5sum(swap[i].name, swap[i].checksum))
                         success = false;
             }
-            #pragma omp atomic
-            ++progress;
+
+            atomic_inc(&progress);
         }
 
     }

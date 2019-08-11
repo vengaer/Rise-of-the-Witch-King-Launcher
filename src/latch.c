@@ -2,7 +2,10 @@
 #include "command.h"
 #include <omp.h>
 
+#define SILENCE_LINT(x) (void)(x);
+
 void latch_init(struct latch* latch, unsigned count) {
+    SILENCE_LINT(count)
     #pragma omp atomic write
     latch->count = count;
 

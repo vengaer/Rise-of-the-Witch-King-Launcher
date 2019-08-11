@@ -7,8 +7,19 @@ extern "C" {
 
 int atomic_inc(int* value);
 int atomic_dec(int* value);
-int atomic_inc_with(int* value, int inc);
-int atomic_dec_with(int* value, int dec);
+int atomic_add(int* value, int inc);
+int atomic_sub(int* value, int dec);
+
+int atomic_and(int* value, int rhs);
+int atomic_or(int* value, int rhs);
+int atomic_xor(int* value, int rhs);
+
+int atomic_fetch_add(int* value, int inc);
+int atomic_fetch_sub(int* value, int sub);
+
+int atomic_fetch_and(int* value, int rhs);
+int atomic_fetch_or(int* value, int rhs);
+int atomic_fetch_xor(int* value, int rhs);
 
 int atomic_read(int* value);
 int atomic_write(int* value, int new_value);

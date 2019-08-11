@@ -17,7 +17,7 @@
 #define OPT_SIZE 32
 
 #ifdef __cplusplus
-extern "C" {,
+extern "C" {
 #endif
 
 typedef enum {

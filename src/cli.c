@@ -32,6 +32,7 @@ int cli_main(int argc, char** argv) {
     int idx, opt, sync;
     bool mounting_necessary = true; 
     bool new_dat_enabled;
+    struct latch latch;
 
     char cwd[PATH_SIZE];
     char rotwk_toml[PATH_SIZE];
@@ -122,9 +123,17 @@ int cli_main(int argc, char** argv) {
 
     /* Update */
     sync = 1;
+    if(strcmp(ucfg, "all") == 0) {
+        if(ld.edain_available)
+            ++sync;
+        if(ld.botta_available)
+            ++sync;
+    }
+    latch_init(&latch, sync);
+
     if(u_flag) {
         if(strcmp(ucfg, "rotwk") == 0) 
-            update_game_config(rotwk_toml, !new_dat_enabled, &sync, &ld);
+            update_game_config(rotwk_toml, !new_dat_enabled, &latch, &ld);
         else if(strcmp(ucfg, "edain") == 0) {
 
             if(!ld.edain_available) {
@@ -132,7 +141,7 @@ int cli_main(int argc, char** argv) {
                 return 1;
             }
 
-            update_game_config(edain_toml, new_dat_enabled, &sync, &ld);
+            update_game_config(edain_toml, new_dat_enabled, &latch, &ld);
         }
         else if(ld.botta_available && strcmp(ucfg, "botta") == 0) {
 
@@ -141,13 +150,9 @@ int cli_main(int argc, char** argv) {
                 return 1;
             }
 
-            update_game_config(botta_toml, new_dat_enabled, &sync, &ld);
+            update_game_config(botta_toml, new_dat_enabled, &latch, &ld);
         }
         else if(strcmp(ucfg, "all") == 0) {
-            if(ld.edain_available)
-                ++sync;
-            if(ld.botta_available)
-                ++sync;
             #pragma omp parallel num_threads(3)
             {
                 #pragma omp master
@@ -155,12 +160,12 @@ int cli_main(int argc, char** argv) {
                     prepare_progress();
 
                     #pragma omp task if(ld.edain_available)
-                        update_game_config(edain_toml, new_dat_enabled, &sync, &ld);
+                        update_game_config(edain_toml, new_dat_enabled, &latch, &ld);
 
                     #pragma omp task if(ld.botta_available)
-                        update_game_config(botta_toml, new_dat_enabled, &sync, &ld);
+                        update_game_config(botta_toml, new_dat_enabled, &latch, &ld);
 
-                    update_game_config(rotwk_toml, !new_dat_enabled, &sync, &ld);
+                    update_game_config(rotwk_toml, !new_dat_enabled, &latch, &ld);
 
                     reset_progress();
                 }
