@@ -20,31 +20,31 @@
 extern "C" {
 #endif
 
-typedef enum {
+enum file_state {
     inactive, 
     active
-} file_state;
+};
 
-typedef enum {
+enum configuration {
     rotwk = 0x1,
     edain = 0x2,
     botta = 0x4,
     any   = 0x8
-} configuration;
+};
 
-typedef struct {
+struct big_file {
     char name[FSTR_SIZE];
     char checksum[FSTR_SIZE];
     char extension[OPT_SIZE];
-} big_file;
+};
 
-typedef struct {
+struct dat_file {
     char name[FSTR_SIZE];
     char checksum[FSTR_SIZE];
-    file_state state;
-} dat_file;
+    enum file_state state;
+};
 
-typedef struct {
+struct launcher_data {
     char game_path[PATH_SIZE];
     char botta_path[PATH_SIZE];
     char mount_exe[PATH_SIZE];
@@ -60,10 +60,10 @@ typedef struct {
     bool umount_imspec;
     bool kill_on_launch;
     bool show_console;
-    configuration default_state;
-} launcher_data;
+    enum configuration default_state;
+};
 
-void launcher_data_init(launcher_data* cfg);
+void launcher_data_init(struct launcher_data* cfg);
 
 #ifdef __cplusplus
 }

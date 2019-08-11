@@ -10,7 +10,7 @@ extern "C" {
 void print_help(void);
 
 int cli_main(int argc, char** argv);
-void cli_setup(launcher_data* cfg, char const* file);
+void cli_setup(struct launcher_data* cfg, char const* file);
 
 #ifdef __cplusplus
 }

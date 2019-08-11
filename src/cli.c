@@ -88,7 +88,7 @@ int cli_main(int argc, char** argv) {
         return 1;
     }
 
-    launcher_data ld;
+    struct launcher_data ld;
     if(!file_exists(lcfg))
         cli_setup(&ld, lcfg);
     else 
@@ -177,7 +177,7 @@ int cli_main(int argc, char** argv) {
         }
     }
 
-    configuration active_config;
+    enum configuration active_config;
 
     if(r_flag || s_flag) {
         /* Set active config */
@@ -264,7 +264,7 @@ int cli_main(int argc, char** argv) {
     return 0;
 }
 
-void cli_setup(launcher_data* cfg, char const* file) {
+void cli_setup(struct launcher_data* cfg, char const* file) {
     launcher_data_init(cfg);
     bool input_ok = false;
     char c;

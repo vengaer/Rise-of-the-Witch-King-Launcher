@@ -1,8 +1,8 @@
 #include "config.h"
 #include "atomic.h"
 #include "bitop.h"
+#include "concurrency_utils.h"
 #include "fsys.h"
-#include "thread_lock.h"
 #include <ctype.h>
 #include <omp.h>
 #include <stdio.h>
@@ -14,10 +14,10 @@ static int progress = 0, total_work = -1;
 bool header_name(char const* line, char* header);
 bool subheader_name(char const* line, char* header);
 void get_table_key(char const* entry, char* key); void get_table_value(char const* entry, char* value);
-bool read_big_entry(char* line, big_file* entry);
-bool read_dat_entry(char* line, dat_file* entry);
-bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry);
-bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry);
+bool read_big_entry(char* line, struct big_file* entry);
+bool read_dat_entry(char* line, struct dat_file* entry);
+bool read_big_table(FILE** fp, char* line, size_t line_size, struct big_file* entry);
+bool read_dat_table(FILE** fp, char* line, size_t line_size, struct dat_file* entry);
 
 void prepare_progress(void) {
     atomic_write(&progress, 0);
@@ -36,13 +36,13 @@ double track_progress(void) {
 }
 
 void read_game_config(char const* filename,
-                      big_file** enable,
+                      struct big_file** enable,
                       size_t* enable_capacity,
                       size_t* enable_size,
-                      big_file** disable,
+                      struct big_file** disable,
                       size_t* disable_capacity,
                       size_t* disable_size,
-                      dat_file** swap,
+                      struct dat_file** swap,
                       size_t* swap_capacity,
                       size_t* swap_size) {
 
@@ -84,7 +84,7 @@ void read_game_config(char const* filename,
 
         if(strcmp(header, "enable") == 0) {
             if(*enable_size >= *enable_capacity) {
-                *enable = realloc(*enable, 2 * (*enable_capacity) * sizeof(big_file));
+                *enable = realloc(*enable, 2 * (*enable_capacity) * sizeof(struct big_file));
                 *enable_capacity *= 2;
             }
 
@@ -96,7 +96,7 @@ void read_game_config(char const* filename,
         }
         else if(strcmp(header, "disable") == 0) {
             if(*disable_size >= *disable_capacity) {
-                *disable = realloc(*disable, 2 * (*disable_capacity) * sizeof(big_file));
+                *disable = realloc(*disable, 2 * (*disable_capacity) * sizeof(struct big_file));
                 *disable_capacity *= 2;
             }
 
@@ -109,7 +109,7 @@ void read_game_config(char const* filename,
         }
         else if(strcmp(header, "swap") == 0) {
             if(*swap_size >= *swap_capacity) {
-                *swap = realloc(*swap, 2 * (*swap_capacity) * sizeof(dat_file));
+                *swap = realloc(*swap, 2 * (*swap_capacity) * sizeof(struct dat_file));
                 *swap_capacity *= 2;
             }
             if(!read_dat_table(&fp, line, sizeof line, &(*swap)[(*swap_size)++])) {
@@ -129,11 +129,11 @@ void read_game_config(char const* filename,
 }
 
 void write_game_config(char const* filename, 
-                       big_file* enable, 
+                       struct big_file* enable, 
                        size_t enable_size, 
-                       big_file* disable,
+                       struct big_file* disable,
                        size_t disable_size,
-                       dat_file* swap,
+                       struct dat_file* swap,
                        size_t swap_size) {
     FILE* fp = fopen(filename, "w");
     if(!fp) {
@@ -166,12 +166,12 @@ void write_game_config(char const* filename,
     fclose(fp);
 }
 
-bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, launcher_data const* cfg) {
+bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, struct launcher_data const* cfg) {
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
-    big_file* enable = malloc(enable_cap * sizeof(big_file));
-    big_file* disable = malloc(disable_cap * sizeof(big_file));
-    dat_file* swap = malloc(swap_cap * sizeof(dat_file));
+    struct big_file* enable = malloc(enable_cap * sizeof(struct big_file));
+    struct big_file* disable = malloc(disable_cap * sizeof(struct big_file));
+    struct dat_file* swap = malloc(swap_cap * sizeof(struct dat_file));
 
     read_game_config(filename, &enable, &enable_cap, &enable_size,
                                &disable, &disable_cap, &disable_size,
@@ -268,7 +268,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
     return success;
 }
 
-void write_launcher_config(launcher_data const* cfg, char const* file) {
+void write_launcher_config(struct launcher_data const* cfg, char const* file) {
     FILE* fp = fopen(file, "w");
 
     if(!fp) {
@@ -301,7 +301,7 @@ void write_launcher_config(launcher_data const* cfg, char const* file) {
     fclose(fp);
 }
 
-bool read_launcher_config(launcher_data* cfg, char const* file) {
+bool read_launcher_config(struct launcher_data* cfg, char const* file) {
     launcher_data_init(cfg);
 
     FILE* fp = fopen(file, "r");
@@ -454,7 +454,7 @@ void get_table_value(char const* entry, char* value) {
     value[end - start] = '\0';
 }
 
-bool read_big_entry(char* line, big_file* entry) {
+bool read_big_entry(char* line, struct big_file* entry) {
     char key[OPT_SIZE];
     get_table_key(line, key);
 
@@ -473,7 +473,7 @@ bool read_big_entry(char* line, big_file* entry) {
     return true;
 }
 
-bool read_dat_entry(char* line, dat_file* entry) {
+bool read_dat_entry(char* line, struct dat_file* entry) {
     char key[OPT_SIZE];
     get_table_key(line, key);
 
@@ -490,7 +490,7 @@ bool read_dat_entry(char* line, dat_file* entry) {
     return true;
 }
 
-bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry) {
+bool read_big_table(FILE** fp, char* line, size_t line_size, struct big_file* entry) {
     int i;
     if(!read_big_entry(line, entry))
         return false;
@@ -508,7 +508,7 @@ bool read_big_table(FILE** fp, char* line, size_t line_size, big_file* entry) {
     return true;
 }
 
-bool read_dat_table(FILE** fp, char* line, size_t line_size, dat_file* entry) {
+bool read_dat_table(FILE** fp, char* line, size_t line_size, struct dat_file* entry) {
     int i;
     char subheader[HEADER_SIZE];
     char tmp_header[HEADER_SIZE];

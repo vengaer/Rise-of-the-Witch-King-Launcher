@@ -1,7 +1,6 @@
 #include "fsys.h"
+#include "concurrency_utils.h"
 #include "config.h"
-#include "thread_lock.h"
-
 #include <openssl/md5.h>
 #include <omp.h>
 #include <stdio.h>
@@ -13,8 +12,8 @@
 #include <windows.h>
 #endif
 
-void toggle_big_files(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
-void revert_changes(big_file* enable, size_t enable_size, big_file* disable, size_t disable_size);
+void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size);
+void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size);
 
 bool md5sum(char const* filename, char* checksum) {
     int i, num_bytes;
@@ -46,9 +45,9 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
     size_t i;
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
-    big_file* enable = malloc(enable_cap * sizeof(big_file));
-    big_file* disable = malloc(disable_cap * sizeof(big_file));
-    dat_file* swap = malloc(swap_cap * sizeof(dat_file));
+    struct big_file* enable = malloc(enable_cap * sizeof(struct big_file));
+    struct big_file* disable = malloc(disable_cap * sizeof(struct big_file));
+    struct dat_file* swap = malloc(swap_cap * sizeof(struct dat_file));
 
     read_game_config(filename, &enable, &enable_cap, &enable_size,
                                &disable, &disable_cap, &disable_size,
@@ -59,7 +58,7 @@ void set_active_configuration(char const* filename, bool use_version_dat) {
 
     toggle_big_files(enable, enable_size, disable, disable_size);
 
-    file_state target_state = use_version_dat ? active : inactive;
+    enum file_state target_state = use_version_dat ? active : inactive;
 
     /* Already active? */
     for(i = 0; i < swap_size; i++) {
@@ -166,8 +165,8 @@ void sys_format(char* dst, char const* command) {
     #endif
 }
 
-void toggle_big_files(big_file* enable, size_t enable_size, 
-                      big_file* disable, size_t disable_size) {
+void toggle_big_files(struct big_file* enable, size_t enable_size, 
+                      struct big_file* disable, size_t disable_size) {
 
     #pragma omp parallel 
     {
@@ -226,8 +225,8 @@ void toggle_big_files(big_file* enable, size_t enable_size,
 
 }
 
-void revert_changes(big_file* enable, size_t enable_size, 
-                    big_file* disable, size_t disable_size) {
+void revert_changes(struct big_file* enable, size_t enable_size, 
+                    struct big_file* disable, size_t disable_size) {
     toggle_big_files(disable, disable_size, enable, enable_size);
 
     char const* swp = "game.swp";

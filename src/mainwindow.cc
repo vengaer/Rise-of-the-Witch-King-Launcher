@@ -1,12 +1,12 @@
 #include "mainwindow.h"
 #include "atomic.h"
 #include "bitop.h"
+#include "concurrency_utils.h"
 #include "command.h"
 #include "config.h"
 #include "fsys.h"
 #include "game_data.h"
 #include "latch.h"
-#include "thread_lock.h"
 #include "ui_mainwindow.h"
 #include <omp.h>
 #include <stdio.h>
