@@ -432,7 +432,7 @@ void MainWindow::update_single_config(configuration config) {
 
             latch_count_down(&latch);
 
-            int total = 100;
+            int const total = 100;
             QProgressDialog dialog("Updating " + version + " config file...", "Cancel", 0, total, this);
             dialog.setWindowModality(Qt::WindowModal);
             dialog.setCancelButton(nullptr);
@@ -440,11 +440,14 @@ void MainWindow::update_single_config(configuration config) {
 
             dialog.show();
             int progress;
+            int tasks = atomic_read(&tasks_running);
 
-            while(tasks_running) {
+            while(tasks) {
                 progress = static_cast<int>(track_progress() * total);
                 QCoreApplication::processEvents();
                 dialog.setValue(progress);
+
+                tasks = atomic_read(&tasks_running);
             }
             dialog.setValue(total);
             dialog.close();
@@ -510,7 +513,7 @@ void MainWindow::update_all_configs() {
 
             latch_count_down(&latch);
 
-            int total = 100;
+            int const total = 100;
             QProgressDialog dialog("Updating config files...", "Cancel", 0, total, this);
             dialog.setWindowModality(Qt::WindowModal);
             dialog.setCancelButton(nullptr);
@@ -518,11 +521,14 @@ void MainWindow::update_all_configs() {
 
             dialog.show();
             int progress;
+            int tasks = atomic_read(&tasks_running);
 
-            while(tasks_running) {
+            while(tasks) {
                 progress = static_cast<int>(track_progress() * total);
                 QCoreApplication::processEvents();
                 dialog.setValue(progress);
+
+                tasks = atomic_read(&tasks_running);
             }
             dialog.setValue(total);
             dialog.close();
