@@ -92,6 +92,7 @@ void MainWindow::on_botta_installed_stateChanged(int arg1) {
 }
 
 void MainWindow::init() {
+    setWindowTitle(WINDOW_TITLE);
     game_hash[0] = '\0';
 
     ui->launch_img->setMinimumSize(1,1);
@@ -593,3 +594,4 @@ void MainWindow::update_gui_functionality() {
 
 QString const MainWindow::GAME_EXE{"lotrbfme2ep1.exe"};
 QString const MainWindow::BOTTA_LNK{"BotTa.lnk"};
+QString const MainWindow::WINDOW_TITLE{"Rise of the Witch-King Custom Launcher"};

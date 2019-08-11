@@ -57,6 +57,7 @@ private:
     static QSize constexpr INITIAL_IMSIZE{400, 220};
     static QString const GAME_EXE;
     static QString const BOTTA_LNK;
+    static QString const WINDOW_TITLE;
 
     void init();
     bool setup_launcher();
