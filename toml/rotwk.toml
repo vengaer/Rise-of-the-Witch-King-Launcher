@@ -1,4 +1,9 @@
 [[enable]]
+name = "##########202_v8.0.0.big"
+checksum = "27ad912c69b83772cf62f24093450109"
+extension = "disabled"
+
+[[enable]]
 name = "########202_v6.0.0.big"
 checksum = "30d4ffc5ff682a1638264f58010d560f"
 extension = "disabled"
@@ -201,6 +206,11 @@ extension = "disabled"
 [[enable]]
 name = "lang/englishstrings202_v7.0.0.big"
 checksum = "f00ac12b0a99cbf95c6bd0019aebe322"
+extension = "disabled"
+
+[[enable]]
+name = "lang/englishstrings202_v8.0.0.big"
+checksum = "29f18a1f784564494f32e502276b6992"
 extension = "disabled"
 
 [[enable]]
