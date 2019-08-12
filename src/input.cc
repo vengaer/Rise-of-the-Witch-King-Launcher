@@ -1,4 +1,5 @@
 #include "input.h"
+#include <stdio.h>
 #include <regex>
 #include <string>
 #include <string_view>
@@ -37,6 +38,20 @@ enum line_contents determine_line_contents(char const* line) {
         return content_key_value_pair;
 
     return content_invalid;
+}
+
+void version_introduced_in(char* dst, char const* filename) {
+    std::string const contents{filename};
+    std::string_view view{contents};
+
+    std::regex const rgx{"(v[0-9]\\.[0-9]\\.[0-9](\\.[0-9])?)\\.[a-zA-Z]{1,4}$"};
+    svmatch match;
+
+    if(std::regex_search(std::begin(view), std::end(view), match, rgx) && match.size() > 1) {
+        memcpy(dst, match[1].str().data(), match[1].length());
+    }
+    else
+        dst[0] = '\0';
 }
 
 bool is_blank_line(std::string_view view) {

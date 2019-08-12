@@ -15,6 +15,8 @@ enum line_contents {
 
 enum line_contents determine_line_contents(char const* line);
 
+void version_introduced_in(char* dst, char const* filename);
+
 #ifdef __cplusplus
 }
 #endif
