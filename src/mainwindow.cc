@@ -8,6 +8,7 @@
 #include "game_data.h"
 #include "latch.h"
 #include "ui_mainwindow.h"
+#include <algorithm>
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -157,6 +158,12 @@ void MainWindow::init() {
 
     ui->default_state->setCurrentIndex(trailing_zerobits(data_.default_state));
 
+    {
+        auto it = std::find(std::begin(ROTWK_VERSIONS), std::end(ROTWK_VERSIONS), QString{data_.patch_version});
+        std::size_t idx = it == std::end(ROTWK_VERSIONS) ? 0 : std::distance(std::begin(ROTWK_VERSIONS), it);
+        ui->rotwk_version->setCurrentIndex(idx);
+    }
+
     show_console(data_.show_console);
 
     game_path_ = data_.game_path;
@@ -281,6 +288,7 @@ void MainWindow::on_pref_save_clicked() {
     data_.swap_dat_file = ui->dat_swap->isChecked();
     data_.verify_active = ui->verify_active->isChecked();
     data_.default_state = static_cast<configuration>(0x1 << ui->default_state->currentIndex());
+    strcpy(data_.patch_version, ROTWK_VERSIONS[ui->rotwk_version->currentIndex()].toLatin1().data());
 
     data_.kill_on_launch = ui->kill_on_launch->isChecked();
     data_.show_console = ui->show_console->isChecked();
@@ -338,13 +346,13 @@ void MainWindow::launch(configuration config) {
     md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
 
     if(config == rotwk) 
-        set_active_configuration(rotwk_toml_.toLatin1().data(), true, data_.verify_active);
+        set_active_configuration(rotwk_toml_.toLatin1().data(), data_.patch_version, true, data_.verify_active);
     else {
 
         if(config == edain)
-            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file, data_.verify_active);
+            set_active_configuration(edain_toml_.toLatin1().data(), data_.patch_version, data_.swap_dat_file, data_.verify_active);
         else
-            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file, data_.verify_active);
+            set_active_configuration(botta_toml_.toLatin1().data(), data_.patch_version, data_.swap_dat_file, data_.verify_active);
 
         if(data_.automatic_mount) {
             md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
@@ -383,13 +391,13 @@ void MainWindow::launch(configuration config) {
 
     switch(data_.default_state) {
         case rotwk:
-            set_active_configuration(rotwk_toml_.toLatin1().data(), true, false);
+            set_active_configuration(rotwk_toml_.toLatin1().data(), data_.patch_version, true, false);
             break;
         case edain:
-            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file, false);
+            set_active_configuration(edain_toml_.toLatin1().data(), data_.patch_version, data_.swap_dat_file, false);
             break;
         case botta:
-            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file, false);
+            set_active_configuration(botta_toml_.toLatin1().data(), data_.patch_version, data_.swap_dat_file, false);
             break;
         default:
             break;
@@ -618,6 +626,10 @@ void MainWindow::update_gui_functionality() {
 QString const MainWindow::GAME_EXE{"lotrbfme2ep1.exe"};
 QString const MainWindow::BOTTA_LNK{"BotTa.lnk"};
 QString const MainWindow::WINDOW_TITLE{"Rise of the Witch-King Custom Launcher"};
-std::array<QString, 1> const MainWindow::ROTWK_VERSIONS {
-    "v8.0.0"
+std::array<QString, 5> const MainWindow::ROTWK_VERSIONS {
+    "v8.0.0",
+    "v7.0.0",
+    "v6.0.0",
+    "v5.0.1",
+    "v5.0.0"
 };

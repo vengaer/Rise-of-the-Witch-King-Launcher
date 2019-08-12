@@ -1,6 +1,7 @@
 #include "fsys.h"
 #include "concurrency_utils.h"
 #include "config.h"
+#include "input.h"
 #include <openssl/md5.h>
 #include <omp.h>
 #include <stdio.h>
@@ -12,9 +13,11 @@
 #include <windows.h>
 #endif
 
-void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, bool verify_active);
+void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version, bool verify_active);
+void enable_big_file(struct big_file const* file, bool verify_active);
+void disable_big_file(struct big_file const* file, bool verify_active);
 bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_version_dat);
-void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size);
+void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version);
 
 bool md5sum(char const* filename, char* checksum) {
     int i, num_bytes;
@@ -42,7 +45,7 @@ bool md5sum(char const* filename, char* checksum) {
     return true;
 }
 
-void set_active_configuration(char const* filename, bool use_version_dat, bool verify_active) {
+void set_active_configuration(char const* filename, char const* target_version, bool use_version_dat, bool verify_active) {
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 4;
     struct big_file* enable = malloc(enable_cap * sizeof(struct big_file));
@@ -54,12 +57,12 @@ void set_active_configuration(char const* filename, bool use_version_dat, bool v
                                &swap, &swap_cap, &swap_size);
 
 
-    toggle_big_files(enable, enable_size, disable, disable_size, verify_active);
+    toggle_big_files(enable, enable_size, disable, disable_size, target_version, verify_active);
     bool const swap_successful = handle_swaps(swap, swap_size, use_version_dat);
 
     if(!swap_successful) {
         SAFE_FPRINTF(stderr, "Failed to swap .dat files, reverting\n");
-        revert_changes(enable, enable_size, disable, disable_size);
+        revert_changes(enable, enable_size, disable, disable_size, target_version);
     }
 
     free(enable);
@@ -111,63 +114,84 @@ void sys_format(char* dst, char const* command) {
 }
 
 void toggle_big_files(struct big_file* enable, size_t enable_size, 
-                      struct big_file* disable, size_t disable_size, bool verify_active) {
+                      struct big_file* disable, size_t disable_size, 
+                      char const* target_version, bool verify_active) {
 
     #pragma omp parallel 
     {
         size_t i;
-        char toggled[FSTR_SIZE];
-        char hash[FSTR_SIZE];
+        char in_ver[OPT_SIZE];
 
         #pragma omp for schedule(static)
         for(i = 0; i < enable_size; i++) {
-            strcpy(toggled, enable[i].name);
-            set_extension(toggled, enable[i].extension);
-            if(file_exists(enable[i].name) && verify_active) {
-                md5sum(enable[i].name, hash);
-                if(strcmp(enable[i].checksum, hash) != 0) {
-                    char invalid[FSTR_SIZE];
-                    strcpy(invalid, enable[i].name);
-                    set_extension(invalid, INVALID_EXT);
-                    SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", enable[i].name, invalid)
+            version_introduced_in(in_ver, enable[i].name);
 
-                    rename(enable[i].name, invalid);
-                }
-                else {
-                    if(file_exists(toggled))
-                        remove(toggled);
-                    continue;
-                }
-            }
-
-            rename(toggled, enable[i].name);
+            /* Introduced no later than target version */
+            if(!in_ver[0] || strcmp(in_ver, target_version) <= 0)
+                enable_big_file(&enable[i], verify_active);
+            /* Introduced after target version */
+            else
+                disable_big_file(&enable[i], verify_active);
         }
 
         #pragma omp for schedule(static)
-        for(i = 0; i < disable_size; i++) {
-            strcpy(toggled, disable[i].name);
-            set_extension(toggled, disable[i].extension);
-            if(file_exists(toggled) && verify_active) {
-                md5sum(toggled, hash);
-                if(strcmp(disable[i].checksum, hash) != 0) {
-                    char invalid[FSTR_SIZE];
-                    strcpy(invalid, toggled);
-                    set_extension(invalid, INVALID_EXT);
-                    SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid)
+        for(i = 0; i < disable_size; i++)
+            disable_big_file(&disable[i], verify_active);
+    }
+}
 
-                    rename(toggled, invalid);
-                }
-                else {
-                    if(file_exists(disable[i].name))
-                        remove(disable[i].name);
-                    continue;
-                }
-            }
+void enable_big_file(struct big_file const* file, bool verify_active) {
+    char toggled[FSTR_SIZE];
+    char hash[FSTR_SIZE];
 
-            rename(disable[i].name, toggled);
+    strcpy(toggled, file->name);
+    set_extension(toggled, file->extension);
+
+    if(file_exists(file->name) && verify_active) {
+        md5sum(file->name, hash);
+        if(strcmp(file->checksum, hash) != 0) {
+            char invalid[FSTR_SIZE];
+            strcpy(invalid, file->name);
+            set_extension(invalid, INVALID_EXT);
+            SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", file->name, invalid)
+
+            rename(file->name, invalid);
+        }
+        else {
+            if(file_exists(toggled))
+                remove(toggled);
+            return;
         }
     }
 
+    rename(toggled, file->name);
+}
+
+void disable_big_file(struct big_file const* file, bool verify_active) {
+    char toggled[FSTR_SIZE];
+    char hash[FSTR_SIZE];
+
+    strcpy(toggled, file->name);
+    set_extension(toggled, file->extension);
+
+    if(file_exists(toggled) && verify_active) {
+        md5sum(toggled, hash);
+        if(strcmp(file->checksum, hash) != 0) {
+            char invalid[FSTR_SIZE];
+            strcpy(invalid, toggled);
+            set_extension(invalid, INVALID_EXT);
+            SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid)
+
+            rename(toggled, invalid);
+        }
+        else {
+            if(file_exists(file->name))
+                remove(file->name);
+            return;
+        }
+    }
+
+    rename(file->name, toggled);
 }
 
 bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_version_dat) {
@@ -198,7 +222,6 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_versio
         }
 
         done[i] = done[j] = true;
-    
 
         /* Might not want to swap game.dat */
         if(strcmp(stem, "game") == 0)
@@ -241,8 +264,9 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_versio
 }
 
 void revert_changes(struct big_file* enable, size_t enable_size, 
-                    struct big_file* disable, size_t disable_size) {
-    toggle_big_files(disable, disable_size, enable, enable_size, false);
+                    struct big_file* disable, size_t disable_size,
+                    char const* target_version) {
+    toggle_big_files(disable, disable_size, enable, enable_size, target_version, false);
 
     char const* swp = "game.swp";
     char toggled[FSTR_SIZE];
