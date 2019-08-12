@@ -42,6 +42,7 @@ struct dat_file {
     char name[FSTR_SIZE];
     char checksum[FSTR_SIZE];
     char disabled[FSTR_SIZE];
+    char introduced[FSTR_SIZE];
     enum file_state state;
 };
 

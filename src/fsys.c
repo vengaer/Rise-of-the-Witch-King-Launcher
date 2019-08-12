@@ -16,7 +16,7 @@
 void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version, bool verify_active);
 void enable_big_file(struct big_file const* file, bool verify_active);
 void disable_big_file(struct big_file const* file, bool verify_active);
-bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_version_dat);
+bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* target_version, bool use_version_dat);
 void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version);
 
 bool md5sum(char const* filename, char* checksum) {
@@ -58,7 +58,7 @@ void set_active_configuration(char const* filename, char const* target_version, 
 
 
     toggle_big_files(enable, enable_size, disable, disable_size, target_version, verify_active);
-    bool const swap_successful = handle_swaps(swap, swap_size, use_version_dat);
+    bool const swap_successful = handle_swaps(swap, swap_size, target_version, use_version_dat);
 
     if(!swap_successful) {
         SAFE_FPRINTF(stderr, "Failed to swap .dat files, reverting\n");
@@ -194,7 +194,7 @@ void disable_big_file(struct big_file const* file, bool verify_active) {
     rename(file->name, toggled);
 }
 
-bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_version_dat) {
+bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* target_version, bool use_version_dat) {
     size_t i, j;
     char stem[FSTR_SIZE];
     char tmp[FSTR_SIZE];
@@ -229,10 +229,14 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_versio
         else
             target_state = active;
 
-        if(swap[i].state == target_state)
+        if(swap[i].state == target_state && strcmp(swap[i].introduced, target_version) <= 0)
             activate = &swap[i];
         else
             activate = &swap[j];
+    
+        /* File introduced later than target version */
+        if(strcmp(activate->introduced, target_version) > 0)
+            continue;
 
         md5sum(activate->name, hash);
 

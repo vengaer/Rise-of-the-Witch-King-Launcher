@@ -184,6 +184,7 @@ void write_game_config(char const* filename,
         fprintf(fp, "        name = \"%s\"\n", swap[i].name);
         fprintf(fp, "        checksum = \"%s\"\n", swap[i].checksum);
         fprintf(fp, "        disabled = \"%s\"\n", swap[i].disabled);
+        fprintf(fp, "        introduced = \"%s\"\n", swap[i].introduced);
     }
 
     fclose(fp);
@@ -529,6 +530,8 @@ bool read_dat_entry(char* line, struct dat_file* entry) {
         strncpy(entry->checksum, value, sizeof entry->checksum);
     else if(strcmp(key, "disabled") == 0)
         strncpy(entry->disabled, value, sizeof entry->disabled);
+    else if(strcmp(key, "introduced") == 0)
+        strncpy(entry->introduced, value, sizeof entry->introduced);
     else 
         return false;
 
