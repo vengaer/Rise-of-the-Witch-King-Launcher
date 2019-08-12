@@ -151,12 +151,10 @@ void read_game_config(char const* filename,
 }
 
 void write_game_config(char const* filename, 
-                       struct big_file* enable, 
-                       size_t enable_size, 
-                       struct big_file* disable,
-                       size_t disable_size,
-                       struct dat_file* swap,
-                       size_t swap_size) {
+                       struct big_file* enable, size_t enable_size, 
+                       struct big_file* disable, size_t disable_size,
+                       struct dat_file* swap, size_t swap_size) {
+
     FILE* fp = fopen(filename, "w");
     if(!fp) {
         SAFE_FPRINTF(stderr, "%s could not be opened\n", filename)
