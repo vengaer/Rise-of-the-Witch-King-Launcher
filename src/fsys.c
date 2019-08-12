@@ -13,6 +13,7 @@
 #endif
 
 void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, bool verify_active);
+bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_version_dat);
 void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size);
 
 bool md5sum(char const* filename, char* checksum) {
@@ -42,9 +43,8 @@ bool md5sum(char const* filename, char* checksum) {
 }
 
 void set_active_configuration(char const* filename, bool use_version_dat, bool verify_active) {
-    size_t i;
     size_t enable_size, disable_size, swap_size;
-    size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
+    size_t enable_cap = 64, disable_cap = 64, swap_cap = 4;
     struct big_file* enable = malloc(enable_cap * sizeof(struct big_file));
     struct big_file* disable = malloc(disable_cap * sizeof(struct big_file));
     struct dat_file* swap = malloc(swap_cap * sizeof(struct dat_file));
@@ -53,68 +53,13 @@ void set_active_configuration(char const* filename, bool use_version_dat, bool v
                                &disable, &disable_cap, &disable_size,
                                &swap, &swap_cap, &swap_size);
 
-    char toggled[FSTR_SIZE];
-    char hash[FSTR_SIZE];
 
     toggle_big_files(enable, enable_size, disable, disable_size, verify_active);
+    bool const swap_successful = handle_swaps(swap, swap_size, use_version_dat);
 
-    enum file_state target_state = use_version_dat ? active : inactive;
-
-    /* Already active? */
-    for(i = 0; i < swap_size; i++) {
-        if(swap[i].state == target_state) {
-            md5sum(swap[i].name, hash);
-            if(file_exists(swap[i].name) && strcmp(swap[i].checksum, hash) == 0) {
-                free(enable);
-                free(disable);
-                free(swap);
-                return;
-            }
-        }
-    }
-
-    /* .dat -> .swp */
-    for(i = 0; i < swap_size; i++) {
-        if(swap[i].state != target_state) {
-            md5sum(swap[i].name, hash);
-            if(strcmp(swap[i].checksum, hash) != 0) {
-                SAFE_FPRINTF(stderr, "Checksum for %s is incorrect. Reverting changes\n", swap[i].name)
-                revert_changes(enable, enable_size, disable, disable_size);
-                free(enable);
-                free(disable);
-                free(swap);
-                return;
-            }
-            strcpy(toggled, swap[i].name);
-            set_extension(toggled, SWP_EXT);
-            rename(swap[i].name, toggled);
-            strcpy(swap[i].name, toggled);
-        }
-    }
-    /* .other -> .dat */
-    for(i = 0; i < swap_size; i++) {
-        if(swap[i].state == target_state) {
-            strcpy(toggled, swap[i].name);
-            set_extension(toggled, OTHER_EXT);
-            md5sum(toggled, hash);
-            if(strcmp(swap[i].checksum, hash) != 0) {
-                SAFE_FPRINTF(stderr, "Checksum for %s is incorrect. Reverting changes\n", swap[i].name)
-                revert_changes(enable, enable_size, disable, disable_size);
-                free(enable);
-                free(disable);
-                free(swap);
-                return;
-            }
-            rename(toggled, swap[i].name);
-        }
-    }
-    /* .swp -> .other */
-    for(i = 0; i < swap_size; i++) {
-        if(swap[i].state != target_state) {
-            strcpy(toggled, swap[i].name);
-            set_extension(toggled, OTHER_EXT);
-            rename(swap[i].name, toggled);
-        }
+    if(!swap_successful) {
+        SAFE_FPRINTF(stderr, "Failed to swap .dat files, reverting\n");
+        revert_changes(enable, enable_size, disable, disable_size);
     }
 
     free(enable);
@@ -223,6 +168,78 @@ void toggle_big_files(struct big_file* enable, size_t enable_size,
         }
     }
 
+}
+
+bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_version_dat) {
+    size_t i, j;
+    char stem[FSTR_SIZE];
+    char tmp[FSTR_SIZE];
+    char hash[FSTR_SIZE];
+    char toggled[FSTR_SIZE];
+    struct dat_file const* activate;
+    enum file_state target_state;
+
+    bool* done = malloc(swap_size * sizeof(bool));
+
+    for(i = 0; i < swap_size; i++)
+        done[i] = false;
+
+    for(i = 0; i < swap_size - 1; i++) {
+        if(done[i])
+            continue;
+
+        file_stem(stem, swap[i].name);
+
+        /* Find other file in pair */
+        for(j = i + 1; j < swap_size; j++) {
+            file_stem(tmp, swap[j].name);
+
+            if(strcmp(stem, tmp) == 0)
+                break;
+        }
+
+        done[i] = done[j] = true;
+    
+
+        /* Might not want to swap game.dat */
+        if(strcmp(stem, "game") == 0)
+            target_state = use_version_dat ? active : inactive;
+        else
+            target_state = active;
+
+        if(swap[i].state == target_state)
+            activate = &swap[i];
+        else
+            activate = &swap[j];
+
+        md5sum(activate->name, hash);
+
+        /* Already active */
+        if(strcmp(activate->checksum, hash) == 0)
+            continue;
+
+        strcpy(toggled, activate->name);
+        set_extension(toggled, OTHER_EXT);
+
+        md5sum(toggled, hash);
+
+        if(strcmp(activate->checksum, hash) != 0) {
+            //TODO: error
+
+            return false;
+        }
+
+        strcpy(tmp, activate->name);
+        set_extension(tmp, SWP_EXT);
+        
+        /* .dat -> .swp */
+        rename(activate->name, tmp);
+        /* .other -> .dat */
+        rename(toggled, activate->name);
+        /* .swp -> .other */
+        rename(tmp, toggled);
+    }
+    return true;
 }
 
 void revert_changes(struct big_file* enable, size_t enable_size, 

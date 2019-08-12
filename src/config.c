@@ -134,7 +134,7 @@ void read_game_config(char const* filename,
                     *swap_capacity *= 2;
                 }
                 if(!read_dat_entry(line, &(*swap)[(*swap_size) - 1])) {
-                    SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
+                    SAFE_FPRINTF(stderr, "Invalid entry '%s' in %s\n", line, filename)
                     fclose(fp);
                     return;
                 }
@@ -538,6 +538,12 @@ void replace_char(char* line, char orig, char repl) {
         if(line[i] == orig)
             line[i] = repl;
     }
+}
+
+void file_stem(char* dst, char const* file) {
+    char* end = strchr(file, '.');
+    memcpy(dst, file, end - file);
+    dst[end - file] = '\0';
 }
 
 char* trim_whitespace(char* str) {
