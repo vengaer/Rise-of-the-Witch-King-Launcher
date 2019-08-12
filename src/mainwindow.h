@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QMainWindow>
 #include <QPixmap>
+#include <string_view>
 
 namespace Ui {
     class MainWindow;
@@ -58,6 +59,7 @@ private:
     static QString const GAME_EXE;
     static QString const BOTTA_LNK;
     static QString const WINDOW_TITLE;
+    static std::array<QString, 1> const ROTWK_VERSIONS;
 
     void init();
     bool setup_launcher();

@@ -58,7 +58,7 @@ bool is_subheader(std::string_view view) {
 }
 
 bool is_key_value_pair(std::string_view view) {
-    std::regex const rgx{"^\\s*[A-Za-z0-9\\_]+\\s*=\\s*\".*\"\\s*$"};
+    std::regex const rgx{"^\\s*[A-Za-z0-9\\_.]+\\s*=\\s*\".*\"\\s*$"};
     svmatch match;
     return std::regex_search(std::begin(view), std::end(view), match, rgx);
 }

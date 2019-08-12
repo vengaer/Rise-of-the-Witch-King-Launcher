@@ -18,6 +18,7 @@
 #include <QProgressDialog>
 #include <QResizeEvent>
 #include <QSize>
+#include <QVector>
 
 #if defined __CYGWIN__ || defined _WIN32
 #include <windows.h>
@@ -111,6 +112,9 @@ void MainWindow::init() {
 
     update_gui_functionality();
 
+    QVector<QString> default_states;
+    default_states.push_back("RotWK");
+
     if(config_exists_) {
         ui->edain_installed->setChecked(data_.edain_available);
         if(data_.botta_available) {
@@ -126,6 +130,12 @@ void MainWindow::init() {
             ui->imspec_umount->setChecked(data_.umount_imspec);
         }
         ui->tabWidget->setCurrentWidget(ui->launch_tab);
+        if(data_.edain_available)
+            default_states.push_back("Edain");
+        if(data_.botta_available)
+            default_states.push_back("BotTA");
+        if(default_states.size() > 1)
+            default_states.push_back("Last Launched");
     }
     else {
         ui->tabWidget->setCurrentWidget(ui->pref_tab);
@@ -138,11 +148,12 @@ void MainWindow::init() {
 
     ui->kill_on_launch->setChecked(data_.kill_on_launch);
     ui->show_console->setChecked(data_.show_console);
-
-    ui->default_state->addItem("RotWK");
-    ui->default_state->addItem("Edain");
-    ui->default_state->addItem("BotTA");
-    ui->default_state->addItem("Last Launched");
+    
+    for(auto const& state : default_states)
+        ui->default_state->addItem(state);
+    
+    for(auto const& s : ROTWK_VERSIONS)
+        ui->rotwk_version->addItem(s);
 
     ui->default_state->setCurrentIndex(trailing_zerobits(data_.default_state));
 
@@ -603,3 +614,6 @@ void MainWindow::update_gui_functionality() {
 QString const MainWindow::GAME_EXE{"lotrbfme2ep1.exe"};
 QString const MainWindow::BOTTA_LNK{"BotTa.lnk"};
 QString const MainWindow::WINDOW_TITLE{"Rise of the Witch-King Custom Launcher"};
+std::array<QString, 1> const MainWindow::ROTWK_VERSIONS {
+    "v8.0.0"
+};

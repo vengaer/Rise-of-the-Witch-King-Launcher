@@ -99,6 +99,9 @@ public:
     QHBoxLayout *horizontalLayout_11;
     QLabel *label_9;
     QComboBox *default_state;
+    QHBoxLayout *horizontalLayout_21;
+    QLabel *label_15;
+    QComboBox *rotwk_version;
     QHBoxLayout *horizontalLayout_8;
     QLabel *label;
     QCheckBox *dat_swap;
@@ -247,7 +250,7 @@ public:
         pref_scroll->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName(QString::fromUtf8("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 382, 553));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 382, 581));
         gridLayout_4 = new QGridLayout(scrollAreaWidgetContents);
         gridLayout_4->setSpacing(6);
         gridLayout_4->setContentsMargins(11, 11, 11, 11);
@@ -476,6 +479,22 @@ public:
 
         verticalLayout_2->addLayout(horizontalLayout_11);
 
+        horizontalLayout_21 = new QHBoxLayout();
+        horizontalLayout_21->setSpacing(6);
+        horizontalLayout_21->setObjectName(QString::fromUtf8("horizontalLayout_21"));
+        label_15 = new QLabel(groupBox);
+        label_15->setObjectName(QString::fromUtf8("label_15"));
+
+        horizontalLayout_21->addWidget(label_15);
+
+        rotwk_version = new QComboBox(groupBox);
+        rotwk_version->setObjectName(QString::fromUtf8("rotwk_version"));
+
+        horizontalLayout_21->addWidget(rotwk_version);
+
+
+        verticalLayout_2->addLayout(horizontalLayout_21);
+
         horizontalLayout_8 = new QHBoxLayout();
         horizontalLayout_8->setSpacing(6);
         horizontalLayout_8->setObjectName(QString::fromUtf8("horizontalLayout_8"));
@@ -676,6 +695,10 @@ public:
         label_9->setText(QApplication::translate("MainWindow", "Default State", nullptr));
 #ifndef QT_NO_TOOLTIP
         default_state->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>State in which the game is left after launch. Options are:<br>RotWK - patch 2.02 (Recommended for maximum compatibility)<br>Edain - patch 2.01 with Edain enabled<br>BotTA - patch 2.01<br> Last Launched - Whatever version was launched last</p></body></html>", nullptr));
+#endif // QT_NO_TOOLTIP
+        label_15->setText(QApplication::translate("MainWindow", "RotWK 2.02 version", nullptr));
+#ifndef QT_NO_TOOLTIP
+        rotwk_version->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Which version of 2.02 that should be applied when launching base game</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
         label->setText(QApplication::translate("MainWindow", "Swap .dat File", nullptr));
 #ifndef QT_NO_TOOLTIP

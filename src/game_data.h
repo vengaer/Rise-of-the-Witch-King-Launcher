@@ -53,6 +53,7 @@ struct launcher_data {
     char umount_flags[OPT_SIZE];
     char mount_cmd[PATH_SIZE];
     char umount_cmd[PATH_SIZE];
+    char patch_version[OPT_SIZE];
     bool edain_available;
     bool botta_available;
     bool automatic_mount;

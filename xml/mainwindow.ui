@@ -178,7 +178,7 @@
              <x>0</x>
              <y>0</y>
              <width>382</width>
-             <height>553</height>
+             <height>581</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
@@ -474,6 +474,24 @@
                   <widget class="QComboBox" name="default_state">
                    <property name="toolTip">
                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;State in which the game is left after launch. Options are:&lt;br&gt;RotWK - patch 2.02 (Recommended for maximum compatibility)&lt;br&gt;Edain - patch 2.01 with Edain enabled&lt;br&gt;BotTA - patch 2.01&lt;br&gt; Last Launched - Whatever version was launched last&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_21">
+                 <item>
+                  <widget class="QLabel" name="label_15">
+                   <property name="text">
+                    <string>RotWK 2.02 version</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="rotwk_version">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Which version of 2.02 that should be applied when launching base game&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                   </widget>
                  </item>

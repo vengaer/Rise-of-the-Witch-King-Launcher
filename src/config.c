@@ -301,8 +301,9 @@ void write_launcher_config(struct launcher_data const* cfg, char const* file) {
     fprintf(fp, "swap = \"%s\"\n", cfg->swap_dat_file ? "true" : "false");
     fprintf(fp, "kill_on_launch = \"%s\"\n", cfg->kill_on_launch ? "true" : "false");
     fprintf(fp, "show_console = \"%s\"\n", cfg->show_console ? "true" : "false");
-    fprintf(fp, "default_state = \"%d\"\n\n", trailing_zerobits(cfg->default_state));
-    fprintf(fp, "verify_active = \"%s\"\n", cfg->verify_active ? "true" : "false");
+    fprintf(fp, "default_state = \"%d\"\n", trailing_zerobits(cfg->default_state));
+    fprintf(fp, "patch_version = \"%s\"\n", cfg->patch_version);
+    fprintf(fp, "verify_active = \"%s\"\n\n", cfg->verify_active ? "true" : "false");
     fprintf(fp, "[game]\n");
     fprintf(fp, "path = \"%s\"\n\n", cfg->game_path);
     fprintf(fp, "[edain]\n");
@@ -369,6 +370,12 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
                 cfg->default_state = (0x1 << atoi(value));
             else if(strcmp(key, "verify_active") == 0)
                 cfg->verify_active = strcmp(value, "true") == 0;
+            else if(strcmp(key, "patch_version") == 0) {
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wstringop-truncation"
+                strncpy(cfg->patch_version, value, sizeof cfg->patch_version - 1);
+                #pragma GCC diagnostic pop
+            }
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
