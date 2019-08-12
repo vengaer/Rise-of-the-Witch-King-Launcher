@@ -700,9 +700,9 @@ public:
 #ifndef QT_NO_TOOLTIP
         rotwk_version->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Which version of 2.02 that should be applied when launching base game</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
-        label->setText(QApplication::translate("MainWindow", "Swap .dat File", nullptr));
+        label->setText(QApplication::translate("MainWindow", "Swap game.dat File", nullptr));
 #ifndef QT_NO_TOOLTIP
-        dat_swap->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.<br>(Recommended: On)</p></body></html>", nullptr));
+        dat_swap->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 game.dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.<br>(Recommended: On)</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
         dat_swap->setText(QString());
         label_14->setText(QApplication::translate("MainWindow", "Verify Active Configuration", nullptr));

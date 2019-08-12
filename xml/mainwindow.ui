@@ -502,14 +502,14 @@
                  <item>
                   <widget class="QLabel" name="label">
                    <property name="text">
-                    <string>Swap .dat File</string>
+                    <string>Swap game.dat File</string>
                    </property>
                   </widget>
                  </item>
                  <item>
                   <widget class="QCheckBox" name="dat_swap">
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.&lt;br&gt;(Recommended: On)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 game.dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.&lt;br&gt;(Recommended: On)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string/>
