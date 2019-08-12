@@ -287,6 +287,8 @@ extension = "big.bak"
     [swap.activate]
         name = "game.dat"
         checksum = "84659690d2b47506bb23b2b43bd3b238"
+        disabled = "game.other"
     [swap.deactivate]
         name = "game.dat"
         checksum = "fbff091f6139eb05dc012d834e3eeb74"
+        disabled = "game.other"

@@ -175,7 +175,6 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_versio
     char stem[FSTR_SIZE];
     char tmp[FSTR_SIZE];
     char hash[FSTR_SIZE];
-    char toggled[FSTR_SIZE];
     struct dat_file const* activate;
     enum file_state target_state;
 
@@ -218,14 +217,11 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_versio
         if(strcmp(activate->checksum, hash) == 0)
             continue;
 
-        strcpy(toggled, activate->name);
-        set_extension(toggled, OTHER_EXT);
-
-        md5sum(toggled, hash);
+        md5sum(activate->disabled, hash);
 
         if(strcmp(activate->checksum, hash) != 0) {
-            //TODO: error
-
+            SAFE_FPRINTF(stderr, "No file matches the desired checksum\n");
+            free(done);
             return false;
         }
 
@@ -235,10 +231,12 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, bool use_versio
         /* .dat -> .swp */
         rename(activate->name, tmp);
         /* .other -> .dat */
-        rename(toggled, activate->name);
+        rename(activate->disabled, activate->name);
         /* .swp -> .other */
-        rename(tmp, toggled);
+        rename(tmp, activate->disabled);
     }
+
+    free(done);
     return true;
 }
 
