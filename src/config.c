@@ -3,21 +3,24 @@
 #include "bitop.h"
 #include "concurrency_utils.h"
 #include "fsys.h"
+#include "input.h"
 #include <ctype.h>
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define BIG_TABLE_SIZE 3
+
 static int progress = 0, total_work = -1;
 
-bool header_name(char const* line, char* header);
-bool subheader_name(char const* line, char* header);
-void get_table_key(char const* entry, char* key); void get_table_value(char const* entry, char* value);
+void header_name(char* line, char* header);
+void subheader_name(char* line, char* header);
+void get_table_key(char* entry, char* key); 
+void get_table_value(char const* entry, char* value);
 bool read_big_entry(char* line, struct big_file* entry);
 bool read_dat_entry(char* line, struct dat_file* entry);
-bool read_big_table(FILE** fp, char* line, size_t line_size, struct big_file* entry);
-bool read_dat_table(FILE** fp, char* line, size_t line_size, struct dat_file* entry);
+char* trim_whitespace(char* str);
 
 void prepare_progress(void) {
     atomic_write(&progress, 0);
@@ -36,15 +39,16 @@ double track_progress(void) {
 }
 
 void read_game_config(char const* filename,
-                      struct big_file** enable,
-                      size_t* enable_capacity,
-                      size_t* enable_size,
-                      struct big_file** disable,
-                      size_t* disable_capacity,
-                      size_t* disable_size,
-                      struct dat_file** swap,
-                      size_t* swap_capacity,
-                      size_t* swap_size) {
+                      struct big_file** enable, size_t* enable_capacity, size_t* enable_size,
+                      struct big_file** disable, size_t* disable_capacity, size_t* disable_size,
+                      struct dat_file** swap, size_t* swap_capacity, size_t* swap_size) {
+
+    char line[LINE_SIZE];
+    char header[HEADER_SIZE];
+    char subheader[HEADER_SIZE];
+
+    enum line_contents contents;
+    unsigned line_number = 0;
 
     *enable_size = 0;
     *disable_size = 0;
@@ -55,73 +59,93 @@ void read_game_config(char const* filename,
         SAFE_FPRINTF(stderr, "%s could not be opened\n", filename)
         return;
     }
-
-    char line[LINE_SIZE];
-    char header[HEADER_SIZE];
-    char tmp_header[HEADER_SIZE];
-
-    do{ 
-        if(fgets(line, sizeof line, fp) == NULL) {
+    else {
+        fseek(fp, 0, SEEK_END);
+        size_t file_size = ftell(fp);
+        if(file_size == 0) {
             SAFE_FPRINTF(stderr, "%s is empty\n", filename)
-            return;
-        }
-    } while(line[0] == '\0');
-
-    if(!header_name(line, tmp_header)) {
-        SAFE_FPRINTF(stderr, "%s does not start with a header", filename)
-        return;
-    }
-    strcpy(header, tmp_header);
-
-    while(fgets(line, sizeof line, fp)) {
-        if(line[0] == '\n')
-            continue;
-
-        if(header_name(line, tmp_header)) {
-            strcpy(header, tmp_header);
-            continue;
-        }
-
-        if(strcmp(header, "enable") == 0) {
-            if(*enable_size >= *enable_capacity) {
-                *enable = realloc(*enable, 2 * (*enable_capacity) * sizeof(struct big_file));
-                *enable_capacity *= 2;
-            }
-
-            if(!read_big_table(&fp, line, sizeof line, &(*enable)[(*enable_size)++])) {
-                SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
-                fclose(fp);
-                return;
-            }
-        }
-        else if(strcmp(header, "disable") == 0) {
-            if(*disable_size >= *disable_capacity) {
-                *disable = realloc(*disable, 2 * (*disable_capacity) * sizeof(struct big_file));
-                *disable_capacity *= 2;
-            }
-
-            if(!read_big_table(&fp, line, sizeof line, &(*disable)[(*disable_size)++])) {
-                SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
-                fclose(fp);
-                return;
-            }
-
-        }
-        else if(strcmp(header, "swap") == 0) {
-            if(*swap_size >= *swap_capacity) {
-                *swap = realloc(*swap, 2 * (*swap_capacity) * sizeof(struct dat_file));
-                *swap_capacity *= 2;
-            }
-            if(!read_dat_table(&fp, line, sizeof line, &(*swap)[(*swap_size)++])) {
-                SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
-                fclose(fp);
-                return;
-            }
-        }
-        else {
-            SAFE_FPRINTF(stderr, "Unknown header %s\n", header)
             fclose(fp);
             return;
+        }
+    }
+
+    rewind(fp);
+    while(fgets(line, sizeof line, fp)) {
+        ++line_number;
+        contents = determine_line_contents(line);
+
+        if(contents == content_invalid) {
+            SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
+            fclose(fp);
+            return;
+        }
+        else if(contents == content_blank)
+            continue;
+        else if(contents == content_subheader) {
+            subheader_name(line, subheader);
+            if(strcmp(subheader, "enable") == 0)
+                ++(*enable_size);
+            else if(strcmp(subheader, "disable") == 0)
+                ++(*disable_size);
+            else if(strcmp(subheader, "swap") != 0) {
+                SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\nUnknown subheader\n", line_number, filename, line);
+                fclose(fp);
+                return;
+            }
+
+            continue;
+        }
+        else {
+            if(strcmp(subheader, "enable") == 0) {
+                if(*enable_size >= *enable_capacity) {
+                    *enable = realloc(*enable, 2 * (*enable_capacity) * sizeof(struct big_file));
+                    *enable_capacity *= 2;
+                }
+
+                if(!read_big_entry(line, &(*enable)[(*enable_size) - 1])) {
+                    SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
+                    fclose(fp);
+                    return;
+                }
+            }
+            else if(strcmp(subheader, "disable") == 0) {
+                if(*disable_size >= *disable_capacity) {
+                    *disable = realloc(*disable, 2 * (*disable_capacity) * sizeof(struct big_file));
+                    *disable_capacity *= 2;
+                }
+
+                if(!read_big_entry(line, &(*disable)[(*disable_size) - 1])) {
+                    SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
+                    fclose(fp);
+                    return;
+                }
+
+            }
+            else if(strcmp(subheader, "swap") == 0) {
+                if(contents == content_header) {
+                    header_name(line, header);
+                    if(strcmp(header, "swap.activate") == 0)
+                        (*swap)[(*swap_size)].state = active;
+                    else
+                        (*swap)[(*swap_size)].state = inactive;
+                    ++(*swap_size);
+                    continue;
+                }
+                if(*swap_size >= *swap_capacity) {
+                    *swap = realloc(*swap, 2 * (*swap_capacity) * sizeof(struct dat_file));
+                    *swap_capacity *= 2;
+                }
+                if(!read_dat_entry(line, &(*swap)[(*swap_size) - 1])) {
+                    SAFE_FPRINTF(stderr, "Missing entry for %s in %s\n", header, filename)
+                    fclose(fp);
+                    return;
+                }
+            }
+            else {
+                SAFE_FPRINTF(stderr, "Unknown header %s\n", header)
+                fclose(fp);
+                return;
+            }
         }
     }
 
@@ -176,8 +200,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
     read_game_config(filename, &enable, &enable_cap, &enable_size,
                                &disable, &disable_cap, &disable_size,
                                &swap, &swap_cap, &swap_size);
-
-
+    
     atomic_add(&total_work, enable_size + disable_size + swap_size);
 
     latch_count_down(latch);
@@ -311,16 +334,27 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
 
     char line[PATH_SIZE];
     char header[HEADER_SIZE];
-    char tmp_header[HEADER_SIZE];
     char key[OPT_SIZE];
     char value[PATH_SIZE];
+    enum line_contents contents;
+    unsigned line_number = 0;
 
     while(fgets(line, sizeof line, fp)) {
-        if(line[0] == '\n')
+        ++line_number;
+        contents = determine_line_contents(line);
+        if(contents == content_invalid) {
+            SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\n", line_number, file, line);
+            return false;
+        }
+        if(contents == content_blank)
             continue;
 
-        if(subheader_name(line, tmp_header)) {
-            strcpy(header, tmp_header);
+        if(contents == content_header) {
+            header_name(line, header);
+            continue;
+        }
+        if(contents == content_subheader) {
+            subheader_name(line, header);
             continue;
         }
         get_table_key(line, key);
@@ -407,61 +441,46 @@ void construct_umount_command(char* dst, char const* exe, char const* flags, cha
         sprintf(dst, "\'%s\'"SUPPRESS_OUTPUT, exe);
 }
 
-bool header_name(char const* line, char* header) {
-    size_t size = strlen(line);
-    if(line[0] == '[' && line[size - 2] == ']') {
-        memcpy(header, line + 2, size - 5);
-        header[size - 5] = '\0';
-        return true;
-    }
-
-    return false;
+void header_name(char* line, char* header) {
+    char* str = trim_whitespace(line);
+    size_t size = strlen(str);
+    memcpy(header, str + 1, size - 2);
+    header[size - 2] = '\0';
 }
 
-bool subheader_name(char const* line, char* header) {
-    size_t size = strlen(line);
-    while(line[0] == ' ') {
-        ++line;
-        --size;
-    }
-    if(line[0] == '[' && line[1] != '[' && line[size - 3] != ']' && line[size - 2] == ']') {
-        memcpy(header, line + 1, size - 3);
-        header[size - 3] = '\0';
-        return true;
-    }
-
-    return false;
+void subheader_name(char* line, char* header) {
+    char* str = trim_whitespace(line);
+    size_t size = strlen(str);
+    memcpy(header, str + 2, size - 4);
+    header[size - 4] = '\0';
 }
 
-void get_table_key(char const* entry, char* key) {
+void get_table_key(char* entry, char* key) {
+    char* str = trim_whitespace(entry);
     size_t i;
-    size_t len = strlen(entry);
-    for(i = 0; i < len; i++) {
-        if(entry[i] != ' ' && entry[i] != '\t')
+    for(i = 0; i < strlen(str); i++) {
+        if(isspace(str[i]))
             break;
     }
-    size_t start = i;
-    for(; i < len; i++)
-        if(entry[i] == ' ')
-            break;
-
-    memcpy(key, entry + start, i - start);
-    key[i - start] = '\0';
+    memcpy(key, str, i);
+    key[i] = '\0';
 }
 
 void get_table_value(char const* entry, char* value) {
-    char* start = strchr(entry, '"');
-    ++start;
+    char* start = strchr(entry, '"') + 1;
     char* end = strchr(start, '"');
     memcpy(value, start, end - start);
     value[end - start] = '\0';
 }
 
 bool read_big_entry(char* line, struct big_file* entry) {
-    char key[OPT_SIZE];
-    get_table_key(line, key);
+    if(determine_line_contents(line) != content_key_value_pair)
+        return false;
 
+    char key[OPT_SIZE];
     char value[FSTR_SIZE];
+
+    get_table_key(line, key);
     get_table_value(line, value);
 
     if(strcmp(key, "name") == 0)
@@ -477,10 +496,13 @@ bool read_big_entry(char* line, struct big_file* entry) {
 }
 
 bool read_dat_entry(char* line, struct dat_file* entry) {
-    char key[OPT_SIZE];
-    get_table_key(line, key);
+    if(determine_line_contents(line) != content_key_value_pair)
+        return false;
 
+    char key[OPT_SIZE];
     char value[FSTR_SIZE];
+
+    get_table_key(line, key);
     get_table_value(line, value);
 
     if(strcmp(key, "name") == 0)
@@ -493,62 +515,29 @@ bool read_dat_entry(char* line, struct dat_file* entry) {
     return true;
 }
 
-bool read_big_table(FILE** fp, char* line, size_t line_size, struct big_file* entry) {
-    int i;
-    if(!read_big_entry(line, entry))
-        return false;
-
-    for(i = 0; i < 2; i++) {
-        do{
-            if(fgets(line, line_size, *fp) == NULL)
-                return false;
-        } while(line[0] == '\n');
-
-        if(!read_big_entry(line, entry))
-            return false;
-    }
-
-    return true;
-}
-
-bool read_dat_table(FILE** fp, char* line, size_t line_size, struct dat_file* entry) {
-    int i;
-    char subheader[HEADER_SIZE];
-    char tmp_header[HEADER_SIZE];
-    subheader_name(line, tmp_header);
-    char* start = strchr(tmp_header, '.');
-    ++start;
-    strcpy(subheader, start);
-
-    for(i = 0; i < 2; i++) {
-        do{
-            if(fgets(line, line_size, *fp) == NULL)
-                return false;
-        } while(line[0] == '\n');
-
-        if(!read_dat_entry(line, entry))
-            return false;
-    }
-
-    if(strcmp(subheader, "activate") == 0)
-        entry->state = active;
-    else
-        entry->state = inactive;
-
-    return true;
-}
-
-void remove_newline(char* line) {
-    int len = strlen(line);
-    if(line[len - 1] == '\n')
-        line[len - 1] = '\0';
-}
-
 void replace_char(char* line, char orig, char repl) {
     size_t i;
     for(i = 0; i < strlen(line); i++) {
         if(line[i] == orig)
             line[i] = repl;
     }
+}
+
+char* trim_whitespace(char* str) {
+    char* end;
+    
+    while(isspace((unsigned char)*str))
+        ++str;
+    
+    if(*str == '\0')
+        return str;
+
+    end = str + strlen(str) - 1;
+
+    while(end > str && isspace((unsigned char)*end))
+        --end;
+    end[1] = '\0';
+
+    return str;
 }
 

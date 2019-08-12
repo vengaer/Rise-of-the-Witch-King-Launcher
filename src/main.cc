@@ -4,6 +4,8 @@
 #include <QApplication>
 #include <omp.h>
 
+#include "config.h"
+
 #if defined __CYGWIN__ || defined _WIN32
 #include <windows.h>
 #endif

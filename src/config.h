@@ -41,7 +41,6 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file);
 void construct_mount_command(char* dst, char const* exe, char const* flags, char const* img);
 void construct_umount_command(char* dst, char const* exe, char const* flags, char const* img, bool spec_img);
 
-void remove_newline(char* line);
 void replace_char(char* line, char orig, char repl);
 
 #ifdef __cplusplus

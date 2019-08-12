@@ -6,9 +6,11 @@ SRC_DIR := src
 LIB_DIR := lib
 LIB := $(LIB_DIR)/librotwk.a
 
+REGSRC := $(SRC_DIR)/input.cc
 SRC := $(wildcard $(SRC_DIR)/*.c)
-CXXSRC :=$(wildcard $(SRC_DIR)/*.cc)
+CXXSRC :=$(filter-out $(REGSRC), $(wildcard $(SRC_DIR)/*.cc))
 
+REGOBJ := $(addsuffix .o, $(basename $(REGSRC)))
 OBJ := $(addsuffix .o, $(basename $(SRC)))
 CXXOBJ := $(addsuffix .o, $(basename $(CXXSRC))) 
 
@@ -30,7 +32,7 @@ INC = -I src/
 
 CFLAGS := $(CFLAGS) -c -std=c11 -O3 -Wall -Wextra -pedantic -fopenmp $(INC)
 CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -fopenmp $(INC)
-LDFLAGS = -static-libgcc -static-libstdc++ -lssl -lcrypto -lgomp -lstdc++ -lpthread 
+LDFLAGS = -static-libgcc -static-libstdc++ -lssl -lcrypto -lgomp -lstdc++ -lpthread -L lib/ -l:libinput.a
 
 ifeq ($(OS), Windows_NT)
     INC += -I "C:/msys64/mingw64/include"
@@ -54,8 +56,8 @@ $(MOC_OBJ): $(MOC_HEADERS)
 $(MOC_HEADERS): $(QT_HEADERS)
 	$(MOC) $(INC) $< -o $@
 
-$(LIB): $(OBJ) setup
-	ar rcs $(LIB) $(OBJ)
+$(LIB): $(REGOBJ) $(OBJ) setup
+	ar rcs $(LIB) $(REGOBJ) $(OBJ) 
 
 release: CXXFLAGS += -O3
 release: $(BIN)
@@ -63,7 +65,7 @@ release: $(BIN)
 lib: $(LIB)
 
 clean:
-	rm -f $(OBJ) $(BIN) $(LIB) $(MOC_HEADERS) $(MOC_OBJ) $(CXXOBJ); rm -rf $(LIB_DIR) $(MOC_DIR)
+	rm -f $(OBJ) $(BIN) $(LIB) $(MOC_HEADERS) $(MOC_OBJ) $(CXXOBJ) $(REGOBJ); rm -rf $(LIB_DIR) $(MOC_DIR)
 
 run: $(BIN)
 	./$(BIN)
