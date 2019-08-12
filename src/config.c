@@ -10,8 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BIG_TABLE_SIZE 3
-
 static int progress = 0, total_work = -1;
 
 void header_name(char* line, char* header);
@@ -376,7 +374,7 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
         }
         else if(strcmp(header, "game") == 0) {
             if(strcmp(key, "path") == 0) 
-                strcpy(cfg->game_path, value);
+                strncpy(cfg->game_path, value, sizeof cfg->game_path);
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
@@ -390,7 +388,7 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
             if(strcmp(key, "available") == 0)
                 cfg->botta_available = strcmp(value, "true") == 0;
             else if(strcmp(key, "path") == 0)
-                strcpy(cfg->botta_path, value);
+                strncpy(cfg->botta_path, value, sizeof cfg->botta_path);
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
@@ -398,13 +396,21 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
             if(strcmp(key, "automatic") == 0)
                 cfg->automatic_mount = strcmp(value, "true") == 0;
             else if(strcmp(key, "mount_exe") == 0)
-                strcpy(cfg->mount_exe, value);
+                strncpy(cfg->mount_exe, value, sizeof cfg->mount_exe);
             else if(strcmp(key, "disc_image") == 0)
-                strcpy(cfg->disc_image, value);
-            else if(strcmp(key, "mount_flags") == 0)
-                strcpy(cfg->mount_flags, value);
-            else if(strcmp(key, "umount_flags") == 0)
-                strcpy(cfg->umount_flags, value);
+                strncpy(cfg->disc_image, value, sizeof cfg->disc_image);
+            else if(strcmp(key, "mount_flags") == 0) {
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wstringop-truncation"
+                strncpy(cfg->mount_flags, value, sizeof cfg->mount_flags - 1);
+                #pragma GCC diagnostic pop
+            }
+            else if(strcmp(key, "umount_flags") == 0) {
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wstringop-truncation"
+                strncpy(cfg->umount_flags, value, sizeof cfg->umount_flags - 1);
+                #pragma GCC diagnostic pop
+            }
             else if(strcmp(key, "mount_cmd") == 0)
                 sys_format(cfg->mount_cmd, value);
             else if(strcmp(key, "umount_cmd") == 0)
@@ -484,11 +490,15 @@ bool read_big_entry(char* line, struct big_file* entry) {
     get_table_value(line, value);
 
     if(strcmp(key, "name") == 0)
-        strcpy(entry->name, value);
+        strncpy(entry->name, value, sizeof entry->name);
     else if(strcmp(key, "checksum") == 0)
-        strcpy(entry->checksum, value);
-    else if(strcmp(key, "extension") == 0)
-        strcpy(entry->extension, value);
+        strncpy(entry->checksum, value, sizeof entry->checksum);
+    else if(strcmp(key, "extension") == 0) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wstringop-truncation"
+        strncpy(entry->extension, value, sizeof entry->extension - 1);
+        #pragma GCC diagnostic pop
+    }
     else 
         return false;
 
@@ -506,9 +516,9 @@ bool read_dat_entry(char* line, struct dat_file* entry) {
     get_table_value(line, value);
 
     if(strcmp(key, "name") == 0)
-        strcpy(entry->name, value);
+        strncpy(entry->name, value, sizeof entry->name);
     else if(strcmp(key, "checksum") == 0)
-        strcpy(entry->checksum, value);
+        strncpy(entry->checksum, value, sizeof entry->checksum);
     else 
         return false;
 

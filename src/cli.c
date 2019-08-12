@@ -103,22 +103,22 @@ int cli_main(int argc, char** argv) {
         return 1;
     }
 
-    strcpy(rotwk_toml, cwd);
-    strcat(rotwk_toml, "/toml/rotwk.toml");
+    strncpy(rotwk_toml, cwd, sizeof rotwk_toml - 1);
+    strncat(rotwk_toml, "/toml/rotwk.toml", sizeof rotwk_toml - strlen(cwd) - 1);
 
-    strcpy(edain_toml, cwd);
-    strcat(edain_toml, "/toml/edain.toml");
+    strncpy(edain_toml, cwd, sizeof edain_toml - 1);
+    strncat(edain_toml, "/toml/edain.toml", sizeof edain_toml - strlen(cwd) - 1);
 
-    strcpy(botta_toml, cwd);
-    strcat(botta_toml, "/toml/botta.toml");
+    strncpy(botta_toml, cwd, sizeof botta_toml - 1);
+    strncat(botta_toml, "/toml/botta.toml", sizeof botta_toml - strlen(cwd) - 1);
 
     chdir(ld.game_path);
 
-    strcpy(launch_cmd, ld.game_path);
-    strcat(launch_cmd, "/lotrbfme2ep1.exe");
+    strncpy(launch_cmd, ld.game_path, sizeof launch_cmd - 1);
+    strncat(launch_cmd, "/lotrbfme2ep1.exe", sizeof launch_cmd - strlen(ld.game_path) - 1);
 
-    strcpy(dat_file, ld.game_path);
-    strcat(dat_file, "/game.dat");
+    strncpy(dat_file, ld.game_path, sizeof dat_file - 1);
+    strncat(dat_file, "/game.dat", sizeof dat_file - strlen(ld.game_path) - 1);
 
     md5sum(dat_file, game_csum);
     new_dat_enabled = strcmp(game_csum, NEW_DAT_CSUM) == 0;
@@ -228,8 +228,8 @@ int cli_main(int argc, char** argv) {
             }
 
             if(active_config == botta) {
-                strcpy(launch_cmd, ld.botta_path);
-                strcat(launch_cmd, "/BotTa.lnk");
+                strncpy(launch_cmd, ld.botta_path, sizeof launch_cmd - 1);
+                strncat(launch_cmd, "/BotTa.lnk", sizeof launch_cmd - strlen(ld.botta_path) - 1);
             }
 
             sys_format(launch, launch_cmd);
