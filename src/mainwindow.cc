@@ -264,8 +264,12 @@ void MainWindow::on_pref_save_clicked() {
         strcpy(data_.umount_flags, ui->umount_opt->text().toLatin1().data());
         data_.umount_imspec = ui->imspec_umount->isChecked();
 
-        construct_mount_command(data_.mount_cmd, data_.mount_exe, data_.mount_flags, data_.disc_image);
-        construct_umount_command(data_.umount_cmd, data_.mount_exe, data_.umount_flags, data_.disc_image, data_.umount_imspec);
+        char buf[PATH_SIZE];
+        construct_mount_command(buf, data_.mount_exe, data_.mount_flags, data_.disc_image);
+        sys_format(data_.mount_cmd, buf);
+        construct_umount_command(buf, data_.mount_exe, data_.umount_flags, data_.disc_image, data_.umount_imspec);
+        sys_format(data_.umount_cmd, buf);
+
     }
     data_.botta_available = ui->botta_installed->isChecked();
     if(data_.botta_available)
