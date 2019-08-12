@@ -249,22 +249,19 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
         }
         #pragma omp for schedule(dynamic)
         for(i = 0; i < swap_size; i++) {
-            strcpy(toggled, swap[i].name);
-            set_extension(toggled, OTHER_EXT);
-
             if(swap[i].state == active) {
                 if(config_enabled && !invert_dat_files) {
                     if(!md5sum(swap[i].name, swap[i].checksum))
                         success = false;
                 }
                 else {
-                    if(!md5sum(toggled, swap[i].checksum))
+                    if(!md5sum(swap[i].disabled, swap[i].checksum))
                         success = false;
                 }
             }
             else {
                 if(config_enabled && !invert_dat_files) {
-                    if(!md5sum(toggled, swap[i].checksum))
+                    if(!md5sum(swap[i].disabled, swap[i].checksum))
                         success = false;
                 }
                 else if(!md5sum(swap[i].name, swap[i].checksum))
