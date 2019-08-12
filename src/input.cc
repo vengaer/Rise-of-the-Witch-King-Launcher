@@ -1,4 +1,5 @@
 #include "input.h"
+#include "string_view_regex.h"
 #include <stdio.h>
 #include <regex>
 #include <string>
@@ -8,21 +9,6 @@ bool is_blank_line(std::string_view view);
 bool is_header(std::string_view view);
 bool is_subheader(std::string_view view);
 bool is_key_value_pair(std::string_view view);
-
-using svmatch = std::match_results<std::string_view::const_iterator>;
-using svsub_match = std::sub_match<std::string_view::const_iterator>;
-
-inline std::string_view get_sv(svsub_match const& m) {
-    return std::string_view(m.first, m.length());
-}
-
-inline bool regex_match(std::string_view sv, svmatch& m, std::regex const& e, std::regex_constants::match_flag_type flags = std::regex_constants::match_default) {
-    return std::regex_match(std::begin(sv), std::end(sv), m, e, flags);
-}
-
-inline bool regex_match(std::string_view sv, std::regex const& e, std::regex_constants::match_flag_type flags = std::regex_constants::match_default) {
-    return std::regex_match(std::begin(sv), std::end(sv), e, flags);
-}
 
 enum line_contents determine_line_contents(char const* line) {
     std::string const contents{line};
@@ -47,9 +33,8 @@ void version_introduced_in(char* dst, char const* filename) {
     std::regex const rgx{"(v[0-9]\\.[0-9]\\.[0-9](\\.[0-9])?)\\.[a-zA-Z]{1,4}$"};
     svmatch match;
 
-    if(std::regex_search(std::begin(view), std::end(view), match, rgx) && match.size() > 1) {
+    if(std::regex_search(std::begin(view), std::end(view), match, rgx) && match.size() > 1)
         memcpy(dst, match[1].str().data(), match[1].length());
-    }
     else
         dst[0] = '\0';
 }
