@@ -3,7 +3,7 @@
 #include "bitop.h"
 #include "concurrency_utils.h"
 #include "fsys.h"
-#include "input.h"
+#include "pattern.h"
 #include <ctype.h>
 #include <omp.h>
 #include <stdio.h>

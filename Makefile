@@ -6,7 +6,7 @@ SRC_DIR := src
 LIB_DIR := lib
 LIB := $(LIB_DIR)/librotwk.a
 
-REGSRC := $(SRC_DIR)/input.cc
+REGSRC := $(SRC_DIR)/pattern.cc
 SRC := $(wildcard $(SRC_DIR)/*.c)
 CXXSRC :=$(filter-out $(REGSRC), $(wildcard $(SRC_DIR)/*.cc))
 

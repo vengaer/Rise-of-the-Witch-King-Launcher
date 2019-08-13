@@ -1,7 +1,7 @@
 #include "fsys.h"
 #include "concurrency_utils.h"
 #include "config.h"
-#include "input.h"
+#include "pattern.h"
 #include <openssl/md5.h>
 #include <omp.h>
 #include <stdio.h>
