@@ -10,6 +10,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Turn GCC diagnostics on/off */
+#if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402
+    #define GCC_DIAG_STR(s) #s
+    #define GCC_DIAG_STRCAT(x,y) GCC_DIAG_STR(x ## y)
+    #define GCC_DIAG_DO_PRAGMA(x) _Pragma(#x)
+    #define GCC_DIAG_PRAGMA(x) GCC_DIAG_DO_PRAGMA(GCC diagnostic x)
+    #if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
+        #define GCC_DIAG_OFF(x) GCC_DIAG_PRAGMA(push) \
+            GCC_DIAG_PRAGMA(ignored GCC_DIAG_STRCAT(-W, x))
+        #define GCC_DIAG_ON(x) GCC_DIAG_PRAGMA(pop)
+    #else
+        #define GCC_DIAG_OFF(x) GCC_DIAG_PRAGMA(ignored GCC_DIAG_STRCAT(-W,x))
+        #define GCC_DIAG_ON(x) GCC_DIAG_PRAGMA(warning GCC_DIAG_STRCAT(-W,x))
+    #endif
+#else
+    #define GCC_DIAG_OFF(x)
+    #define GCC_DIAG_ON(x)
+#endif
+
 static int progress = 0, total_work = -1;
 
 void header_name(char* line, char* header);
@@ -208,7 +227,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
     #pragma omp parallel reduction(&& : success)
     {
         size_t i;
-        char toggled[FSTR_SIZE];
+        char toggled[ENTRY_SIZE];
         bool config_enabled;
 
         #pragma omp for schedule(dynamic)
@@ -330,7 +349,7 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
 
     char line[PATH_SIZE];
     char header[HEADER_SIZE];
-    char key[OPT_SIZE];
+    char key[HEADER_SIZE];
     char value[PATH_SIZE];
     enum line_contents contents;
     unsigned line_number = 0;
@@ -368,10 +387,9 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
             else if(strcmp(key, "verify_active") == 0)
                 cfg->verify_active = strcmp(value, "true") == 0;
             else if(strcmp(key, "patch_version") == 0) {
-                #pragma GCC diagnostic push
-                #pragma GCC diagnostic ignored "-Wstringop-truncation"
+                GCC_DIAG_OFF(stringop-truncation)
                 strncpy(cfg->patch_version, value, sizeof cfg->patch_version - 1);
-                #pragma GCC diagnostic pop
+                GCC_DIAG_ON(stringop-truncation)
             }
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
@@ -404,16 +422,14 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
             else if(strcmp(key, "disc_image") == 0)
                 strncpy(cfg->disc_image, value, sizeof cfg->disc_image);
             else if(strcmp(key, "mount_flags") == 0) {
-                #pragma GCC diagnostic push
-                #pragma GCC diagnostic ignored "-Wstringop-truncation"
+                GCC_DIAG_OFF(stringop-truncation)
                 strncpy(cfg->mount_flags, value, sizeof cfg->mount_flags - 1);
-                #pragma GCC diagnostic pop
+                GCC_DIAG_ON(stringop-truncation)
             }
             else if(strcmp(key, "umount_flags") == 0) {
-                #pragma GCC diagnostic push
-                #pragma GCC diagnostic ignored "-Wstringop-truncation"
+                GCC_DIAG_OFF(stringop-truncation)
                 strncpy(cfg->umount_flags, value, sizeof cfg->umount_flags - 1);
-                #pragma GCC diagnostic pop
+                GCC_DIAG_ON(stringop-truncation)
             }
             else if(strcmp(key, "mount_cmd") == 0)
                 sys_format(cfg->mount_cmd, value);
@@ -487,8 +503,8 @@ bool read_big_entry(char* line, struct big_file* entry) {
     if(determine_line_contents(line) != content_key_value_pair)
         return false;
 
-    char key[OPT_SIZE];
-    char value[FSTR_SIZE];
+    char key[HEADER_SIZE];
+    char value[ENTRY_SIZE];
 
     get_table_key(line, key);
     get_table_value(line, value);
@@ -498,10 +514,9 @@ bool read_big_entry(char* line, struct big_file* entry) {
     else if(strcmp(key, "checksum") == 0)
         strncpy(entry->checksum, value, sizeof entry->checksum);
     else if(strcmp(key, "extension") == 0) {
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wstringop-truncation"
+        GCC_DIAG_OFF(stringop-truncation)
         strncpy(entry->extension, value, sizeof entry->extension - 1);
-        #pragma GCC diagnostic pop
+        GCC_DIAG_ON(stringop-trucation)
     }
     else 
         return false;
@@ -513,8 +528,8 @@ bool read_dat_entry(char* line, struct dat_file* entry) {
     if(determine_line_contents(line) != content_key_value_pair)
         return false;
 
-    char key[OPT_SIZE];
-    char value[FSTR_SIZE];
+    char key[HEADER_SIZE];
+    char value[ENTRY_SIZE];
 
     get_table_key(line, key);
     get_table_value(line, value);
@@ -525,8 +540,11 @@ bool read_dat_entry(char* line, struct dat_file* entry) {
         strncpy(entry->checksum, value, sizeof entry->checksum);
     else if(strcmp(key, "disabled") == 0)
         strncpy(entry->disabled, value, sizeof entry->disabled);
-    else if(strcmp(key, "introduced") == 0)
+    else if(strcmp(key, "introduced") == 0) {
+        GCC_DIAG_OFF(stringop-truncation)
         strncpy(entry->introduced, value, sizeof entry->introduced);
+        GCC_DIAG_ON(stringop-truncation)
+    }
     else 
         return false;
 
