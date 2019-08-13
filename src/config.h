@@ -34,6 +34,7 @@ void construct_umount_command(char* dst, char const* exe, char const* flags, cha
 
 void replace_char(char* line, char orig, char repl);
 void file_stem(char* dst, char const* file);
+void parent_path(char* dst, char const* file);
 
 #ifdef __cplusplus
 }

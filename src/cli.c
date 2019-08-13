@@ -23,9 +23,18 @@ void print_help(void) {
     fprintf(stderr, "** Available only with the -u flag\n");
 }
 
+void get_launcher_dir(char* dst, char const* launcher_path) {
+    char arg[PATH_SIZE];
+
+    strncpy(arg, launcher_path, sizeof arg - 1);
+    replace_char(arg, '\\', '/');
+
+    parent_path(dst, arg);
+}
+
 int cli_main(int argc, char** argv) {
-    static char const config_file[] = "toml/launcher.toml";
-    char const* lcfg = config_file;
+    char config_file[PATH_SIZE];
+    char launcher_dir[PATH_SIZE];
 
     bool r_flag = false, s_flag = false, u_flag = false, h_flag = false;
     char *scfg = NULL, *ucfg = NULL;
@@ -34,7 +43,6 @@ int cli_main(int argc, char** argv) {
     bool new_dat_enabled;
     struct latch latch;
 
-    char cwd[PATH_SIZE];
     char rotwk_toml[PATH_SIZE];
     char edain_toml[PATH_SIZE];
     char botta_toml[PATH_SIZE];
@@ -42,6 +50,13 @@ int cli_main(int argc, char** argv) {
     char launch[PATH_SIZE];
     char dat_file[PATH_SIZE];
     char game_csum[ENTRY_SIZE];
+
+    struct launcher_data ld;
+
+    get_launcher_dir(launcher_dir, argv[0]);
+    snprintf(config_file, sizeof config_file, "%stoml/launcher.toml", launcher_dir);
+
+    char const* lcfg = config_file;
 
     while((opt = getopt(argc, argv, ":r:s:u:c:hnv")) != -1) {
         switch(opt) {
@@ -88,7 +103,6 @@ int cli_main(int argc, char** argv) {
         return 1;
     }
 
-    struct launcher_data ld;
     if(!file_exists(lcfg)) {
         fprintf(stderr, "Warning: no config file found. Using default values\n");
         launcher_data_init(&ld);
@@ -98,19 +112,14 @@ int cli_main(int argc, char** argv) {
 
     show_console(ld.show_console);
 
-    if(!getcwd(cwd, sizeof(cwd))) {
-        fprintf(stderr, "Failed to get working directory\n");
-        return 1;
-    }
+    strncpy(rotwk_toml, launcher_dir, sizeof rotwk_toml);
+    strncat(rotwk_toml, "/toml/rotwk.toml", sizeof rotwk_toml - strlen(launcher_dir));
 
-    strncpy(rotwk_toml, cwd, sizeof rotwk_toml);
-    strncat(rotwk_toml, "/toml/rotwk.toml", sizeof rotwk_toml - strlen(cwd));
+    strncpy(edain_toml, launcher_dir, sizeof edain_toml - 1);
+    strncat(edain_toml, "/toml/edain.toml", sizeof edain_toml - strlen(launcher_dir) - 1);
 
-    strncpy(edain_toml, cwd, sizeof edain_toml - 1);
-    strncat(edain_toml, "/toml/edain.toml", sizeof edain_toml - strlen(cwd) - 1);
-
-    strncpy(botta_toml, cwd, sizeof botta_toml - 1);
-    strncat(botta_toml, "/toml/botta.toml", sizeof botta_toml - strlen(cwd) - 1);
+    strncpy(botta_toml, launcher_dir, sizeof botta_toml - 1);
+    strncat(botta_toml, "/toml/botta.toml", sizeof botta_toml - strlen(launcher_dir) - 1);
 
     chdir(ld.game_path);
 
@@ -125,7 +134,7 @@ int cli_main(int argc, char** argv) {
 
     /* Update */
     sync = 1;
-    if(strcmp(ucfg, "all") == 0) {
+    if(ucfg && strcmp(ucfg, "all") == 0) {
         if(ld.edain_available)
             ++sync;
         if(ld.botta_available)
@@ -133,7 +142,7 @@ int cli_main(int argc, char** argv) {
     }
     latch_init(&latch, sync);
 
-    if(u_flag) {
+    if(ucfg && u_flag) {
         if(strcmp(ucfg, "rotwk") == 0) 
             update_game_config(rotwk_toml, !new_dat_enabled, &latch, &ld);
         else if(strcmp(ucfg, "edain") == 0) {
@@ -181,7 +190,7 @@ int cli_main(int argc, char** argv) {
 
     enum configuration active_config;
 
-    if(r_flag || s_flag) {
+    if(r_flag || (scfg && s_flag)) {
         /* Set active config */
         if(strcmp(scfg, "rotwk") == 0) {
             set_active_configuration(rotwk_toml, ld.patch_version, true, ld.verify_active);
