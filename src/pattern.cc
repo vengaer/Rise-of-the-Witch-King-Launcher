@@ -30,7 +30,7 @@ void version_introduced_in(char* dst, char const* filename) {
     std::string const contents{filename};
     std::string_view view{contents};
 
-    std::regex const rgx{"(v[0-9]\\.[0-9]\\.[0-9](\\.[0-9])?)\\.[a-zA-Z]{1,4}$"};
+    std::regex const rgx{"(v[0-9](\\.[0-9]){2,3})\\.[a-zA-Z]{1,4}$"};
     svmatch match;
 
     if(std::regex_search(std::begin(view), std::end(view), match, rgx) && match.size() > 1)
