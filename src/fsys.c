@@ -120,7 +120,7 @@ void toggle_big_files(struct big_file* enable, size_t enable_size,
     #pragma omp parallel 
     {
         size_t i;
-        char in_ver[OPT_SIZE];
+        char in_ver[HEADER_SIZE];
 
         #pragma omp for schedule(static)
         for(i = 0; i < enable_size; i++) {
@@ -141,8 +141,8 @@ void toggle_big_files(struct big_file* enable, size_t enable_size,
 }
 
 void enable_big_file(struct big_file const* file, bool verify_active) {
-    char toggled[FSTR_SIZE];
-    char hash[FSTR_SIZE];
+    char toggled[ENTRY_SIZE];
+    char hash[ENTRY_SIZE];
 
     strcpy(toggled, file->name);
     set_extension(toggled, file->extension);
@@ -150,7 +150,7 @@ void enable_big_file(struct big_file const* file, bool verify_active) {
     if(file_exists(file->name) && verify_active) {
         md5sum(file->name, hash);
         if(strcmp(file->checksum, hash) != 0) {
-            char invalid[FSTR_SIZE];
+            char invalid[ENTRY_SIZE];
             strcpy(invalid, file->name);
             set_extension(invalid, INVALID_EXT);
             SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", file->name, invalid)
@@ -168,8 +168,8 @@ void enable_big_file(struct big_file const* file, bool verify_active) {
 }
 
 void disable_big_file(struct big_file const* file, bool verify_active) {
-    char toggled[FSTR_SIZE];
-    char hash[FSTR_SIZE];
+    char toggled[ENTRY_SIZE];
+    char hash[ENTRY_SIZE];
 
     strcpy(toggled, file->name);
     set_extension(toggled, file->extension);
@@ -177,7 +177,7 @@ void disable_big_file(struct big_file const* file, bool verify_active) {
     if(file_exists(toggled) && verify_active) {
         md5sum(toggled, hash);
         if(strcmp(file->checksum, hash) != 0) {
-            char invalid[FSTR_SIZE];
+            char invalid[ENTRY_SIZE];
             strcpy(invalid, toggled);
             set_extension(invalid, INVALID_EXT);
             SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid)
@@ -196,9 +196,9 @@ void disable_big_file(struct big_file const* file, bool verify_active) {
 
 bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* target_version, bool use_version_dat) {
     size_t i, j;
-    char stem[FSTR_SIZE];
-    char tmp[FSTR_SIZE];
-    char hash[FSTR_SIZE];
+    char stem[ENTRY_SIZE];
+    char tmp[ENTRY_SIZE];
+    char hash[ENTRY_SIZE];
     struct dat_file const* activate;
     enum file_state target_state;
 
@@ -273,7 +273,7 @@ void revert_changes(struct big_file* enable, size_t enable_size,
     toggle_big_files(disable, disable_size, enable, enable_size, target_version, false);
 
     char const* swp = "game.swp";
-    char toggled[FSTR_SIZE];
+    char toggled[ENTRY_SIZE];
     strcpy(toggled, swp);
     set_extension(toggled, DAT_EXT);
     if(file_exists(swp))

@@ -41,7 +41,7 @@ int cli_main(int argc, char** argv) {
     char launch_cmd[PATH_SIZE];
     char launch[PATH_SIZE];
     char dat_file[PATH_SIZE];
-    char game_csum[FSTR_SIZE];
+    char game_csum[ENTRY_SIZE];
 
     while((opt = getopt(argc, argv, ":r:s:u:c:hnv")) != -1) {
         switch(opt) {
