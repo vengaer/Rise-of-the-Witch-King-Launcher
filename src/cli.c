@@ -36,6 +36,10 @@ int get_launcher_dir(char* dst, char const* launcher_path) {
     return 0;
 }
 
+void cli_error_diag(char const* info) {
+    fprintf(stderr, "\nError: %s\n\n", info);
+}
+
 int cli_main(int argc, char** argv) {
     char config_file[PATH_SIZE];
     char launcher_dir[PATH_SIZE];
@@ -58,7 +62,8 @@ int cli_main(int argc, char** argv) {
     struct launcher_data ld;
 
     if(get_launcher_dir(launcher_dir, argv[0]) < 0) {
-        //TODO:: handle error
+        fprintf(stderr, "Could not get launcher directory\n");
+        return 1;
     }
     snprintf(config_file, sizeof config_file, "%stoml/launcher.toml", launcher_dir);
 
@@ -113,46 +118,60 @@ int cli_main(int argc, char** argv) {
         fprintf(stderr, "Warning: no config file found. Using default values\n");
         launcher_data_init(&ld);
     }
-    else 
-        read_launcher_config(&ld, lcfg);
+    else  {
+        if(!read_launcher_config(&ld, lcfg)) {
+            fprintf(stderr, "Failed to read launcher config, terminating\n");
+            return 1;
+        }
+    }
 
     show_console(ld.show_console);
 
     if(strscpy(rotwk_toml, launcher_dir, sizeof rotwk_toml) < 0) {
-        //TODO: handle error
+        fprintf(stderr, "Launcher path overflowed the rotwk toml buffer\n");
+        return 1;
     }
     if(strscat(rotwk_toml, "/toml/rotwk.toml", sizeof rotwk_toml) < 0) {
-        // TODO: handle error
+        fprintf(stderr, "rotwk toml overflowed the buffer\n");
+        return 1;
     }
 
     if(strscpy(edain_toml, launcher_dir, sizeof edain_toml) < 0) {
-        // TODO: handle error
+        fprintf(stderr, "Launcher path overflowed the edain toml buffer\n");
+        return 1;
     }
     if(strscat(edain_toml, "/toml/edain.toml", sizeof edain_toml) < 0) {
-        // TODO: handle error
+        fprintf(stderr, "edain toml overflowed the buffer\n");
+        return 1;
     }
 
     if(strscpy(botta_toml, launcher_dir, sizeof botta_toml) < 0) {
-        // TODO: handle error
+        fprintf(stderr, "Launcher path overflowed the botta toml buffer\n");
+        return 1;
     }
     if(strscat(botta_toml, "/toml/botta.toml", sizeof botta_toml) < 0) {
-        // TODO: handle error
+        fprintf(stderr, "botta toml overflowed the buffer\n");
+        return 1;
     }
 
     chdir(ld.game_path);
 
     if(strscpy(launch_cmd, ld.game_path, sizeof launch_cmd) < 0) {
-        // TODO: handle error
+        fprintf(stderr, "Game path overflowed the launch command buffer\n");
+        return 1;
     }
     if(strscat(launch_cmd, "/lotrbfme2ep1.exe", sizeof launch_cmd) < 0) {
-        // TODO: handle error
+        fprintf(stderr, "Exe path overflowed the launch command buffer\n");
+        return 1;
     }
 
     if(strscpy(dat_file, ld.game_path, sizeof dat_file) < 0) {
-        // TODO: handle error
+        fprintf(stderr, "Game path overflowed the game.dat buffer\n");
+        return 1;
     }
     if(strscat(dat_file, "/game.dat", sizeof dat_file) < 0) {
-        // TODO: handle error
+        fprintf(stderr, "game.dat path overflowed the buffer\n");
+        return 1;
     }
     strncat(dat_file, "/game.dat", sizeof dat_file - strlen(ld.game_path) - 1);
 
@@ -265,10 +284,22 @@ int cli_main(int argc, char** argv) {
 
             if(active_config == botta) {
                 if(strscpy(launch_cmd, ld.botta_path, sizeof launch_cmd) < 0) {
-                    // TODO: handle error
+                    fprintf(stderr, "Botta path overflowed the launch buffer\n");
+                    /* Unmount if necessary */
+                    if(ld.automatic_mount && mounting_necessary) {
+                        if(system(ld.umount_cmd) != 0)
+                            fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
+                    }
+                    return 1;
                 }
                 if(strscat(launch_cmd, "/BotTa.lnk", sizeof launch_cmd) < 0) {
-                    // TODO: handle error
+                    fprintf(stderr, "Botta lnk overflowed the buffer\n");
+                    /* Unmount if necessary */
+                    if(ld.automatic_mount && mounting_necessary) {
+                        if(system(ld.umount_cmd) != 0)
+                            fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
+                    }
+                    return 1;
                 }
             }
 

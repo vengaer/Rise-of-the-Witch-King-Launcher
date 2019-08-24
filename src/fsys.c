@@ -52,18 +52,23 @@ void set_active_configuration(char const* filename, char const* target_version, 
     struct big_file* disable = malloc(disable_cap * sizeof(struct big_file));
     struct dat_file* swap = malloc(swap_cap * sizeof(struct dat_file));
 
-    read_game_config(filename, &enable, &enable_cap, &enable_size,
-                               &disable, &disable_cap, &disable_size,
-                               &swap, &swap_cap, &swap_size);
+    bool const read_success = read_game_config(filename, &enable, &enable_cap, &enable_size,
+                                                         &disable, &disable_cap, &disable_size,
+                                                         &swap, &swap_cap, &swap_size);
 
 
-    toggle_big_files(enable, enable_size, disable, disable_size, target_version, verify_active);
-    bool const swap_successful = handle_swaps(swap, swap_size, target_version, use_version_dat);
 
-    if(!swap_successful) {
-        fprintf(stderr, "Failed to swap .dat files, reverting\n");
-        revert_changes(enable, enable_size, disable, disable_size, target_version);
+    if(read_success) {
+        toggle_big_files(enable, enable_size, disable, disable_size, target_version, verify_active);
+        bool const swap_successful = handle_swaps(swap, swap_size, target_version, use_version_dat);
+
+        if(!swap_successful) {
+            fprintf(stderr, "Failed to swap .dat files, reverting\n");
+            revert_changes(enable, enable_size, disable, disable_size, target_version);
+        }
     }
+    else
+        fprintf(stderr, "Errors encountered while reading game config, no changes will be made\n");
 
     free(enable);
     free(disable);

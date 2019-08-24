@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "atomic.h"
 #include "bitop.h"
-#include "concurrency_utils.h"
 #include "command.h"
 #include "config.h"
 #include "fsys.h"
@@ -24,6 +23,12 @@
 #if defined __CYGWIN__ || defined _WIN32
 #include <windows.h>
 #endif
+
+void gui_error_diag(char const* info) {
+    QMessageBox box;
+    box.critical(0, "Error", info);
+    box.setFixedSize(500, 200);
+}
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow{parent}, ui{new Ui::MainWindow}, launch_img_{"images/argonath.jpg"}, upd_img_{"images/minas_tirith.jpg"} {
     ui->setupUi(this);

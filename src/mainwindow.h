@@ -12,6 +12,8 @@ namespace Ui {
     class MainWindow;
 }
 
+void gui_error_diag(char const* info);
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
