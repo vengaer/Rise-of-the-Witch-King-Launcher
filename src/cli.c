@@ -24,13 +24,16 @@ void print_help(void) {
     fprintf(stderr, "** Available only with the -u flag\n");
 }
 
-void get_launcher_dir(char* dst, char const* launcher_path) {
+int get_launcher_dir(char* dst, char const* launcher_path) {
     char arg[PATH_SIZE];
 
-    strncpy(arg, launcher_path, sizeof arg - 1);
+    if(strscpy(arg, launcher_path, sizeof arg) < 0)
+        return -E2BIG;
+
     replace_char(arg, '\\', '/');
 
     parent_path(dst, arg);
+    return 0;
 }
 
 int cli_main(int argc, char** argv) {
@@ -54,7 +57,9 @@ int cli_main(int argc, char** argv) {
 
     struct launcher_data ld;
 
-    get_launcher_dir(launcher_dir, argv[0]);
+    if(get_launcher_dir(launcher_dir, argv[0]) < 0) {
+        //TODO:: handle error
+    }
     snprintf(config_file, sizeof config_file, "%stoml/launcher.toml", launcher_dir);
 
     char const* lcfg = config_file;
@@ -113,21 +118,42 @@ int cli_main(int argc, char** argv) {
 
     show_console(ld.show_console);
 
-    strncpy(rotwk_toml, launcher_dir, sizeof rotwk_toml);
-    strncat(rotwk_toml, "/toml/rotwk.toml", sizeof rotwk_toml - strlen(launcher_dir));
+    if(strscpy(rotwk_toml, launcher_dir, sizeof rotwk_toml) < 0) {
+        //TODO: handle error
+    }
+    if(strscat(rotwk_toml, "/toml/rotwk.toml", sizeof rotwk_toml) < 0) {
+        // TODO: handle error
+    }
 
-    strncpy(edain_toml, launcher_dir, sizeof edain_toml - 1);
-    strncat(edain_toml, "/toml/edain.toml", sizeof edain_toml - strlen(launcher_dir) - 1);
+    if(strscpy(edain_toml, launcher_dir, sizeof edain_toml) < 0) {
+        // TODO: handle error
+    }
+    if(strscat(edain_toml, "/toml/edain.toml", sizeof edain_toml) < 0) {
+        // TODO: handle error
+    }
 
-    strncpy(botta_toml, launcher_dir, sizeof botta_toml - 1);
-    strncat(botta_toml, "/toml/botta.toml", sizeof botta_toml - strlen(launcher_dir) - 1);
+    if(strscpy(botta_toml, launcher_dir, sizeof botta_toml) < 0) {
+        // TODO: handle error
+    }
+    if(strscat(botta_toml, "/toml/botta.toml", sizeof botta_toml) < 0) {
+        // TODO: handle error
+    }
 
     chdir(ld.game_path);
 
-    strncpy(launch_cmd, ld.game_path, sizeof launch_cmd);
-    strncat(launch_cmd, "/lotrbfme2ep1.exe", sizeof launch_cmd - strlen(ld.game_path));
+    if(strscpy(launch_cmd, ld.game_path, sizeof launch_cmd) < 0) {
+        // TODO: handle error
+    }
+    if(strscat(launch_cmd, "/lotrbfme2ep1.exe", sizeof launch_cmd) < 0) {
+        // TODO: handle error
+    }
 
-    strncpy(dat_file, ld.game_path, sizeof dat_file - 1);
+    if(strscpy(dat_file, ld.game_path, sizeof dat_file) < 0) {
+        // TODO: handle error
+    }
+    if(strscat(dat_file, "/game.dat", sizeof dat_file) < 0) {
+        // TODO: handle error
+    }
     strncat(dat_file, "/game.dat", sizeof dat_file - strlen(ld.game_path) - 1);
 
     md5sum(dat_file, game_csum);
@@ -238,8 +264,12 @@ int cli_main(int argc, char** argv) {
             }
 
             if(active_config == botta) {
-                strncpy(launch_cmd, ld.botta_path, sizeof launch_cmd);
-                strncat(launch_cmd, "/BotTa.lnk", sizeof launch_cmd - strlen(ld.botta_path));
+                if(strscpy(launch_cmd, ld.botta_path, sizeof launch_cmd) < 0) {
+                    // TODO: handle error
+                }
+                if(strscat(launch_cmd, "/BotTa.lnk", sizeof launch_cmd) < 0) {
+                    // TODO: handle error
+                }
             }
 
             sys_format(launch, launch_cmd);

@@ -387,16 +387,19 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
             else if(strcmp(key, "verify_active") == 0)
                 cfg->verify_active = strcmp(value, "true") == 0;
             else if(strcmp(key, "patch_version") == 0) {
-                GCC_DIAG_OFF(stringop-truncation)
-                strncpy(cfg->patch_version, value, sizeof cfg->patch_version - 1);
-                GCC_DIAG_ON(stringop-truncation)
+                if(strscpy(cfg->patch_version, value, sizeof cfg->patch_version) < 0) {
+                    // TODO: handle error
+                }
             }
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
         else if(strcmp(header, "game") == 0) {
-            if(strcmp(key, "path") == 0) 
-                strncpy(cfg->game_path, value, sizeof cfg->game_path);
+            if(strcmp(key, "path") == 0) {
+                if(strscpy(cfg->game_path, value, sizeof cfg->game_path) < 0) {
+                    // TODO: handle error
+                }
+            }
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
@@ -409,27 +412,36 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
         else if(strcmp(header, "botta") == 0) {
             if(strcmp(key, "available") == 0)
                 cfg->botta_available = strcmp(value, "true") == 0;
-            else if(strcmp(key, "path") == 0)
-                strncpy(cfg->botta_path, value, sizeof cfg->botta_path);
+            else if(strcmp(key, "path") == 0) {
+                if(strscpy(cfg->botta_path, value, sizeof cfg->botta_path) < 0) {
+                    // TODO: handle error
+                }
+            }
             else
                 fprintf(stderr, "Unknown key %s.\n", key);
         }
         else if(strcmp(header, "mount") == 0) {
             if(strcmp(key, "automatic") == 0)
                 cfg->automatic_mount = strcmp(value, "true") == 0;
-            else if(strcmp(key, "mount_exe") == 0)
-                strncpy(cfg->mount_exe, value, sizeof cfg->mount_exe);
-            else if(strcmp(key, "disc_image") == 0)
-                strncpy(cfg->disc_image, value, sizeof cfg->disc_image);
+            else if(strcmp(key, "mount_exe") == 0) {
+                if(strscpy(cfg->mount_exe, value, sizeof cfg->mount_exe) < 0) {
+                    // TODO: handle error
+                }
+            }
+            else if(strcmp(key, "disc_image") == 0) {
+                if(strscpy(cfg->disc_image, value, sizeof cfg->disc_image) < 0) {
+                    // TODO: handle error
+                }
+            }
             else if(strcmp(key, "mount_flags") == 0) {
-                GCC_DIAG_OFF(stringop-truncation)
-                strncpy(cfg->mount_flags, value, sizeof cfg->mount_flags - 1);
-                GCC_DIAG_ON(stringop-truncation)
+                if(strscpy(cfg->mount_flags, value, sizeof cfg->mount_flags) < 0) {
+                    // TODO: handle error
+                }
             }
             else if(strcmp(key, "umount_flags") == 0) {
-                GCC_DIAG_OFF(stringop-truncation)
-                strncpy(cfg->umount_flags, value, sizeof cfg->umount_flags - 1);
-                GCC_DIAG_ON(stringop-truncation)
+                if(strscpy(cfg->umount_flags, value, sizeof cfg->umount_flags) < 0) {
+                    // TODO: handle error
+                }
             }
             else if(strcmp(key, "mount_cmd") == 0)
                 sys_format(cfg->mount_cmd, value);
@@ -509,14 +521,20 @@ bool read_big_entry(char* line, struct big_file* entry) {
     get_table_key(line, key);
     get_table_value(line, value);
 
-    if(strcmp(key, "name") == 0)
-        strncpy(entry->name, value, sizeof entry->name);
-    else if(strcmp(key, "checksum") == 0)
-        strncpy(entry->checksum, value, sizeof entry->checksum);
+    if(strcmp(key, "name") == 0) {
+        if(strscpy(entry->name, value, sizeof entry->name) < 0) {
+            // TODO: handle error
+        }
+    }
+    else if(strcmp(key, "checksum") == 0) {
+        if(strscpy(entry->checksum, value, sizeof entry->checksum) < 0) {
+            // TODO: handle error
+        }
+    }
     else if(strcmp(key, "extension") == 0) {
-        GCC_DIAG_OFF(stringop-truncation)
-        strncpy(entry->extension, value, sizeof entry->extension - 1);
-        GCC_DIAG_ON(stringop-trucation)
+        if(strscpy(entry->extension, value, sizeof entry->extension) < 0) {
+            // TODO: handle error
+        }
     }
     else 
         return false;
@@ -534,16 +552,25 @@ bool read_dat_entry(char* line, struct dat_file* entry) {
     get_table_key(line, key);
     get_table_value(line, value);
 
-    if(strcmp(key, "name") == 0)
-        strncpy(entry->name, value, sizeof entry->name);
-    else if(strcmp(key, "checksum") == 0)
-        strncpy(entry->checksum, value, sizeof entry->checksum);
-    else if(strcmp(key, "disabled") == 0)
-        strncpy(entry->disabled, value, sizeof entry->disabled);
+    if(strcmp(key, "name") == 0) {
+        if(strscpy(entry->name, value, sizeof entry->name) < 0) {
+            // TODO: handle error
+        }
+    }
+    else if(strcmp(key, "checksum") == 0) {
+        if(strscpy(entry->checksum, value, sizeof entry->checksum) < 0) {
+            // TODO: handle error
+        }
+    }
+    else if(strcmp(key, "disabled") == 0) {
+        if(strscpy(entry->disabled, value, sizeof entry->disabled) < 0) {
+            // TODO: handle error
+        }
+    }
     else if(strcmp(key, "introduced") == 0) {
-        GCC_DIAG_OFF(stringop-truncation)
-        strncpy(entry->introduced, value, sizeof entry->introduced);
-        GCC_DIAG_ON(stringop-truncation)
+        if(strscpy(entry->introduced, value, sizeof entry->introduced) < 0) {
+            // TODO: handle error
+        }
     }
     else 
         return false;
