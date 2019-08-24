@@ -1,7 +1,6 @@
 #include "config.h"
 #include "atomic.h"
 #include "bitop.h"
-#include "concurrency_utils.h"
 #include "fsys.h"
 #include "pattern.h"
 #include "strutils.h"
@@ -73,14 +72,14 @@ void read_game_config(char const* filename,
 
     FILE* fp = fopen(filename, "r");
     if(!fp) {
-        SAFE_FPRINTF(stderr, "%s could not be opened\n", filename)
+        fprintf(stderr, "%s could not be opened\n", filename)
         return;
     }
     else {
         fseek(fp, 0, SEEK_END);
         size_t file_size = ftell(fp);
         if(file_size == 0) {
-            SAFE_FPRINTF(stderr, "%s is empty\n", filename)
+            fprintf(stderr, "%s is empty\n", filename)
             fclose(fp);
             return;
         }
@@ -92,7 +91,7 @@ void read_game_config(char const* filename,
         contents = determine_line_contents(line);
 
         if(contents == content_invalid) {
-            SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
+            fprintf(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
             fclose(fp);
             return;
         }
@@ -105,7 +104,7 @@ void read_game_config(char const* filename,
             else if(strcmp(subheader, "disable") == 0)
                 ++(*disable_size);
             else if(strcmp(subheader, "swap") != 0) {
-                SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\nUnknown subheader\n", line_number, filename, line);
+                fprintf(stderr, "Syntax error on line %u in %s: %s\nUnknown subheader\n", line_number, filename, line);
                 fclose(fp);
                 return;
             }
@@ -120,7 +119,7 @@ void read_game_config(char const* filename,
                 }
 
                 if(!read_big_entry(line, &(*enable)[(*enable_size) - 1])) {
-                    SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
+                    fprintf(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
                     fclose(fp);
                     return;
                 }
@@ -132,7 +131,7 @@ void read_game_config(char const* filename,
                 }
 
                 if(!read_big_entry(line, &(*disable)[(*disable_size) - 1])) {
-                    SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
+                    fprintf(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
                     fclose(fp);
                     return;
                 }
@@ -153,13 +152,13 @@ void read_game_config(char const* filename,
                     *swap_capacity *= 2;
                 }
                 if(!read_dat_entry(line, &(*swap)[(*swap_size) - 1])) {
-                    SAFE_FPRINTF(stderr, "Invalid entry '%s' in %s\n", line, filename)
+                    fprintf(stderr, "Invalid entry '%s' in %s\n", line, filename)
                     fclose(fp);
                     return;
                 }
             }
             else {
-                SAFE_FPRINTF(stderr, "Unknown header %s\n", header)
+                fprintf(stderr, "Unknown header %s\n", header)
                 fclose(fp);
                 return;
             }
@@ -176,7 +175,7 @@ void write_game_config(char const* filename,
 
     FILE* fp = fopen(filename, "w");
     if(!fp) {
-        SAFE_FPRINTF(stderr, "%s could not be opened\n", filename)
+        fprintf(stderr, "%s could not be opened\n", filename)
         return;
     }
     size_t i;
@@ -296,7 +295,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                                     swap, swap_size);
     }
     else 
-        SAFE_FPRINTF(stderr, "Errors were encountered during hashing of %s, config file will remain unchanged\n", filename)
+        fprintf(stderr, "Errors were encountered during hashing of %s, config file will remain unchanged\n", filename)
 
     free(enable);
     free(disable);
@@ -358,7 +357,7 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
         ++line_number;
         contents = determine_line_contents(line);
         if(contents == content_invalid) {
-            SAFE_FPRINTF(stderr, "Syntax error on line %u in %s: %s\n", line_number, file, line);
+            fprintf(stderr, "Syntax error on line %u in %s: %s\n", line_number, file, line);
             return false;
         }
         if(contents == content_blank)

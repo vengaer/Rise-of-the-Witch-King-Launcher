@@ -1,5 +1,4 @@
 #include "fsys.h"
-#include "concurrency_utils.h"
 #include "config.h"
 #include "pattern.h"
 #include "strutils.h"
@@ -25,7 +24,7 @@ bool md5sum(char const* filename, char* checksum) {
     FILE* fp = fopen(filename, "rb");
 
     if(!fp) {
-        SAFE_FPRINTF(stderr, "%s could not be opened for hashing\n", filename)
+        fprintf(stderr, "%s could not be opened for hashing\n", filename)
         return false;
     }
 
@@ -62,7 +61,7 @@ void set_active_configuration(char const* filename, char const* target_version, 
     bool const swap_successful = handle_swaps(swap, swap_size, target_version, use_version_dat);
 
     if(!swap_successful) {
-        SAFE_FPRINTF(stderr, "Failed to swap .dat files, reverting\n");
+        fprintf(stderr, "Failed to swap .dat files, reverting\n");
         revert_changes(enable, enable_size, disable, disable_size, target_version);
     }
 
@@ -154,7 +153,7 @@ void enable_big_file(struct big_file const* file, bool verify_active) {
             char invalid[ENTRY_SIZE];
             strcpy(invalid, file->name);
             set_extension(invalid, INVALID_EXT);
-            SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", file->name, invalid)
+            fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", file->name, invalid)
 
             rename(file->name, invalid);
         }
@@ -181,7 +180,7 @@ void disable_big_file(struct big_file const* file, bool verify_active) {
             char invalid[ENTRY_SIZE];
             strcpy(invalid, toggled);
             set_extension(invalid, INVALID_EXT);
-            SAFE_FPRINTF(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid)
+            fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid)
 
             rename(toggled, invalid);
         }
@@ -248,7 +247,7 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* tar
         md5sum(activate->disabled, hash);
 
         if(strcmp(activate->checksum, hash) != 0) {
-            SAFE_FPRINTF(stderr, "No file matches the desired checksum\n");
+            fprintf(stderr, "No file matches the desired checksum\n");
             free(done);
             return false;
         }
@@ -280,5 +279,5 @@ void revert_changes(struct big_file* enable, size_t enable_size,
     if(file_exists(swp))
         rename(swp, toggled);
     else
-        SAFE_FPRINTF(stderr, "Failed to restore .dat file\n")
+        fprintf(stderr, "Failed to restore .dat file\n")
 }
