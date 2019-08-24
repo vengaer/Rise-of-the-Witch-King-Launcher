@@ -10,25 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Turn GCC diagnostics on/off */
-#if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402
-    #define GCC_DIAG_STR(s) #s
-    #define GCC_DIAG_STRCAT(x,y) GCC_DIAG_STR(x ## y)
-    #define GCC_DIAG_DO_PRAGMA(x) _Pragma(#x)
-    #define GCC_DIAG_PRAGMA(x) GCC_DIAG_DO_PRAGMA(GCC diagnostic x)
-    #if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
-        #define GCC_DIAG_OFF(x) GCC_DIAG_PRAGMA(push) \
-            GCC_DIAG_PRAGMA(ignored GCC_DIAG_STRCAT(-W, x))
-        #define GCC_DIAG_ON(x) GCC_DIAG_PRAGMA(pop)
-    #else
-        #define GCC_DIAG_OFF(x) GCC_DIAG_PRAGMA(ignored GCC_DIAG_STRCAT(-W,x))
-        #define GCC_DIAG_ON(x) GCC_DIAG_PRAGMA(warning GCC_DIAG_STRCAT(-W,x))
-    #endif
-#else
-    #define GCC_DIAG_OFF(x)
-    #define GCC_DIAG_ON(x)
-#endif
-
 static int progress = 0, total_work = -1;
 
 void header_name(char* line, char* header);
@@ -72,14 +53,14 @@ void read_game_config(char const* filename,
 
     FILE* fp = fopen(filename, "r");
     if(!fp) {
-        fprintf(stderr, "%s could not be opened\n", filename)
+        fprintf(stderr, "%s could not be opened\n", filename);
         return;
     }
     else {
         fseek(fp, 0, SEEK_END);
         size_t file_size = ftell(fp);
         if(file_size == 0) {
-            fprintf(stderr, "%s is empty\n", filename)
+            fprintf(stderr, "%s is empty\n", filename);
             fclose(fp);
             return;
         }
@@ -152,13 +133,13 @@ void read_game_config(char const* filename,
                     *swap_capacity *= 2;
                 }
                 if(!read_dat_entry(line, &(*swap)[(*swap_size) - 1])) {
-                    fprintf(stderr, "Invalid entry '%s' in %s\n", line, filename)
+                    fprintf(stderr, "Invalid entry '%s' in %s\n", line, filename);
                     fclose(fp);
                     return;
                 }
             }
             else {
-                fprintf(stderr, "Unknown header %s\n", header)
+                fprintf(stderr, "Unknown header %s\n", header);
                 fclose(fp);
                 return;
             }
@@ -175,7 +156,7 @@ void write_game_config(char const* filename,
 
     FILE* fp = fopen(filename, "w");
     if(!fp) {
-        fprintf(stderr, "%s could not be opened\n", filename)
+        fprintf(stderr, "%s could not be opened\n", filename);
         return;
     }
     size_t i;
@@ -295,7 +276,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                                     swap, swap_size);
     }
     else 
-        fprintf(stderr, "Errors were encountered during hashing of %s, config file will remain unchanged\n", filename)
+        fprintf(stderr, "Errors were encountered during hashing of %s, config file will remain unchanged\n", filename);
 
     free(enable);
     free(disable);

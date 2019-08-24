@@ -24,7 +24,7 @@ bool md5sum(char const* filename, char* checksum) {
     FILE* fp = fopen(filename, "rb");
 
     if(!fp) {
-        fprintf(stderr, "%s could not be opened for hashing\n", filename)
+        fprintf(stderr, "%s could not be opened for hashing\n", filename);
         return false;
     }
 
@@ -153,7 +153,7 @@ void enable_big_file(struct big_file const* file, bool verify_active) {
             char invalid[ENTRY_SIZE];
             strcpy(invalid, file->name);
             set_extension(invalid, INVALID_EXT);
-            fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", file->name, invalid)
+            fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", file->name, invalid);
 
             rename(file->name, invalid);
         }
@@ -180,7 +180,7 @@ void disable_big_file(struct big_file const* file, bool verify_active) {
             char invalid[ENTRY_SIZE];
             strcpy(invalid, toggled);
             set_extension(invalid, INVALID_EXT);
-            fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid)
+            fprintf(stderr, "Warning: File %s already exists. Will be moved to %s\n", toggled, invalid);
 
             rename(toggled, invalid);
         }
@@ -279,5 +279,5 @@ void revert_changes(struct big_file* enable, size_t enable_size,
     if(file_exists(swp))
         rename(swp, toggled);
     else
-        fprintf(stderr, "Failed to restore .dat file\n")
+        fprintf(stderr, "Failed to restore .dat file\n");
 }
