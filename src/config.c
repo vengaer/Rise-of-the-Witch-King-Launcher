@@ -4,6 +4,7 @@
 #include "concurrency_utils.h"
 #include "fsys.h"
 #include "pattern.h"
+#include "strutils.h"
 #include <ctype.h>
 #include <omp.h>
 #include <stdio.h>
@@ -37,7 +38,6 @@ void get_table_key(char* entry, char* key);
 void get_table_value(char const* entry, char* value);
 bool read_big_entry(char* line, struct big_file* entry);
 bool read_dat_entry(char* line, struct dat_file* entry);
-char* trim_whitespace(char* str);
 
 void prepare_progress(void) {
     atomic_write(&progress, 0);
@@ -551,14 +551,6 @@ bool read_dat_entry(char* line, struct dat_file* entry) {
     return true;
 }
 
-void replace_char(char* line, char orig, char repl) {
-    size_t i;
-    for(i = 0; i < strlen(line); i++) {
-        if(line[i] == orig)
-            line[i] = repl;
-    }
-}
-
 void file_stem(char* dst, char const* file) {
     char* end = strchr(file, '.');
     memcpy(dst, file, end - file);
@@ -570,22 +562,3 @@ void parent_path(char* dst, char const* file) {
     memcpy(dst, file, end - file);
     dst[end - file] = '\0';
 }
-
-char* trim_whitespace(char* str) {
-    char* end;
-    
-    while(isspace((unsigned char)*str))
-        ++str;
-    
-    if(*str == '\0')
-        return str;
-
-    end = str + strlen(str) - 1;
-
-    while(end > str && isspace((unsigned char)*end))
-        --end;
-    end[1] = '\0';
-
-    return str;
-}
-

@@ -2,6 +2,7 @@
 #include "config.h"
 #include "command.h"
 #include "fsys.h"
+#include "strutils.h"
 #include <ctype.h>
 #include <omp.h>
 #include <stdbool.h>

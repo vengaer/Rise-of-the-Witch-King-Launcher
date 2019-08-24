@@ -2,6 +2,7 @@
 #include "concurrency_utils.h"
 #include "config.h"
 #include "pattern.h"
+#include "strutils.h"
 #include <openssl/md5.h>
 #include <omp.h>
 #include <stdio.h>
