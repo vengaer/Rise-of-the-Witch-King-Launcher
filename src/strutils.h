@@ -17,7 +17,7 @@ extern "C" {
 
 void replace_char(char* line, char orig, char repl);
 char* trim_whitespace(char* str);
-int strscpy(char* dst, char const* src, size_t count);
+int strscpy(char* RESTRICT dst, char const* RESTRICT src, size_t count);
 int strscat(char* RESTRICT dst, char const* RESTRICT src, size_t count);
 
 #ifdef __cplusplus
