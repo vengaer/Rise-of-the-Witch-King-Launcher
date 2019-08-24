@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int progress = 0, total_work = -1;
+static volatile int progress = 0, total_work = -1;
 extern void(*display_error)(char const*);
 
 void header_name(char* line, char* header);
