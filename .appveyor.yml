@@ -14,3 +14,6 @@ install:
 
 build_script:
     - C:\msys64\usr\bin\bash -lc "C:/projects/rotwkl/ci/build_win"
+
+artifacts:
+    - path: build.zip
