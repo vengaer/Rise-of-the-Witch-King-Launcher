@@ -33,8 +33,8 @@ ifeq ($(OS), Windows_NT)
 	UIC := $(QT_PATH)/bin/uic.exe
 	MOC := $(QT_PATH)/bin/moc.exe
 
-    INC += -I "C:/msys64/mingw64/include"
-    LDFLAGS := -L "C:/msys64/mingw64/lib" -static $(LDFLAGS)
+    INC += -I C:/msys64/mingw64/include
+    LDFLAGS := -L C:/msys64/mingw64/lib -L C:/msys64/usr/local/ssl -static $(LDFLAGS)
 
 	QT_INCLUDE := -I $(QT_PATH)/include -I $(QT_PATH)/include/QtWidgets -I $(QT_PATH)/include/QtGui -I $(QT_PATH)/include/QtCore
 	QT_FLAGS := $(QT_INCLUDE)
