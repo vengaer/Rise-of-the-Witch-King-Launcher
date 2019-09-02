@@ -2,7 +2,7 @@ image: archlinux/base:latest
 
 before_script:
     - pacman --noconfirm -Syu
-    - pacman --noconfirm -S gcc make qt5-base
+    - pacman --noconfirm -S gcc make qt5-base util-linux
 
 stages:
     - build
