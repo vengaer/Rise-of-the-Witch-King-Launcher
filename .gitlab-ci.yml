@@ -1,0 +1,24 @@
+image: archlinux/base:latest
+
+before_script:
+    - pacman --noconfirm -Syu
+    - pacman -S gcc make qt5-base
+
+stages:
+    - build
+    - test
+
+gcc:
+    stage: build
+    script:
+    - export CC=gcc
+    - export CXX=g++
+    - make release -j$(nproc)
+    artifacts:
+        paths:
+        - rotwkl
+
+tests:
+    stage: test
+    script:
+    - ci/verify
