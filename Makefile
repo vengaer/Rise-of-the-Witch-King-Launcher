@@ -66,7 +66,7 @@ $(XML_HEADER):
 	$(UIC) -o $@
 
 $(MOC_OBJ): $(MOC_HEADERS)
-	$(CXX) -c -o $@ $< $(QT_INCLUDE)
+	$(CXX) -c -o $@ $< $(QT_INCLUDE) -fPIC
 
 $(MOC_HEADERS): $(QT_HEADERS)
 	$(MOC) $(INC) $< -o $@
