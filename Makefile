@@ -34,7 +34,7 @@ ifeq ($(OS), Windows_NT)
 	MOC := $(QT_PATH)/bin/moc.exe
 
     INC += -I C:/msys64/mingw64/include
-    LDFLAGS := -L C:/msys64/mingw64/lib -L C:/msys64/usr/local/ssl -static $(LDFLAGS)
+    LDFLAGS := -L C:/msys64/mingw64/lib -L C:/msys64/usr/local/ssl/lib -static $(LDFLAGS)
 
 	QT_INCLUDE := -I $(QT_PATH)/include -I $(QT_PATH)/include/QtWidgets -I $(QT_PATH)/include/QtGui -I $(QT_PATH)/include/QtCore
 	QT_FLAGS := $(QT_INCLUDE)
