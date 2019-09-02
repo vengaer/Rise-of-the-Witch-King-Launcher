@@ -14,5 +14,6 @@ install:
 
 build_script:
     - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -Syu"
-    - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S make base-devel mingw-w64-x86_64-toolchaing mingw-w64-x86_64-openssl"
+    - C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S make base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-openssl"
+    - Ć:\msys64\usr\bin\make QT_PATH="C:\Qt\5.13.0\mingw73_64"
 
