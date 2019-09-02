@@ -12,7 +12,7 @@ CXXSRC :=$(filter-out $(REGSRC), $(wildcard $(SRC_DIR)/*.cc))
 
 REGOBJ := $(addsuffix .o, $(basename $(REGSRC)))
 OBJ := $(addsuffix .o, $(basename $(SRC)))
-CXXOBJ := $(addsuffix .o, $(basename $(CXXSRC))) 
+CXXOBJ := $(addsuffix .o, $(basename $(CXXSRC)))
 
 QT_HEADERS := $(SRC_DIR)/mainwindow.h
 MOC_DIR := $(SRC_DIR)/moc
@@ -22,42 +22,57 @@ MOC_OBJ := $(addsuffix .o, $(basename $(MOC_HEADERS)))
 XML_SRC := $(wildcard xml/*.ui)
 XML_HEADER := $(SRC_DIR)/ui_mainwindow.h
 
-QT_VER := 5.12.3
-QT_PATH := D:/Qt/$(QT_VER)/mingw73_64
-UIC := $(QT_PATH)/bin/uic.exe
+INC = -I src/
 
-MOC := $(QT_PATH)/bin/moc.exe
-
-INC = -I src/ 
-
-CFLAGS := $(CFLAGS) -c -std=c11 -O3 -Wall -Wextra -pedantic -fopenmp $(INC)
-CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -fopenmp $(INC)
-LDFLAGS = -static-libgcc -static-libstdc++ -lssl -lcrypto -lgomp -lstdc++ -lpthread -L lib/ -l:libinput.a
+QT_LDFLAGS := -lQt5Widgets -lQt5Gui -lQt5Core
 
 ifeq ($(OS), Windows_NT)
+	QT_VER := 5.12.3
+	QT_PATH := D:/Qt/$(QT_VER)/mingw73_64
+
+	UIC := $(QT_PATH)/bin/uic.exe
+	MOC := $(QT_PATH)/bin/moc.exe
+
     INC += -I "C:/msys64/mingw64/include"
-    LDFLAGS := -L "C:/msys64/mingw64/lib" -static $(LDFLAGS) 
+    LDFLAGS := -L "C:/msys64/mingw64/lib" -static $(LDFLAGS)
+
+	QT_INCLUDE := -I $(QT_PATH)/include -I $(QT_PATH)/include/QtWidgets -I $(QT_PATH)/include/QtGui -I $(QT_PATH)/include/QtCore
+	QT_LDFLAGS := -L $(QT_PATH)/lib $(QT_LDFLAGS) -lqtmain
+else
+	QT_PATH := /usr/include/qt
+	UIC := uic
+	MOC := moc
+	QT_INCLUDE := -I $(QT_PATH) -I $(QT_PATH)/QtWidgets -I $(QT_PATH)/QtGui -I $(QT_PATH)/QtCore
+endif
+
+CFLAGS := $(CFLAGS) -c -std=c11 -O3 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
+CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
+LDFLAGS = -static-libgcc -static-libstdc++ -lssl -lcrypto -lgomp -lstdc++ -lpthread -L lib/
+
+ifeq ($(OS), Windows_NT)
+	LDFLAGS += -l:libinput.a
+else
+	LDFLAGS += -linput
 endif
 
 .PHONY: clean run release setup lib
 
-$(BIN): INC += -I $(QT_PATH)/include -I $(QT_PATH)/include/QtWidgets -I $(QT_PATH)/include/QtGui -I $(QT_PATH)/include/QtCore
-$(BIN): CXXFLAGS += $(INC)
-$(BIN): LDFLAGS := -L lib/ -l:librotwk.a -L $(QT_PATH)/lib -lQt5Widgets -lQt5Gui -lQt5Core -lqtmain $(LDFLAGS)
-$(BIN): setup $(XML_HEADER) $(MOC_OBJ) $(LIB) $(CXXOBJ) 
+$(BIN): CXXFLAGS += $(QT_INCLUDE)
+$(BIN): LDFLAGS := -L lib/ -l:librotwk.a $(QT_LDFLAGS) $(LDFLAGS)
+$(BIN): setup $(XML_HEADER) $(MOC_OBJ) $(LIB) $(CXXOBJ)
 	$(CXX) -o $@ $(CXXFLAGS) $(CXXOBJ) $(MOC_OBJ) $(LDFLAGS)
 
 $(XML_HEADER):
 	$(UIC) -o $@
 
 $(MOC_OBJ): $(MOC_HEADERS)
-	$(CXX) -c -o $@ $< $(INC) $(LDFLAGS)
+	$(CXX) -c -o $@ $< $(QT_INCLUDE)
 
 $(MOC_HEADERS): $(QT_HEADERS)
 	$(MOC) $(INC) $< -o $@
 
 $(LIB): $(REGOBJ) $(OBJ) setup
-	ar rcs $(LIB) $(REGOBJ) $(OBJ) 
+	ar rcs $(LIB) $(REGOBJ) $(OBJ)
 
 release: CXXFLAGS += -O3
 release: $(BIN)
