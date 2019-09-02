@@ -5,7 +5,7 @@ pacman --noconfirm -S make mingw-w64-x86_64-toolchain mingw-w64-x86_64-openssl
 
 cd C:/projects/rotwkl
 
-make release QT_PATH="C:\Qt\5.13.0\mingw73_64"
+make release QT_PATH="C:/Qt/5.13.0/mingw73_64"
 
 mkdir artifacts
 cp -r {images,toml,xml,rotwkl} artifacts/
