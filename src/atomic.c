@@ -7,10 +7,11 @@ int atomic_inc(int volatile* value) {
     int rv;
     #pragma omp flush
     
-    #pragma omp atomic
-    ++(*value);
-    #pragma omp atomic read
-    rv = *value;
+    #pragma omp atomic capture
+    {
+        ++(*value);
+        rv = *value;
+    }
     #pragma omp flush
 
     return rv;
@@ -20,10 +21,11 @@ int atomic_dec(int volatile* value) {
     int rv;
     #pragma omp flush
     
-    #pragma omp atomic
-    --(*value);
-    #pragma omp atomic read
-    rv = *value;
+    #pragma omp atomic capture
+    {
+        --(*value);
+        rv = *value;
+    }
     #pragma omp flush
 
     return rv;
@@ -33,10 +35,11 @@ int atomic_add(int volatile* value, int inc) {
     int rv;
     #pragma omp flush
     
-    #pragma omp atomic
-    (*value) += inc;
-    #pragma omp atomic read
-    rv = *value;
+    #pragma omp atomic capture
+    {
+        (*value) += inc;
+        rv = *value;
+    }
     #pragma omp flush
     
     return rv;
@@ -46,10 +49,11 @@ int atomic_sub(int volatile* value, int dec) {
     int rv;
     #pragma omp flush
     
-    #pragma omp atomic
-    (*value) -= dec;
-    #pragma omp atomic read
-    rv = *value;
+    #pragma omp atomic capture
+    {
+        (*value) -= dec;
+        rv = *value;
+    }
     #pragma omp flush
 
     return rv;
@@ -59,10 +63,11 @@ int atomic_and(int volatile* value, int rhs) {
     int rv;
     #pragma omp flush
 
-    #pragma omp atomic
-    (*value) &= rhs;
-    #pragma omp atomic read
-    rv = *value;
+    #pragma omp atomic capture
+    {
+        (*value) &= rhs;
+        rv = *value;
+    }
 
     #pragma omp flush
 
@@ -73,11 +78,11 @@ int atomic_or(int volatile* value, int rhs) {
     int rv;
     #pragma omp flush
     
-    #pragma omp atomic
-    (*value) |= rhs;
-    
-    #pragma omp atomic read
-    rv = *value;
+    #pragma omp atomic capture
+    {
+        (*value) |= rhs;
+        rv = *value;
+    }
 
     #pragma omp flush
 
@@ -88,10 +93,11 @@ int atomic_xor(int volatile* value, int rhs) {
     int rv;
     #pragma omp flush
     
-    #pragma omp atomic
-    (*value) ^= rhs;
-    #pragma omp atomic read
-    rv = *value;
+    #pragma omp atomic capture
+    {
+        (*value) ^= rhs;
+        rv = *value;
+    }
 
     #pragma omp flush
 
@@ -102,11 +108,11 @@ int atomic_fetch_add(int volatile* value, int inc) {
     int rv;
     #pragma omp flush
 
-    #pragma omp atomic read
-    rv = *value;
-    
-    #pragma omp atomic
-    (*value) += inc;
+    #pragma omp atomic capture
+    {
+        rv = *value;
+        (*value) += inc;
+    }
 
     #pragma omp flush
     
@@ -117,11 +123,11 @@ int atomic_fetch_sub(int volatile* value, int dec) {
     int rv;
     #pragma omp flush
     
-    #pragma omp atomic read
-    rv = *value;
-
-    #pragma omp atomic
-    (*value) -= dec;
+    #pragma omp atomic capture
+    {
+        rv = *value;
+        (*value) -= dec;
+    }
 
     #pragma omp flush
 
@@ -132,11 +138,11 @@ int atomic_fetch_and(int volatile* value, int rhs) {
     int rv;
     #pragma omp flush
 
-    #pragma omp atomic read
-    rv = *value;
-
-    #pragma omp atomic
-    (*value) &= rhs;
+    #pragma omp atomic capture
+    {
+        rv = *value;
+        (*value) &= rhs;
+    }
 
     #pragma omp flush
 
@@ -147,11 +153,11 @@ int atomic_fetch_or(int volatile* value, int rhs) {
     int rv;
     #pragma omp flush
 
-    #pragma omp atomic read
-    rv = *value;
-
-    #pragma omp atomic
-    (*value) |= rhs;
+    #pragma omp atomic capture
+    {
+        rv = *value;
+        (*value) |= rhs;
+    }
 
     #pragma omp flush
 
@@ -162,11 +168,11 @@ int atomic_fetch_xor(int volatile* value, int rhs) {
     int rv;
     #pragma omp flush
 
-    #pragma omp atomic read
-    rv = *value;
-
-    #pragma omp atomic
-    (*value) ^= rhs;
+    #pragma omp atomic capture
+    {
+        rv = *value;
+        (*value) ^= rhs;
+    }
 
     #pragma omp flush
 
