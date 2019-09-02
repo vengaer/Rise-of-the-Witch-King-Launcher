@@ -31,8 +31,6 @@ char* trim_whitespace(char* str) {
 int strscpy(char* restrict dst, char const* restrict src, size_t count) {
     size_t const src_len = strlen(src);
 
-    dst[0] = '\0';
-
     strncpy(dst, src, count);
     dst[count - 1] = '\0';
 
