@@ -37,13 +37,16 @@ ifeq ($(OS), Windows_NT)
     LDFLAGS := -L "C:/msys64/mingw64/lib" -static $(LDFLAGS)
 
 	QT_INCLUDE := -I $(QT_PATH)/include -I $(QT_PATH)/include/QtWidgets -I $(QT_PATH)/include/QtGui -I $(QT_PATH)/include/QtCore
+	QT_FLAGS := $(QT_INCLUDE)
 	QT_LDFLAGS := -L $(QT_PATH)/lib $(QT_LDFLAGS) -lqtmain
 else
 	QT_PATH := /usr/include/qt
 	UIC := uic
 	MOC := moc
 	QT_INCLUDE := -I $(QT_PATH) -I $(QT_PATH)/QtWidgets -I $(QT_PATH)/QtGui -I $(QT_PATH)/QtCore
+	QT_FLAGS := -fPIC $(QT_INCLUDE)
 endif
+
 
 CFLAGS := $(CFLAGS) -c -std=c11 -O3 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
 CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
@@ -57,7 +60,7 @@ endif
 
 .PHONY: clean run release setup lib
 
-$(BIN): CXXFLAGS += $(QT_INCLUDE)
+$(BIN): CXXFLAGS += $(QT_FLAGS)
 $(BIN): LDFLAGS := -L lib/ -l:librotwk.a $(QT_LDFLAGS) $(LDFLAGS)
 $(BIN): setup $(XML_HEADER) $(MOC_OBJ) $(LIB) $(CXXOBJ)
 	$(CXX) -o $@ $(CXXFLAGS) $(CXXOBJ) $(MOC_OBJ) $(LDFLAGS)
@@ -66,7 +69,7 @@ $(XML_HEADER):
 	$(UIC) -o $@
 
 $(MOC_OBJ): $(MOC_HEADERS)
-	$(CXX) -c -o $@ $< $(QT_INCLUDE) -fPIC
+	$(CXX) -c -o $@ $< $(QT_FLAGS)
 
 $(MOC_HEADERS): $(QT_HEADERS)
 	$(MOC) $(INC) $< -o $@
