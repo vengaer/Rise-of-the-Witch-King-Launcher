@@ -65,7 +65,15 @@ int cli_main(int argc, char** argv) {
         fprintf(stderr, "Could not get launcher directory\n");
         return 1;
     }
+
+    #if defined __GNUC__ && !defined __clang__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat-truncation"
+    #endif
     snprintf(config_file, sizeof config_file, "%stoml/launcher.toml", launcher_dir);
+    #if defined __GNUC__ && !defined __clang__
+    #pragma GCC diagnostic pop
+    #endif
 
     char const* lcfg = config_file;
 
