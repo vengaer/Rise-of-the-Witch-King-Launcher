@@ -50,7 +50,7 @@ endif
 
 CFLAGS := $(CFLAGS) -c -std=c11 -O3 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
 CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
-LDFLAGS = -static-libgcc -static-libstdc++ -lssl -lcrypto -lgomp -lstdc++ -lpthread -L lib/
+LDFLAGS := $(LDFLAGS) -static-libgcc -static-libstdc++ -lssl -lcrypto -lgomp -lstdc++ -lpthread -L lib/
 
 ifeq ($(OS), Windows_NT)
 	LDFLAGS += -l:libinput.a
