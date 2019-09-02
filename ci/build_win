@@ -1,0 +1,10 @@
+#!/bin/bash
+
+pacman --noconfirm -Syu
+pacman --noconfirm -S make base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-openssl
+
+make release QT_PATH="C:\Qt\5.13.0\mingw73_64"
+
+mkdir artifacts
+cp -r {images,toml,xml,rotwkl} artifacts/
+
