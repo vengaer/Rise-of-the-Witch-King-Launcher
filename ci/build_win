@@ -2,15 +2,15 @@
 
 set -e
 
-export CC="$msys_bin""/gcc.exe"
-export CXX="$msys_bin""/g++.exe"
-
 project_dir="C:/projects/rotwkl"
 qt_path="C:/Qt/5.13/mingw73_64"
 qt_bin="$qt_path""/bin"
 msys_bin="C:/msys64/mingw64/bin"
 artifact_dir="rotwkl"
 archive="$artifact_dir"".zip"
+
+export CC="$msys_bin""/gcc.exe"
+export CXX="$msys_bin""/g++.exe"
 
 declare -a dlls
 
