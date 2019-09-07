@@ -27,8 +27,7 @@ INC = -I src/
 QT_LDFLAGS := -lQt5Widgets -lQt5Gui -lQt5Core
 
 ifeq ($(OS), Windows_NT)
-	QT_VER := 5.12.3
-	QT_PATH := D:/Qt/$(QT_VER)/mingw73_64
+	QT_PATH := D:/Qt5.13/5.13.1/mingw73_64
 
 	UIC := $(QT_PATH)/bin/uic.exe
 	MOC := $(QT_PATH)/bin/moc.exe
