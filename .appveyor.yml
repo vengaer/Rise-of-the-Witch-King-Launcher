@@ -10,7 +10,8 @@ platform:
     -x64
 
 build_script:
-    - C:\msys64\mingw64.exe /bin/bash -lc "C:/projects/rotwkl/ci/build_win C:/projects/rotwkl C:/Qt/5.13.0/mingw73_64"
+    #- C:\msys64\mingw64.exe /bin/bash -lc "C:/projects/rotwkl/ci/build_win C:/projects/rotwkl C:/Qt/5.13.0/mingw73_64"
+    - C:\msys64\mingw64.exe /bin/bash -lc "echo Ouput >> output.log"
     - type C:\projects\rotwkl\output.log
 
 artifacts:
