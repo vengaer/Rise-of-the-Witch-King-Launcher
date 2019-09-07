@@ -7,7 +7,7 @@ function print_usage {
 }
 
 function print_error {
-    echo "$1" >&2 >> "$log_file"
+    echo Error: "$1" >&2 >> "$log_file"
 }
 
 if [ -z "$1" ] ; then
