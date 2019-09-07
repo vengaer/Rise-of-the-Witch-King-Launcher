@@ -10,8 +10,8 @@ platform:
     -x64
 
 build_script:
-    - C:\msys64\usr\bin\mintty.exe /bin/bash -cl "C:/projects/rotwkl/ci/build_win"
+    - C:\msys64\usr\bin\mintty.exe /bin/bash -cl "C:/projects/rotwkl/ci/build_win C:/projects/rotwkl C:/Qt/5.13/mingw73_64"
     - type C:\projects\rotwkl\output.log
 
 artifacts:
-    - path: C:\projects\rotwkl\rotwkl.zip
+    - path: rotwkl.zip
