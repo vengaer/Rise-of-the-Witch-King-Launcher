@@ -3,12 +3,15 @@
 log_file="output.log"
 
 function print_usage {
-    echo "Usage: build_win <project dir> <Qt path>" > "$log_file"
+    echo "Usage: build_win <project dir> <Qt path>" >> "$log_file"
 }
 
 function print_error {
-    echo "$1" >&2 > "$log_file"
+    echo "$1" >&2 >> "$log_file"
 }
+
+print_error asdf
+exit
 
 if [ -z "$1" ] ; then
     print_error "Project path not specified"
@@ -43,10 +46,13 @@ dlls+=("$msys_bin""/libgcc_s_seh-1.dll")
 dlls+=("$msys_bin""/libstdc++-6.dll")
 dlls+=("$msys_bin""/libwinpthread-1.dll")
 
+echo Updating packages... >> "$log_file"
 pacman --noconfirm -Syu
 pacman --noconfirm --needed -S make gcc zip mingw-w64-x86_64-toolchain mingw-w64-x86_64-openssl
 
 cd "$project_dir"
+
+echo Compiling... >> "$log_file"
 
 make release QT_PATH="$qt_path" > "$log_file" 2>&1
 
