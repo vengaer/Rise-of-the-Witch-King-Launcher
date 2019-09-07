@@ -1,11 +1,13 @@
 #!/bin/bash
 
+log_file="output.log"
+
 function print_usage {
-    echo "Usage: build_win <project dir> <Qt path>" >&2
+    echo "Usage: build_win <project dir> <Qt path>" > "$log_file"
 }
 
 function print_error {
-    echo "$1" >&2
+    echo "$1" >&2 > "$log_file"
 }
 
 if [ -z "$1" ] ; then
@@ -30,7 +32,6 @@ qt_bin="$qt_path""/bin"
 msys_bin="C:/msys64/mingw64/bin"
 artifact_dir="build"
 archive="$artifact_dir"".zip"
-log_file="output.log"
 
 declare -a dlls
 
