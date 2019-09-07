@@ -30,7 +30,7 @@ set -xe
 
 qt_bin="$qt_path""/bin"
 msys_bin="C:/msys64/mingw64/bin"
-artifact_dir="build"
+artifact_dir="rotwk_launcher"
 archive="$artifact_dir"".zip"
 
 declare -a dlls
