@@ -36,16 +36,15 @@ ifeq ($(OS), Windows_NT)
     LDFLAGS := -L C:/msys64/mingw64/lib -static $(LDFLAGS)
 
 	QT_INCLUDE := -I $(QT_PATH)/include -I $(QT_PATH)/include/QtWidgets -I $(QT_PATH)/include/QtGui -I $(QT_PATH)/include/QtCore
-	QT_FLAGS := $(QT_INCLUDE)
 	QT_LDFLAGS := -L $(QT_PATH)/lib $(QT_LDFLAGS) -lqtmain
 else
 	QT_PATH := /usr/include/qt
 	UIC := uic
 	MOC := moc
 	QT_INCLUDE := -I $(QT_PATH) -I $(QT_PATH)/QtWidgets -I $(QT_PATH)/QtGui -I $(QT_PATH)/QtCore
-	QT_FLAGS := -fPIC $(QT_INCLUDE)
 endif
 
+QT_FLAGS := -fPIC $(QT_INCLUDE)
 
 CFLAGS := $(CFLAGS) -c -std=c11 -O3 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
 CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
