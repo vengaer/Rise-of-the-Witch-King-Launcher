@@ -63,6 +63,6 @@ for dll in "${dlls[@]}"; do
 done
 
 printf "Zipping build...\n" >> "$log_file"
-zip -r rotwkl.zip "$artifact_dir" >> "$log_file" 2>&1
+zip -r rotwkl.zip "$artifact_dir"/* >> "$log_file" 2>&1
 
 rm -r "$artifact_dir"
