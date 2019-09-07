@@ -50,22 +50,19 @@ pacman --noconfirm --needed -S make gcc zip mingw-w64-x86_64-toolchain mingw-w64
 cd "$project_dir"
 
 echo Compiling... >> "$log_file"
-
 make release QT_PATH="$qt_path" > "$log_file" 2>&1
 
 mkdir -p "$artifact_dir"
 
 printf "Copying resources...\n" >> "$log_file"
-
 cp -r {images,toml,xml,rotwkl} "$artifact_dir"/ >> "$log_file" 2>&1
 
 for dll in "${dlls[@]}"; do
-    printf "Copying dll %s\n" "$dll"
+    printf "Copying dll %s\n" "$dll" >> "$log_file"
     cp $dll "$artifact_dir" >> "$log_file" 2>&1
 done
 
 printf "Zipping build...\n" >> "$log_file"
-
 zip -r rotwkl.zip "$artifact_dir" >> "$log_file" 2>&1
 
 rm -r "$artifact_dir"
