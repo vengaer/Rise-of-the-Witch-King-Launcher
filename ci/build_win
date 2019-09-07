@@ -10,9 +10,6 @@ function print_error {
     echo "$1" >&2 >> "$log_file"
 }
 
-print_error asdf
-exit
-
 if [ -z "$1" ] ; then
     print_error "Project path not specified"
     print_usage
