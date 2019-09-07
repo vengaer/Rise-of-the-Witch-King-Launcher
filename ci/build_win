@@ -9,8 +9,8 @@ msys_bin="C:/msys64/mingw64/bin"
 artifact_dir="rotwkl"
 archive="$artifact_dir"".zip"
 
-export CC=C:/msys64/mingw64/bin/gcc.exe
-export CXX=C:/msys64/mingw64/bin/g++.exe
+export CC="C:/msys64/mingw64/bin/gcc.exe"
+export CXX="C:/msys64/mingw64/bin/g++.exe"
 
 declare -a dlls
 
