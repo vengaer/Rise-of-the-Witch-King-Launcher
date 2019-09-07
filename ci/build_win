@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -xe
 
 project_dir="C:/projects/rotwkl"
 qt_path="C:/Qt/5.13/mingw73_64"
@@ -24,13 +24,13 @@ pacman --noconfirm --needed -S make gcc zip mingw-w64-x86_64-toolchain mingw-w64
 
 cd "$project_dir"
 
-make release QT_PATH="$qt_path"
+make release QT_PATH="$qt_path" > output.log 2>&1
 
 mkdir "$artifact_dir"
-cp -r {images,toml,xml,rotwkl} "$artifact_dir"/
+cp -r {images,toml,xml,rotwkl} "$artifact_dir"/ >> output.log 2>&1
 
 for ddl in "${dlls[@]}" do
-    cp dll "$artifact_dir"
+    cp dll "$artifact_dir" >> output.log 2>&1
 done
 
-zip -r rotwkl.zip "$artifact_dir"
+zip -r rotwkl.zip "$artifact_dir" >> output.log 2>&1

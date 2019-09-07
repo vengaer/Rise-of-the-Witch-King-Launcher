@@ -11,6 +11,7 @@ platform:
 
 build_script:
     - C:\msys64\usr\bin\mintty.exe /bin/bash -cl "C:/projects/rotwkl/ci/build_win"
+    - type C:\projects\rotwkl\output.log
 
 artifacts:
-    - path: rotwkl.zip
+    - path: C:\projects\rotwkl\rotwkl.zip
