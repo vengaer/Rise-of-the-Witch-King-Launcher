@@ -9,11 +9,8 @@ matrix:
 platform:
     -x64
 
-install:
-    set PATH=%PATH%;C:\msys64\bin;C:\msys64\usr\bin
-
 build_script:
-    - C:\msys64\usr\bin\bash -lc "C:/projects/rotwkl/ci/build_win"
+    - C:\msys64\usr\bin\mintty.exe /bin/bash -cl "C:/projects/rotwkl/ci/build_win"
 
 artifacts:
-    - path: build.zip
+    - path: rotwkl.zip
