@@ -23,7 +23,7 @@ void write_game_config(char const* filename,
 
 bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, struct launcher_data const* cfg, struct progress_callback* pc);
 
-void write_launcher_config(struct launcher_data const* cfg, char const* file);
+bool write_launcher_config(struct launcher_data const* cfg, char const* file);
 bool read_launcher_config(struct launcher_data* cfg, char const* file);
 
 void construct_mount_command(char* dst, char const* exe, char const* flags, char const* img);

@@ -270,12 +270,24 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
     return success;
 }
 
-void write_launcher_config(struct launcher_data const* cfg, char const* file) {
+bool write_launcher_config(struct launcher_data const* cfg, char const* file) {
+    char mount[sizeof cfg->mount_cmd];
+    char umount[sizeof cfg->umount_cmd];
+
+    if(toml_format(mount, cfg->mount_cmd, sizeof mount) < 0) {
+        display_error("Mount command overflowed the toml buffer");
+        return false;
+    }
+    if(toml_format(umount, cfg->umount_cmd, sizeof umount) < 0) {
+        display_error("Umount command overflowed the toml buffer");
+        return false;
+    }
+
     FILE* fp = fopen(file, "w");
 
     if(!fp) {
         display_error("Could not write config file\n");
-        return;
+        return false;
     }
 
     fprintf(fp, "[launcher]\n");
@@ -298,11 +310,13 @@ void write_launcher_config(struct launcher_data const* cfg, char const* file) {
     fprintf(fp, "disc_image = \"%s\"\n", cfg->disc_image);
     fprintf(fp, "mount_flags = \"%s\"\n", cfg->mount_flags);
     fprintf(fp, "umount_flags = \"%s\"\n", cfg->umount_flags);
-    fprintf(fp, "mount_cmd = \"%s\"\n", cfg->mount_cmd);
-    fprintf(fp, "umount_cmd = \"%s\"\n", cfg->umount_cmd);
+    fprintf(fp, "mount_cmd = \"%s\"\n", mount);
+    fprintf(fp, "umount_cmd = \"%s\"\n", umount);
     fprintf(fp, "umount_imspec = \"%s\"\n", cfg->umount_imspec ? "true" : "false");
 
     fclose(fp);
+
+    return true;
 }
 
 bool read_launcher_config(struct launcher_data* cfg, char const* file) {

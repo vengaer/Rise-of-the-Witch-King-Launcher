@@ -250,6 +250,7 @@ void MainWindow::on_pref_save_clicked() {
 
     if(!file_exists(exe.toLatin1().data())) {
         QMessageBox::information(this, tr("Invalid Game Path"), "Could not locate lotrbfme2ep1.exe at specified path");
+        QApplication::restoreOverrideCursor();
         return;
     }
 
@@ -257,6 +258,7 @@ void MainWindow::on_pref_save_clicked() {
         exe = botta_path_ + "/" + BOTTA_LNK;
         if(!file_exists(exe.toLatin1().data())) {
             QMessageBox::information(this, tr("Invalid BotTA Path"), "Could not locate the BotTa shortcut at specified path");
+            QApplication::restoreOverrideCursor();
             return;
         }
     }
@@ -265,10 +267,12 @@ void MainWindow::on_pref_save_clicked() {
     if(data_.automatic_mount) {
         if(!file_exists(mount_exe_.toLatin1().data())) {
             QMessageBox::information(this, tr("File Does Not Exist"), "Could not locate specified mounting executable");
+            QApplication::restoreOverrideCursor();
             return;
         }
         if(!file_exists(mount_image_.toLatin1().data())) {
             QMessageBox::information(this, tr("File Does Not Exist"), "Could not locate specified image file");
+            QApplication::restoreOverrideCursor();
             return;
         }
 
@@ -283,11 +287,13 @@ void MainWindow::on_pref_save_clicked() {
         construct_mount_command(buf, data_.mount_exe, data_.mount_flags, data_.disc_image);
         if(sys_format(data_.mount_cmd, buf, sizeof data_.mount_cmd) < 0) {
             display_error("Mount command overflowed the buffer");
+            QApplication::restoreOverrideCursor();
             return;
         }
         construct_umount_command(buf, data_.mount_exe, data_.umount_flags, data_.disc_image, data_.umount_imspec);
         if(sys_format(data_.umount_cmd, buf, sizeof data_.umount_cmd) < 0) {
             display_error("Umount command overflowed the buffer");
+            QApplication::restoreOverrideCursor();
             return;
         }
 
@@ -313,7 +319,11 @@ void MainWindow::on_pref_save_clicked() {
 
     update_gui_functionality();
 
-    write_launcher_config(&data_, config_file_.toLatin1().data());
+    if(!write_launcher_config(&data_, config_file_.toLatin1().data())) {
+        display_error("Failed to write launcher config");
+        QApplication::restoreOverrideCursor();
+        return;
+    }
 
     if(!config_exists_) {
         config_exists_ = true;
