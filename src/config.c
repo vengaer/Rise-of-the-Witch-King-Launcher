@@ -573,6 +573,11 @@ void file_stem(char* dst, char const* file) {
 
 void parent_path(char* dst, char const* file) {
     char* end = strrchr(file, '/') + 1;
-    memcpy(dst, file, end - file);
-    dst[end - file] = '\0';
+
+    if(end) {
+        memcpy(dst, file, end - file);
+        dst[end - file] = '\0';
+    }
+    else
+        strcpy(dst, file);
 }
