@@ -10,12 +10,10 @@
 #endif
 
 void (*display_error)(char const*) = NULL;
-void (*display_errorf)(char const*, ...) = NULL;
 
 int main(int argc, char *argv[]) {
     if(argc > 1) {
         display_error = &cli_error_diag;
-        display_errorf = &cli_error_diagf;
         return cli_main(argc, argv);
     }
 
