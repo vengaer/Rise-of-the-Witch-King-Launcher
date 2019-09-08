@@ -179,7 +179,7 @@ int atomic_fetch_xor(int volatile* value, int rhs) {
     return rv;
 }
 
-int atomic_read(int volatile* value) {
+int atomic_read(int const volatile* value) {
     int rv;
     #pragma omp flush
     #pragma omp atomic read

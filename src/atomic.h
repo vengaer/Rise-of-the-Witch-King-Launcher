@@ -21,7 +21,7 @@ int atomic_fetch_and(int volatile* value, int rhs);
 int atomic_fetch_or(int volatile* value, int rhs);
 int atomic_fetch_xor(int volatile* value, int rhs);
 
-int atomic_read(int volatile* value);
+int atomic_read(int const volatile* value);
 int atomic_write(int volatile* value, int new_value);
 
 #ifdef __cplusplus
