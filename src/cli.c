@@ -2,14 +2,17 @@
 #include "config.h"
 #include "command.h"
 #include "fsys.h"
-#include "strutils.h"
 #include <ctype.h>
 #include <omp.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+extern void(*display_error)(char const*);
+extern void(*display_errorf)(char const*, ...);
 
 void print_help(void) {
     fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");
@@ -24,7 +27,7 @@ void print_help(void) {
     fprintf(stderr, "** Available only with the -u flag\n");
 }
 
-int get_launcher_dir(char* dst, char const* launcher_path) {
+static int get_launcher_dir(char* dst, char const* restrict launcher_path) {
     char arg[PATH_SIZE];
 
     if(strscpy(arg, launcher_path, sizeof arg) < 0)
@@ -38,6 +41,17 @@ int get_launcher_dir(char* dst, char const* launcher_path) {
 
 void cli_error_diag(char const* info) {
     fprintf(stderr, "\nError: %s\n\n", info);
+}
+
+void cli_error_diagf(char const* fmt, ...) {
+    char buf[LINE_SIZE];
+
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+
+    cli_error_diag(buf);
 }
 
 int cli_main(int argc, char** argv) {
@@ -62,7 +76,7 @@ int cli_main(int argc, char** argv) {
     struct launcher_data ld;
 
     if(get_launcher_dir(launcher_dir, argv[0]) < 0) {
-        fprintf(stderr, "Could not get launcher directory\n");
+        display_error("Could not get launcher directory\n");
         return 1;
     }
 
@@ -103,11 +117,11 @@ int cli_main(int argc, char** argv) {
                 break;
             case '?':
                 if(optopt == 'r' || optopt == 's' || optopt == 'u')
-                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                    display_errorf("Option -%c requires an argument\n", optopt);
                 else if(isprint(optopt))
-                    fprintf(stderr, "Unknown option '-%c'.\n", optopt);
+                    display_errorf("Unknown option '-%c'\n", optopt);
                 else
-                    fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
+                    display_errorf("Unknown option character '\\x%x'\n", optopt);
                 return 1;
             default:
                 return 1;
@@ -115,7 +129,7 @@ int cli_main(int argc, char** argv) {
     }
 
     for(idx = optind; idx < argc; idx++)
-        printf("Non-option argument %s ignored.\n", argv[idx]);
+        display_errorf("Non-option argument %s ignored\n", argv[idx]);
 
     if(h_flag) {
         print_help();
@@ -123,12 +137,12 @@ int cli_main(int argc, char** argv) {
     }
 
     if(!file_exists(lcfg)) {
-        fprintf(stderr, "Warning: no config file found. Using default values\n");
+        display_error("No config file found, using default values\n");
         launcher_data_init(&ld);
     }
     else  {
         if(!read_launcher_config(&ld, lcfg)) {
-            fprintf(stderr, "Failed to read launcher config, terminating\n");
+            display_error("Failed to read launcher config\n");
             return 1;
         }
     }
@@ -136,52 +150,51 @@ int cli_main(int argc, char** argv) {
     show_console(ld.show_console);
 
     if(strscpy(rotwk_toml, launcher_dir, sizeof rotwk_toml) < 0) {
-        fprintf(stderr, "Launcher path overflowed the rotwk toml buffer\n");
+        display_error("Launcher path overflowed the rotwk toml buffer\n");
         return 1;
     }
     if(strscat(rotwk_toml, "/toml/rotwk.toml", sizeof rotwk_toml) < 0) {
-        fprintf(stderr, "rotwk toml overflowed the buffer\n");
+        display_error("rotwkl toml overflowed the buffer\n");
         return 1;
     }
 
     if(strscpy(edain_toml, launcher_dir, sizeof edain_toml) < 0) {
-        fprintf(stderr, "Launcher path overflowed the edain toml buffer\n");
+        display_error("Launcher path overflowed the edain toml buffer\n");
         return 1;
     }
     if(strscat(edain_toml, "/toml/edain.toml", sizeof edain_toml) < 0) {
-        fprintf(stderr, "edain toml overflowed the buffer\n");
+        display_error("Edain toml overflowed the buffer\n");
         return 1;
     }
 
     if(strscpy(botta_toml, launcher_dir, sizeof botta_toml) < 0) {
-        fprintf(stderr, "Launcher path overflowed the botta toml buffer\n");
+        display_error("Launcher path overflowed the botta toml buffer\n");
         return 1;
     }
     if(strscat(botta_toml, "/toml/botta.toml", sizeof botta_toml) < 0) {
-        fprintf(stderr, "botta toml overflowed the buffer\n");
+        display_error("Botta toml overflowed the buffer\n");
         return 1;
     }
 
     chdir(ld.game_path);
 
     if(strscpy(launch_cmd, ld.game_path, sizeof launch_cmd) < 0) {
-        fprintf(stderr, "Game path overflowed the launch command buffer\n");
+        display_error("Game path overflowed the launch command buffer\n");
         return 1;
     }
     if(strscat(launch_cmd, "/lotrbfme2ep1.exe", sizeof launch_cmd) < 0) {
-        fprintf(stderr, "Exe path overflowed the launch command buffer\n");
+        display_error("Exe path overflowed the launch command buffer\n");
         return 1;
     }
 
     if(strscpy(dat_file, ld.game_path, sizeof dat_file) < 0) {
-        fprintf(stderr, "Game path overflowed the game.dat buffer\n");
+        display_error("Game path overflowed the game.dat buffer\n");
         return 1;
     }
     if(strscat(dat_file, "/game.dat", sizeof dat_file) < 0) {
-        fprintf(stderr, "game.dat path overflowed the buffer\n");
+        display_error("game.dat path overflowed the buffer\n");
         return 1;
     }
-    strncat(dat_file, "/game.dat", sizeof dat_file - strlen(ld.game_path) - 1);
 
     md5sum(dat_file, game_csum);
     new_dat_enabled = strcmp(game_csum, NEW_DAT_CSUM) == 0;
@@ -202,7 +215,7 @@ int cli_main(int argc, char** argv) {
         else if(strcmp(ucfg, "edain") == 0) {
 
             if(!ld.edain_available) {
-                fprintf(stderr, "Edain is not available\n");
+                display_error("Edain is not avaialble\n");
                 return 1;
             }
 
@@ -211,7 +224,7 @@ int cli_main(int argc, char** argv) {
         else if(ld.botta_available && strcmp(ucfg, "botta") == 0) {
 
             if(!ld.botta_available) {
-                fprintf(stderr, "BotTA is not available\n");
+                display_error("BotTA is not available\n");
                 return 1;
             }
 
@@ -237,7 +250,7 @@ int cli_main(int argc, char** argv) {
             }
         }
         else {
-            fprintf(stderr, "Unknown configuration %s\n", ucfg);
+            display_error("Unknown configuration\n");
             return 1;
         }
     }
@@ -253,7 +266,7 @@ int cli_main(int argc, char** argv) {
         else {
             if(strcmp(scfg, "edain") == 0) {
                 if(!ld.edain_available) {
-                    fprintf(stderr, "Edain is not available\n");
+                    display_error("Edain is not available\n");
                     return 1;
                 }
 
@@ -263,7 +276,7 @@ int cli_main(int argc, char** argv) {
             }
             else if(ld.botta_available && strcmp(scfg, "botta") == 0) {
                 if(!ld.botta_available) {
-                    fprintf(stderr, "BotTA is not available\n");
+                    display_error("BotTA is not avaialble\n");
                     return 1;
                 }
 
@@ -271,7 +284,7 @@ int cli_main(int argc, char** argv) {
                 active_config = botta;
             }
             else {
-                fprintf(stderr, "Unknown configuration %s\n", scfg);
+                display_error("Unknown configuration\n");
                 return 1;
             }
         }
@@ -284,7 +297,7 @@ int cli_main(int argc, char** argv) {
 
                 if(mounting_necessary) {
                     if(system(ld.mount_cmd) != 0) {
-                        fprintf(stderr, "'%s' returned an error\n", ld.mount_cmd);
+                        display_errorf("'%s' returned an error\n", ld.mount_cmd);
                         return 1;
                     }
                 }
@@ -292,20 +305,20 @@ int cli_main(int argc, char** argv) {
 
             if(active_config == botta) {
                 if(strscpy(launch_cmd, ld.botta_path, sizeof launch_cmd) < 0) {
-                    fprintf(stderr, "Botta path overflowed the launch buffer\n");
+                    display_error("Botta path overflowed the launch buffer\n");
                     /* Unmount if necessary */
                     if(ld.automatic_mount && mounting_necessary) {
                         if(system(ld.umount_cmd) != 0)
-                            fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
+                            display_errorf("'%s' returned an error\n", ld.umount_cmd);
                     }
                     return 1;
                 }
                 if(strscat(launch_cmd, "/BotTa.lnk", sizeof launch_cmd) < 0) {
-                    fprintf(stderr, "Botta lnk overflowed the buffer\n");
+                    display_error("Botta lnk overflowed the buffer\n");
                     /* Unmount if necessary */
                     if(ld.automatic_mount && mounting_necessary) {
                         if(system(ld.umount_cmd) != 0)
-                            fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
+                            display_errorf("'%s' returned an error\n", ld.umount_cmd);
                     }
                     return 1;
                 }
@@ -314,7 +327,7 @@ int cli_main(int argc, char** argv) {
             sys_format(launch, launch_cmd);
 
             if(system(launch) != 0)
-                fprintf(stderr, "Failed to launch game.\n");
+                display_error("Failed to launch game\n");
 
             while(game_running())
                 sleep_for(SLEEP_TIME);
@@ -335,7 +348,7 @@ int cli_main(int argc, char** argv) {
 
             if(ld.automatic_mount && mounting_necessary) {
                 if(system(ld.umount_cmd) != 0) {
-                    fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
+                    display_errorf("'%s' returned an error\n", ld.umount_cmd);
                     return 1;
                 }
             }
