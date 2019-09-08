@@ -20,6 +20,8 @@ char* trim_whitespace(char* str);
 int strscpy(char* RESTRICT dst, char const* RESTRICT src, size_t count);
 int strscat(char* RESTRICT dst, char const* RESTRICT src, size_t count);
 
+void errorfmt(char const* fmt, ...);
+
 #ifdef __cplusplus
 }
 #endif
