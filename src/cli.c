@@ -2,6 +2,7 @@
 #include "config.h"
 #include "command.h"
 #include "fsys.h"
+#include "progress_callback.h"
 #include <ctype.h>
 #include <omp.h>
 #include <stdbool.h>
@@ -269,6 +270,8 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
                    char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml) {
     unsigned sync;
     struct latch latch;
+    struct progress_callback pc;
+    progress_init(&pc);
 
     sync = 1;
     if(upd_cfg && strcmp(upd_cfg, "all") == 0) {
@@ -281,7 +284,7 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
 
     /* Only rotwk */
     if(strcmp(upd_cfg, "rotwk") == 0) 
-        update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld);
+        update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc);
     /* Only edain */
     else if(strcmp(upd_cfg, "edain") == 0) {
 
@@ -290,7 +293,7 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
             return false;
         }
 
-        update_game_config(edain_toml, new_dat_enabled, &latch, ld);
+        update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc);
     }
     /* Only botta */
     else if(strcmp(upd_cfg, "botta") == 0) {
@@ -300,7 +303,7 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
             return false;
         }
 
-        update_game_config(botta_toml, new_dat_enabled, &latch, ld);
+        update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc);
     }
     /* All */
     else if(strcmp(upd_cfg, "all") == 0) {
@@ -308,17 +311,13 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
         {
             #pragma omp master
             {
-                prepare_progress();
-
                 #pragma omp task if(ld->edain_available)
-                    update_game_config(edain_toml, new_dat_enabled, &latch, ld);
+                    update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc);
 
                 #pragma omp task if(ld->botta_available)
-                    update_game_config(botta_toml, new_dat_enabled, &latch, ld);
+                    update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc);
 
-                update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld);
-
-                reset_progress();
+                update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc);
             }
         }
     }

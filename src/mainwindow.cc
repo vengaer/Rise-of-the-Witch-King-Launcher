@@ -6,6 +6,7 @@
 #include "fsys.h"
 #include "game_data.h"
 #include "latch.h"
+#include "progress_callback.h"
 #include "ui_mainwindow.h"
 #include <algorithm>
 #include <omp.h>
@@ -448,14 +449,15 @@ void MainWindow::update_single_config(configuration config) {
     bool update_successful;
     struct latch latch;
     latch_init(&latch, 2);
+    struct progress_callback pc;
+    progress_init(&pc);
     #pragma omp parallel num_threads(2)
     {
         #pragma omp master
         {
-            prepare_progress();
             #pragma omp task
             {
-                update_successful = update_game_config(toml->toLatin1().data(), invert_dat, &latch, &data_);
+                update_successful = update_game_config(toml->toLatin1().data(), invert_dat, &latch, &data_, &pc);
 
                 atomic_dec(&tasks_running);
             }
@@ -473,7 +475,7 @@ void MainWindow::update_single_config(configuration config) {
             int tasks = atomic_read(&tasks_running);
 
             while(tasks) {
-                progress = static_cast<int>(track_progress() * total);
+                progress = progress_get_percentage(&pc);
                 QCoreApplication::processEvents();
                 dialog.setValue(progress);
 
@@ -482,7 +484,6 @@ void MainWindow::update_single_config(configuration config) {
             dialog.setValue(total);
             dialog.close();
 
-            reset_progress();
         }
     }
 
@@ -508,17 +509,18 @@ void MainWindow::update_all_configs() {
     struct latch latch;
     latch_init(&latch, sync);
 
+    struct progress_callback pc;
+    progress_init(&pc);
+
     int failed = 0x0;
 
     #pragma omp parallel num_threads(4)
     {
         #pragma omp master
         {
-            prepare_progress();
-
             #pragma omp task if(data_.edain_available)
             {
-                if(!update_game_config(edain_toml_.toLatin1().data(), invert_dat, &latch, &data_)) {
+                if(!update_game_config(edain_toml_.toLatin1().data(), invert_dat, &latch, &data_, &pc)) {
                     atomic_or(&failed, edain);
                 }
 
@@ -526,7 +528,7 @@ void MainWindow::update_all_configs() {
             }
             #pragma omp task if(data_.botta_available)
             {
-                if(!update_game_config(botta_toml_.toLatin1().data(), invert_dat, &latch, &data_)) {
+                if(!update_game_config(botta_toml_.toLatin1().data(), invert_dat, &latch, &data_, &pc)) {
                     atomic_or(&failed, botta);
                 }
 
@@ -534,7 +536,7 @@ void MainWindow::update_all_configs() {
             }
             #pragma omp task
             {
-                if(!update_game_config(rotwk_toml_.toLatin1().data(), !invert_dat, &latch, &data_)) {
+                if(!update_game_config(rotwk_toml_.toLatin1().data(), !invert_dat, &latch, &data_, &pc)) {
                     atomic_or(&failed, rotwk);
                 }
 
@@ -554,7 +556,7 @@ void MainWindow::update_all_configs() {
             int tasks = atomic_read(&tasks_running);
 
             while(tasks) {
-                progress = static_cast<int>(track_progress() * total);
+                progress = progress_get_percentage(&pc);
                 QCoreApplication::processEvents();
                 dialog.setValue(progress);
 
@@ -562,8 +564,6 @@ void MainWindow::update_all_configs() {
             }
             dialog.setValue(total);
             dialog.close();
-
-            reset_progress();
         }
     }
     if(failed) {
