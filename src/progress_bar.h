@@ -11,7 +11,7 @@ extern "C" {
 #define PROGRESS_BAR_INDENT_BUF_LENGTH 128
 
 struct progress_bar {
-    unsigned progress;
+    unsigned volatile progress;
     char buffer[PROGRESS_BAR_BUF_LENGTH];
 };
 
