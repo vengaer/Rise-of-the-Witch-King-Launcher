@@ -2,6 +2,7 @@
 #include "config.h"
 #include "command.h"
 #include "fsys.h"
+#include "progress_callback.h"
 #include <ctype.h>
 #include <omp.h>
 #include <stdbool.h>
@@ -10,7 +11,151 @@
 #include <string.h>
 #include <unistd.h>
 
-void print_help(void) {
+extern void(*display_error)(char const*);
+
+static void print_help(void);
+static int get_launcher_dir(char* restrict dst, char const* restrict launcher_path);
+static bool setup_config(struct launcher_data* ld, char const* launch_cfg);
+static bool construct_rotwkl_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size);
+static bool construct_edain_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size);
+static bool construct_botta_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size);
+static bool construct_launch_cmd(char* restrict dst, char const* restrict game_path, size_t dst_size);
+static bool construct_botta_launch_cmd(char* restrict dst, char const* restrict botta_path, size_t dst_size);
+static bool construct_dat_file_path(char* restrict dst, char const* restrict game_path, size_t dst_size);
+static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct launcher_data const* ld,
+                   char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml);
+static int set(char const* restrict set_cfg, struct launcher_data const* ld, char const* restrict edain_toml,
+                char const* restrict botta_toml, char const* restrict rotwk_toml);
+static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const* restrict dat_file, struct launcher_data const* ld, 
+                   enum configuration active_config, char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml);
+
+void cli_error_diag(char const* info) {
+    fprintf(stderr, "\nError: %s\n\n", info);
+}
+
+int cli_main(int argc, char** argv) {
+    char config_file[PATH_SIZE];
+    char launcher_dir[PATH_SIZE];
+
+    bool run_flag = false, set_flag = false, upd_flag = false, h_flag = false;
+    char *set_cfg = NULL, *upd_cfg = NULL;
+    int idx, opt;
+    bool new_dat_enabled;
+
+    char rotwk_toml[PATH_SIZE];
+    char edain_toml[PATH_SIZE];
+    char botta_toml[PATH_SIZE];
+    char launch_cmd[PATH_SIZE];
+    char dat_file[PATH_SIZE];
+    char game_csum[ENTRY_SIZE];
+
+    struct launcher_data ld;
+    char const* launch_cfg = config_file;
+
+    if(get_launcher_dir(launcher_dir, argv[0]) < 0) {
+        display_error("Could not get launcher directory\n");
+        return 1;
+    }
+
+    #if defined __GNUC__ && !defined __clang__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat-truncation"
+    #endif
+    snprintf(config_file, sizeof config_file, "%stoml/launcher.toml", launcher_dir);
+    #if defined __GNUC__ && !defined __clang__
+    #pragma GCC diagnostic pop
+    #endif
+
+
+    while((opt = getopt(argc, argv, ":r:s:u:c:hnv")) != -1) {
+        switch(opt) {
+            case 'r':
+                if(!set_flag && !run_flag) {
+                    run_flag = true;
+                    set_cfg = optarg;
+                }
+                break;
+            case 's':
+                if(!run_flag && !set_flag) {
+                    set_flag = true;
+                    set_cfg = optarg;
+                }
+                break;
+            case 'u':
+                upd_flag = true;
+                upd_cfg = optarg;
+                break;
+            case 'c':
+                launch_cfg = optarg;
+                break;
+            case 'h':
+                h_flag = true;
+                break;
+            case '?':
+                if(optopt == 'r' || optopt == 's' || optopt == 'u')
+                    errorfmt("Option -%c requires an argument\n", optopt);
+                else if(isprint(optopt))
+                    errorfmt("Unknown option '-%c'\n", optopt);
+                else
+                    errorfmt("Unknown option character '\\x%x'\n", optopt);
+                return 1;
+            default:
+                return 1;
+        }
+    }
+
+    for(idx = optind; idx < argc; idx++)
+        errorfmt("Non-option argument %s ignored\n", argv[idx]);
+
+    if(h_flag) {
+        print_help();
+        return 1;
+    }
+
+    if(!setup_config(&ld, launch_cfg))
+        return 1;
+
+    show_console(ld.show_console);
+
+    if(!construct_rotwkl_toml_path(rotwk_toml, launcher_dir, sizeof rotwk_toml))
+        return 1;
+    if(!construct_edain_toml_path(edain_toml, launcher_dir, sizeof edain_toml))
+        return 1;
+    if(!construct_botta_toml_path(botta_toml, launcher_dir, sizeof botta_toml))
+        return 1;
+
+    chdir(ld.game_path);
+
+    if(!construct_launch_cmd(launch_cmd, ld.game_path, sizeof launch_cmd))
+        return 1;
+    if(!construct_dat_file_path(dat_file, ld.game_path, sizeof dat_file))
+        return 1;
+
+    md5sum(dat_file, game_csum);
+    new_dat_enabled = strcmp(game_csum, NEW_DAT_CSUM) == 0;
+
+    /* Update */
+    if(upd_cfg && upd_flag) {
+        if(!update(upd_cfg, new_dat_enabled, &ld, edain_toml, botta_toml, rotwk_toml))
+            return 1;
+    }
+
+    enum configuration active_config = ld.default_state;
+    if(set_cfg && set_flag) {
+        active_config = set(set_cfg, &ld, edain_toml, botta_toml, rotwk_toml);
+        if(active_config < 0)
+            return 1;
+    }
+
+    if(run_flag) {
+        if(!launch(launch_cmd, sizeof launch_cmd, dat_file, &ld, active_config, edain_toml, botta_toml, rotwk_toml))
+            return 1;
+    }
+
+    return 0;
+}
+
+static void print_help(void) {
     fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");
     fprintf(stderr, "    -r <config>,        Run the given configuration.\n");
     fprintf(stderr, "    -s <config>,        Specify what configuration to enable.\n");
@@ -23,399 +168,259 @@ void print_help(void) {
     fprintf(stderr, "** Available only with the -u flag\n");
 }
 
-int cli_main(int argc, char** argv) {
-    static char const config_file[] = "toml/launcher.toml";
-    char const* lcfg = config_file;
+static int get_launcher_dir(char* restrict dst, char const* restrict launcher_path) {
+    char arg[PATH_SIZE];
 
-    bool r_flag = false, s_flag = false, u_flag = false, h_flag = false;
-    char *scfg = NULL, *ucfg = NULL;
-    int idx, opt, sync;
-    bool mounting_necessary = true; 
-    bool new_dat_enabled;
-    struct latch latch;
+    if(strscpy(arg, launcher_path, sizeof arg) < 0)
+        return -E2BIG;
 
-    char cwd[PATH_SIZE];
-    char rotwk_toml[PATH_SIZE];
-    char edain_toml[PATH_SIZE];
-    char botta_toml[PATH_SIZE];
-    char launch_cmd[PATH_SIZE];
-    char launch[PATH_SIZE];
-    char dat_file[PATH_SIZE];
-    char game_csum[FSTR_SIZE];
+    replace_char(arg, '\\', '/');
 
-    while((opt = getopt(argc, argv, ":r:s:u:c:hnv")) != -1) {
-        switch(opt) {
-            case 'r':
-                if(!s_flag && !r_flag) {
-                    r_flag = true;
-                    scfg = optarg;
-                }
-                break;
-            case 's':
-                if(!r_flag && !s_flag) {
-                    s_flag = true;
-                    scfg = optarg;
-                }
-                break;
-            case 'u':
-                u_flag = true;
-                ucfg = optarg;
-                break;
-            case 'c':
-                lcfg = optarg;
-                break;
-            case 'h':
-                h_flag = true;
-                break;
-            case '?':
-                if(optopt == 'r' || optopt == 's' || optopt == 'u')
-                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
-                else if(isprint(optopt))
-                    fprintf(stderr, "Unknown option '-%c'.\n", optopt);
-                else
-                    fprintf(stderr, "Unknown option character '\\x%x'.\n", optopt);
-                return 1;
-            default:
-                return 1;
+    parent_path(dst, arg);
+    return 0;
+}
+
+static bool setup_config(struct launcher_data* ld, char const* launch_cfg) {
+    if(!file_exists(launch_cfg)) {
+        display_error("No config file found, using default values\n");
+        launcher_data_init(ld);
+    }
+    else  {
+        if(!read_launcher_config(ld, launch_cfg)) {
+            display_error("Failed to read launcher config\n");
+            return false;
         }
     }
+    return true;
+}
 
-    for(idx = optind; idx < argc; idx++)
-        printf("Non-option argument %s ignored.\n", argv[idx]);
-
-    if(h_flag) {
-        print_help();
-        return 1;
+static bool construct_rotwkl_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size) {
+    if(strscpy(dst, launcher_dir, dst_size) < 0) {
+        display_error("Launcher path overflowed the rotwk toml buffer\n");
+        return false;
     }
-
-    struct launcher_data ld;
-    if(!file_exists(lcfg))
-        cli_setup(&ld, lcfg);
-    else 
-        read_launcher_config(&ld, lcfg);
-
-    show_console(ld.show_console);
-
-    if(!getcwd(cwd, sizeof(cwd))) {
-        fprintf(stderr, "Failed to get working directory\n");
-        return 1;
+    if(strscat(dst, "/toml/rotwk.toml", dst_size) < 0) {
+        display_error("rotwkl toml overflowed the buffer\n");
+        return false;
     }
+    return true;
+}
 
-    strcpy(rotwk_toml, cwd);
-    strcat(rotwk_toml, "/toml/rotwk.toml");
+static bool construct_edain_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size) {
+    if(strscpy(dst, launcher_dir, dst_size) < 0) {
+        display_error("Launcher path overflowed the edain toml buffer\n");
+        return false;
+    }
+    if(strscat(dst, "/toml/edain.toml", dst_size) < 0) {
+        display_error("Edain toml overflowed the buffer\n");
+        return false;
+    }
+    return true;
+}
 
-    strcpy(edain_toml, cwd);
-    strcat(edain_toml, "/toml/edain.toml");
+static bool construct_botta_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size) {
+    if(strscpy(dst, launcher_dir, dst_size) < 0) {
+        display_error("Launcher path overflowed the botta toml buffer\n");
+        return false;
+    }
+    if(strscat(dst, "/toml/botta.toml", dst_size) < 0) {
+        display_error("Botta toml overflowed the buffer\n");
+        return false;
+    }
+    return true;
+}
 
-    strcpy(botta_toml, cwd);
-    strcat(botta_toml, "/toml/botta.toml");
+static bool construct_launch_cmd(char* restrict dst, char const* restrict game_path, size_t dst_size) {
+    if(strscpy(dst, game_path, dst_size) < 0) {
+        display_error("Game path overflowed the launch command buffer\n");
+        return false;
+    }
+    if(strscat(dst, "/lotrbfme2ep1.exe", dst_size) < 0) {
+        display_error("Exe path overflowed the launch command buffer\n");
+        return false;
+    }
+    return true;
+}
 
-    chdir(ld.game_path);
+static bool construct_botta_launch_cmd(char* restrict dst, char const* restrict botta_path, size_t dst_size) {
+    if(strscpy(dst, botta_path, dst_size) < 0) {
+        display_error("Botta path overflowed the launch buffer\n");
+        return false;
+    }
+    if(strscat(dst, "/BotTa.lnk", dst_size) < 0) {
+        display_error("Botta lnk overflowed the buffer\n");
+        return false;
+    }
+    return true;
+}
 
-    strcpy(launch_cmd, ld.game_path);
-    strcat(launch_cmd, "/lotrbfme2ep1.exe");
+static bool construct_dat_file_path(char* restrict dst, char const* restrict game_path, size_t dst_size) {
+    if(strscpy(dst, game_path, dst_size) < 0) {
+        display_error("Game path overflowed the game.dat buffer\n");
+        return false;
+    }
+    if(strscat(dst, "/game.dat", dst_size) < 0) {
+        display_error("game.dat path overflowed the buffer\n");
+        return false;
+    }
+    return true;
+}
 
-    strcpy(dat_file, ld.game_path);
-    strcat(dat_file, "/game.dat");
+static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct launcher_data const* ld,
+                   char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml) {
+    unsigned sync;
+    struct latch latch;
+    struct progress_callback pc;
+    progress_init(&pc);
 
-    md5sum(dat_file, game_csum);
-    new_dat_enabled = strcmp(game_csum, NEW_DAT_CSUM) == 0;
-
-    /* Update */
     sync = 1;
-    if(strcmp(ucfg, "all") == 0) {
-        if(ld.edain_available)
+    if(upd_cfg && strcmp(upd_cfg, "all") == 0) {
+        if(ld->edain_available)
             ++sync;
-        if(ld.botta_available)
+        if(ld->botta_available)
             ++sync;
     }
     latch_init(&latch, sync);
 
-    if(u_flag) {
-        if(strcmp(ucfg, "rotwk") == 0) 
-            update_game_config(rotwk_toml, !new_dat_enabled, &latch, &ld);
-        else if(strcmp(ucfg, "edain") == 0) {
+    /* Only rotwk */
+    if(strcmp(upd_cfg, "rotwk") == 0) 
+        update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc);
+    /* Only edain */
+    else if(strcmp(upd_cfg, "edain") == 0) {
 
-            if(!ld.edain_available) {
-                fprintf(stderr, "Edain is not available\n");
-                return 1;
-            }
-
-            update_game_config(edain_toml, new_dat_enabled, &latch, &ld);
+        if(!ld->edain_available) {
+            display_error("Edain is not avaialble\n");
+            return false;
         }
-        else if(ld.botta_available && strcmp(ucfg, "botta") == 0) {
 
-            if(!ld.botta_available) {
-                fprintf(stderr, "BotTA is not available\n");
-                return 1;
-            }
+        update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc);
+    }
+    /* Only botta */
+    else if(strcmp(upd_cfg, "botta") == 0) {
 
-            update_game_config(botta_toml, new_dat_enabled, &latch, &ld);
+        if(!ld->botta_available) {
+            display_error("BotTA is not available\n");
+            return false;
         }
-        else if(strcmp(ucfg, "all") == 0) {
-            #pragma omp parallel num_threads(3)
+
+        update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc);
+    }
+    /* All */
+    else if(strcmp(upd_cfg, "all") == 0) {
+        #pragma omp parallel num_threads(3)
+        {
+            #pragma omp master
             {
-                #pragma omp master
-                {
-                    prepare_progress();
+                #pragma omp task if(ld->edain_available)
+                    update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc);
 
-                    #pragma omp task if(ld.edain_available)
-                        update_game_config(edain_toml, new_dat_enabled, &latch, &ld);
+                #pragma omp task if(ld->botta_available)
+                    update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc);
 
-                    #pragma omp task if(ld.botta_available)
-                        update_game_config(botta_toml, new_dat_enabled, &latch, &ld);
-
-                    update_game_config(rotwk_toml, !new_dat_enabled, &latch, &ld);
-
-                    reset_progress();
-                }
-            }
-        }
-        else {
-            fprintf(stderr, "Unknown configuration %s\n", ucfg);
-            return 1;
-        }
-    }
-
-    enum configuration active_config;
-
-    if(r_flag || s_flag) {
-        /* Set active config */
-        if(strcmp(scfg, "rotwk") == 0) {
-            set_active_configuration(rotwk_toml, true);
-            active_config = rotwk;
-        }
-        else {
-            if(strcmp(scfg, "edain") == 0) {
-                if(!ld.edain_available) {
-                    fprintf(stderr, "Edain is not available\n");
-                    return 1;
-                }
-
-                set_active_configuration(edain_toml, ld.swap_dat_file);
-
-                active_config = edain;
-            }
-            else if(ld.botta_available && strcmp(scfg, "botta") == 0) {
-                if(!ld.botta_available) {
-                    fprintf(stderr, "BotTA is not available\n");
-                    return 1;
-                }
-
-                set_active_configuration(botta_toml, ld.swap_dat_file);
-                active_config = botta;
-            }
-            else {
-                fprintf(stderr, "Unknown configuration %s\n", scfg);
-                return 1;
-            }
-        }
-
-        /* Launch */
-        if(r_flag) {
-            if(ld.automatic_mount) {
-                md5sum(dat_file, game_csum);
-                mounting_necessary = strcmp(game_csum, NEW_DAT_CSUM);
-
-                if(mounting_necessary) {
-                    if(system(ld.mount_cmd) != 0) {
-                        fprintf(stderr, "'%s' returned an error\n", ld.mount_cmd);
-                        return 1;
-                    }
-                }
-            }
-
-            if(active_config == botta) {
-                strcpy(launch_cmd, ld.botta_path);
-                strcat(launch_cmd, "/BotTa.lnk");
-            }
-
-            sys_format(launch, launch_cmd);
-
-            if(system(launch) != 0)
-                fprintf(stderr, "Failed to launch game.\n");
-
-            while(game_running())
-                sleep_for(SLEEP_TIME);
-
-            switch(ld.default_state) {
-                case rotwk:
-                    set_active_configuration(rotwk_toml, true);
-                    break;
-                case edain:
-                    set_active_configuration(edain_toml, ld.swap_dat_file);
-                    break;
-                case botta:
-                    set_active_configuration(botta_toml, ld.swap_dat_file);
-                    break;
-                default:
-                    break;
-            }
-
-            if(ld.automatic_mount && mounting_necessary) {
-                if(system(ld.umount_cmd) != 0) {
-                    fprintf(stderr, "'%s' returned an error\n", ld.umount_cmd);
-                    return 1;
-                }
+                update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc);
             }
         }
     }
-
-    return 0;
+    else {
+        errorfmt("Unknown configuration %s\n", upd_cfg);
+        return false;
+    }
+    return true;
 }
 
-void cli_setup(struct launcher_data* cfg, char const* file) {
-    launcher_data_init(cfg);
-    bool input_ok = false;
-    char c;
+static int set(char const* restrict set_cfg, struct launcher_data const* ld, char const* restrict edain_toml,
+                char const* restrict botta_toml, char const* restrict rotwk_toml) {
+    enum configuration active_config;
 
-    char path[PATH_SIZE];
+    if(strcmp(set_cfg, "rotwk") == 0) {
+        set_active_configuration(rotwk_toml, ld->patch_version, true, ld->verify_active);
+        active_config = rotwk;
+    }
+    else {
+        if(strcmp(set_cfg, "edain") == 0) {
+            if(!ld->edain_available) {
+                display_error("Edain is not available\n");
+                return -1;
+            }
 
-    game_path_from_registry(cfg->game_path);
-    printf("Unofficial Rise of the Witch-King Launcher setup\n");
-    if(!cfg->game_path[0]) {
-        while(!input_ok) {
-            printf("Enter the path to the game directory (directory containing lotrbfme2ep1.exe).\n");
-            fgets(cfg->game_path, sizeof cfg->game_path, stdin);
-            remove_newline(cfg->game_path);
+            set_active_configuration(edain_toml, ld->patch_version, ld->swap_dat_file, ld->verify_active);
 
-            strcpy(path, cfg->game_path);
-            strcat(path, "/lotrbfme2ep1.exe");
+            active_config = edain;
+        }
+        else if(strcmp(set_cfg, "botta") == 0) {
+            if(!ld->botta_available) {
+                display_error("BotTA is not avaialble\n");
+                return -1;
+            }
 
-            if(!file_exists(path)) 
-                fprintf(stderr, "Could not locate lotrbfme2ep1.exe at given path. Try again");
-            else
-                input_ok = true;
+            set_active_configuration(botta_toml, ld->patch_version, ld->swap_dat_file, ld->verify_active);
+            active_config = botta;
+        }
+        else {
+            display_error("Unknown configuration\n");
+            return -1;
         }
     }
-    input_ok = false;
-    printf("Game path set to '%s'.\n", cfg->game_path);
-    printf("Is the Edain mod installed? (y/n)\n");
+    return active_config;
+}
 
-    while(!input_ok) {
-        c = getchar();
-        while(getchar() != '\n') { }
-        if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-            input_ok = true;
-        else 
-            printf("Please enter 'y' or 'n'.\n");
-    }
-    cfg->edain_available = c == 'y' || c == 'Y';
-    input_ok = false;
+static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const* restrict dat_file, struct launcher_data const* ld, 
+                   enum configuration active_config, char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml) {
+    char csum[ENTRY_SIZE];
+    char launch_call[PATH_SIZE];
+    bool mounting_necessary = true;
 
-    printf("Is the Battles of the Third Age (BotTa) mod installed? (y/n)\n");
+    if(ld->automatic_mount) {
+        md5sum(dat_file, csum);
+        mounting_necessary = strcmp(csum, NEW_DAT_CSUM);
 
-    while(!input_ok) {
-        c = getchar();
-        while(getchar() != '\n') { }
-        if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-            input_ok = true;
-        else 
-            printf("Please enter 'y' or 'n'.\n");
-    }
-    cfg->botta_available = c == 'y' || c == 'Y';
-    input_ok = false;
-
-    if(cfg->botta_available) {
-        printf("Enter the path to the BotTa directory.\n");
-        while(!input_ok) {
-            fgets(cfg->botta_path, sizeof cfg->botta_path, stdin);
-            remove_newline(cfg->botta_path);
-
-            strcpy(path, cfg->botta_path);
-            strcat(path, "/BotTa.lnk");
-
-            if(!file_exists(path))
-                fprintf(stderr, "Could not locate BotTa.lnk at given path. Try again.");
-            else
-                input_ok = true;
-
+        if(mounting_necessary) {
+            if(system(ld->mount_cmd) != 0) {
+                errorfmt("'%s' returned an error\n", ld->mount_cmd);
+                return false;
+            }
         }
-        printf("BotTa path set to '%s'.\n", cfg->botta_path);
-        input_ok = false;
     }
-    else
-        cfg->botta_path[0] = '\0';
 
-    printf("Should the launcher mount a disk image automatically? (y/n)\n");
-    while(!input_ok) {
-        c = getchar();
-        while(getchar() != '\n') { }
-        if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-            input_ok = true;
-        else 
-            printf("Please enter 'y' or 'n'.\n");
-    }
-    input_ok = false;
-    cfg->automatic_mount = c == 'y' || c == 'Y';
-
-    if(cfg->automatic_mount) {
-        printf("Enter path to mount executable (without quotes or escaping any chars)\n");
-        while(!input_ok) {
-            fgets(cfg->mount_exe, sizeof cfg->mount_exe, stdin);
-            remove_newline(cfg->mount_exe);
-
-            if(!file_exists(cfg->mount_exe))
-                fprintf(stderr, "%s does not exist\n", cfg->mount_exe);
-            else
-                input_ok = true;
-
+    if(active_config == botta) {
+        if(!construct_botta_launch_cmd(launch_cmd, ld->botta_path, launch_cmd_size)) {
+            /* Unmount if necessary */
+            if(ld->automatic_mount && mounting_necessary) {
+                if(system(ld->umount_cmd) != 0)
+                    errorfmt("'%s' returned an error\n", ld->umount_cmd);
+            }
+            return false;
         }
-        printf("Mount executable set to '%s'.\n", cfg->mount_exe);
-        input_ok = false;
-
-        printf("Enter path to the disc image that should be mounted (without quotes or escaping chars)\n");
-        while(!input_ok) {
-            fgets(cfg->disc_image, sizeof cfg->disc_image, stdin);
-            remove_newline(cfg->disc_image);
-
-            if(!file_exists(cfg->disc_image))
-                fprintf(stderr, "%s does not exist\n", cfg->disc_image);
-            else 
-                input_ok = true;
-        }
-        printf("Disc image set to '%s'.\n", cfg->disc_image);
-        input_ok = false;
-
-        printf("Enter mounting flags (if none, leave empty)\n");
-        fgets(cfg->mount_flags, sizeof cfg->mount_flags, stdin);
-        remove_newline(cfg->mount_flags);
-        printf("Mounting flags set to '%s'.\n", cfg->mount_flags);
-
-        printf("Enter unmounting flags (if non, leave empty)\n");
-        fgets(cfg->umount_flags, sizeof cfg->umount_flags, stdin);
-        remove_newline(cfg->umount_flags);
-        printf("Unmounting flags set to '%s'.\n", cfg->umount_flags);
-
-        printf("Should the disc image be specified when invoking the unmoung command?\n");
-        while(!input_ok) {
-            c = getchar();
-            while(getchar() != '\n') { }
-            if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-                input_ok = true;
-            else 
-                printf("Please enter 'y' or 'n'.\n");
-        }
-        input_ok = false;
-        cfg->umount_imspec = c == 'y' || c == 'Y';
-
-        construct_mount_command(cfg->mount_cmd, cfg->mount_exe, cfg->mount_flags, cfg->disc_image);
-        construct_umount_command(cfg->umount_cmd, cfg->mount_exe, cfg->umount_flags, cfg->disc_image, cfg->umount_imspec);
-        printf("Mount command set ot '%s'.\n", cfg->mount_cmd);
-        printf("Unmount command set ot '%s'.\n", cfg->umount_cmd);
     }
 
-    printf("Should the launcher swap dat files? (Recommended).");
+    sys_format(launch_call, launch_cmd);
 
-    while(!input_ok) {
-        c = getchar();
-        while(getchar() != '\n') { }
-        if(c == 'y' || c == 'Y' || c == 'n' || c == 'N')
-            input_ok = true;
-        else 
-            printf("Please enter 'y' or 'n'.\n");
+    if(system(launch_call) != 0)
+        display_error("Failed to launch game\n");
+
+    while(game_running())
+        sleep_for(SLEEP_TIME);
+
+    switch(ld->default_state) {
+        case rotwk:
+            set_active_configuration(rotwk_toml, ld->patch_version, true, false);
+            break;
+        case edain:
+            set_active_configuration(edain_toml, ld->patch_version, ld->swap_dat_file, false);
+            break;
+        case botta:
+            set_active_configuration(botta_toml, ld->patch_version, ld->swap_dat_file, false);
+            break;
+        default:
+            break;
     }
-    cfg->swap_dat_file = c == 'y' || c == 'Y';
 
-    write_launcher_config(cfg, file);
+    if(ld->automatic_mount && mounting_necessary) {
+        if(system(ld->umount_cmd) != 0) {
+            errorfmt("'%s' returned an error\n", ld->umount_cmd);
+            return false;
+        }
+    }
+
+    return true;
 }

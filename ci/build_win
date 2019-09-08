@@ -1,0 +1,66 @@
+#!/bin/bash
+
+log_file="output.log"
+
+function print_usage {
+    echo "Usage: build_win <project dir> <Qt path>" >> "$log_file"
+}
+
+function print_error {
+    echo Error: "$1" >&2 >> "$log_file"
+}
+
+if [ -z "$1" ] ; then
+    print_error "Project path not specified"
+    print_usage
+    exit 1
+fi
+
+project_dir="$1"
+
+if [ -z "$2" ] ; then
+    print_error "Qt path not specified"
+    print_usage
+    exit 1
+fi
+
+qt_path="$2"
+
+set -xe
+
+qt_bin="$qt_path""/bin"
+msys_bin="C:/msys64/mingw64/bin"
+artifact_dir="rotwk_launcher"
+archive="$artifact_dir"".zip"
+
+declare -a dlls
+
+dlls+=("$qt_bin""/Qt5Core.dll")
+dlls+=("$qt_bin""/Qt5Gui.dll")
+dlls+=("$qt_bin""/Qt5Svg.dll")
+dlls+=("$qt_bin""/Qt5Widgets.dll")
+dlls+=("$msys_bin""/libgcc_s_seh-1.dll")
+dlls+=("$msys_bin""/libstdc++-6.dll")
+dlls+=("$msys_bin""/libwinpthread-1.dll")
+
+echo Updating packages... >> "$log_file"
+pacman --noconfirm -Syu
+pacman --noconfirm --needed -S make gcc zip mingw-w64-x86_64-toolchain mingw-w64-x86_64-openssl
+
+cd "$project_dir"
+
+echo Compiling... >> "$log_file"
+make release QT_PATH="$qt_path" > "$log_file" 2>&1
+
+mkdir -p "$artifact_dir"
+
+cp -rv {images,toml,xml,rotwkl} "$artifact_dir"/ >> "$log_file" 2>&1
+
+for dll in "${dlls[@]}"; do
+    cp -v $dll "$artifact_dir" >> "$log_file" 2>&1
+done
+
+printf "Zipping build...\n" >> "$log_file"
+zip -r rotwkl.zip "$artifact_dir"/* >> "$log_file" 2>&1
+
+rm -r "$artifact_dir"

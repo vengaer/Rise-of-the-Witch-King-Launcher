@@ -12,9 +12,9 @@
 
 #define PATH_SIZE 1024
 #define LINE_SIZE 256
-#define FSTR_SIZE 64
+#define ENTRY_SIZE 64
 #define HEADER_SIZE 32
-#define OPT_SIZE 32
+#define VERSION_SIZE 16
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,14 +33,16 @@ enum configuration {
 };
 
 struct big_file {
-    char name[FSTR_SIZE];
-    char checksum[FSTR_SIZE];
-    char extension[OPT_SIZE];
+    char name[ENTRY_SIZE];
+    char checksum[ENTRY_SIZE];
+    char extension[HEADER_SIZE];
 };
 
 struct dat_file {
-    char name[FSTR_SIZE];
-    char checksum[FSTR_SIZE];
+    char name[ENTRY_SIZE];
+    char checksum[ENTRY_SIZE];
+    char disabled[ENTRY_SIZE];
+    char introduced[VERSION_SIZE];
     enum file_state state;
 };
 
@@ -49,10 +51,11 @@ struct launcher_data {
     char botta_path[PATH_SIZE];
     char mount_exe[PATH_SIZE];
     char disc_image[PATH_SIZE];
-    char mount_flags[OPT_SIZE];
-    char umount_flags[OPT_SIZE];
+    char mount_flags[HEADER_SIZE];
+    char umount_flags[HEADER_SIZE];
     char mount_cmd[PATH_SIZE];
     char umount_cmd[PATH_SIZE];
+    char patch_version[HEADER_SIZE];
     bool edain_available;
     bool botta_available;
     bool automatic_mount;
@@ -60,6 +63,7 @@ struct launcher_data {
     bool umount_imspec;
     bool kill_on_launch;
     bool show_console;
+    bool verify_active;
     enum configuration default_state;
 };
 

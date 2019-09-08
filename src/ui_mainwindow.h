@@ -92,18 +92,24 @@ public:
     QLabel *label_4;
     QCheckBox *edain_installed;
     QGroupBox *groupBox;
-    QGridLayout *gridLayout_7;
-    QHBoxLayout *horizontalLayout_8;
-    QLabel *label;
-    QCheckBox *dat_swap;
+    QVBoxLayout *verticalLayout_2;
     QHBoxLayout *horizontalLayout_7;
     QLabel *label_2;
     QPushButton *game_path_chooser;
     QHBoxLayout *horizontalLayout_11;
     QLabel *label_9;
     QComboBox *default_state;
+    QHBoxLayout *horizontalLayout_21;
+    QLabel *label_15;
+    QComboBox *rotwk_version;
+    QHBoxLayout *horizontalLayout_8;
+    QLabel *label;
+    QCheckBox *dat_swap;
+    QHBoxLayout *horizontalLayout_20;
+    QLabel *label_14;
+    QCheckBox *verify_active;
     QGroupBox *groupBox_5;
-    QGridLayout *gridLayout_6;
+    QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout_16;
     QLabel *label_11;
     QCheckBox *kill_on_launch;
@@ -244,7 +250,7 @@ public:
         pref_scroll->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName(QString::fromUtf8("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 382, 532));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 382, 581));
         gridLayout_4 = new QGridLayout(scrollAreaWidgetContents);
         gridLayout_4->setSpacing(6);
         gridLayout_4->setContentsMargins(11, 11, 11, 11);
@@ -437,26 +443,10 @@ public:
 
         groupBox = new QGroupBox(scrollAreaWidgetContents);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        gridLayout_7 = new QGridLayout(groupBox);
-        gridLayout_7->setSpacing(6);
-        gridLayout_7->setContentsMargins(11, 11, 11, 11);
-        gridLayout_7->setObjectName(QString::fromUtf8("gridLayout_7"));
-        horizontalLayout_8 = new QHBoxLayout();
-        horizontalLayout_8->setSpacing(6);
-        horizontalLayout_8->setObjectName(QString::fromUtf8("horizontalLayout_8"));
-        label = new QLabel(groupBox);
-        label->setObjectName(QString::fromUtf8("label"));
-
-        horizontalLayout_8->addWidget(label);
-
-        dat_swap = new QCheckBox(groupBox);
-        dat_swap->setObjectName(QString::fromUtf8("dat_swap"));
-
-        horizontalLayout_8->addWidget(dat_swap);
-
-
-        gridLayout_7->addLayout(horizontalLayout_8, 2, 0, 1, 1);
-
+        verticalLayout_2 = new QVBoxLayout(groupBox);
+        verticalLayout_2->setSpacing(6);
+        verticalLayout_2->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
         horizontalLayout_7 = new QHBoxLayout();
         horizontalLayout_7->setSpacing(6);
         horizontalLayout_7->setObjectName(QString::fromUtf8("horizontalLayout_7"));
@@ -471,7 +461,7 @@ public:
         horizontalLayout_7->addWidget(game_path_chooser);
 
 
-        gridLayout_7->addLayout(horizontalLayout_7, 0, 0, 1, 1);
+        verticalLayout_2->addLayout(horizontalLayout_7);
 
         horizontalLayout_11 = new QHBoxLayout();
         horizontalLayout_11->setSpacing(6);
@@ -487,17 +477,65 @@ public:
         horizontalLayout_11->addWidget(default_state);
 
 
-        gridLayout_7->addLayout(horizontalLayout_11, 1, 0, 1, 1);
+        verticalLayout_2->addLayout(horizontalLayout_11);
+
+        horizontalLayout_21 = new QHBoxLayout();
+        horizontalLayout_21->setSpacing(6);
+        horizontalLayout_21->setObjectName(QString::fromUtf8("horizontalLayout_21"));
+        label_15 = new QLabel(groupBox);
+        label_15->setObjectName(QString::fromUtf8("label_15"));
+
+        horizontalLayout_21->addWidget(label_15);
+
+        rotwk_version = new QComboBox(groupBox);
+        rotwk_version->setObjectName(QString::fromUtf8("rotwk_version"));
+
+        horizontalLayout_21->addWidget(rotwk_version);
+
+
+        verticalLayout_2->addLayout(horizontalLayout_21);
+
+        horizontalLayout_8 = new QHBoxLayout();
+        horizontalLayout_8->setSpacing(6);
+        horizontalLayout_8->setObjectName(QString::fromUtf8("horizontalLayout_8"));
+        label = new QLabel(groupBox);
+        label->setObjectName(QString::fromUtf8("label"));
+
+        horizontalLayout_8->addWidget(label);
+
+        dat_swap = new QCheckBox(groupBox);
+        dat_swap->setObjectName(QString::fromUtf8("dat_swap"));
+
+        horizontalLayout_8->addWidget(dat_swap);
+
+
+        verticalLayout_2->addLayout(horizontalLayout_8);
+
+        horizontalLayout_20 = new QHBoxLayout();
+        horizontalLayout_20->setSpacing(6);
+        horizontalLayout_20->setObjectName(QString::fromUtf8("horizontalLayout_20"));
+        label_14 = new QLabel(groupBox);
+        label_14->setObjectName(QString::fromUtf8("label_14"));
+
+        horizontalLayout_20->addWidget(label_14);
+
+        verify_active = new QCheckBox(groupBox);
+        verify_active->setObjectName(QString::fromUtf8("verify_active"));
+
+        horizontalLayout_20->addWidget(verify_active);
+
+
+        verticalLayout_2->addLayout(horizontalLayout_20);
 
 
         gridLayout_4->addWidget(groupBox, 2, 0, 1, 2);
 
         groupBox_5 = new QGroupBox(scrollAreaWidgetContents);
         groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
-        gridLayout_6 = new QGridLayout(groupBox_5);
-        gridLayout_6->setSpacing(6);
-        gridLayout_6->setContentsMargins(11, 11, 11, 11);
-        gridLayout_6->setObjectName(QString::fromUtf8("gridLayout_6"));
+        verticalLayout = new QVBoxLayout(groupBox_5);
+        verticalLayout->setSpacing(6);
+        verticalLayout->setContentsMargins(11, 11, 11, 11);
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         horizontalLayout_16 = new QHBoxLayout();
         horizontalLayout_16->setSpacing(6);
         horizontalLayout_16->setObjectName(QString::fromUtf8("horizontalLayout_16"));
@@ -512,7 +550,7 @@ public:
         horizontalLayout_16->addWidget(kill_on_launch);
 
 
-        gridLayout_6->addLayout(horizontalLayout_16, 0, 0, 1, 1);
+        verticalLayout->addLayout(horizontalLayout_16);
 
         horizontalLayout_19 = new QHBoxLayout();
         horizontalLayout_19->setSpacing(6);
@@ -528,7 +566,7 @@ public:
         horizontalLayout_19->addWidget(show_console);
 
 
-        gridLayout_6->addLayout(horizontalLayout_19, 1, 0, 1, 1);
+        verticalLayout->addLayout(horizontalLayout_19);
 
 
         gridLayout_4->addWidget(groupBox_5, 8, 0, 1, 2);
@@ -649,11 +687,6 @@ public:
 #endif // QT_NO_TOOLTIP
         edain_installed->setText(QString());
         groupBox->setTitle(QApplication::translate("MainWindow", "Base Game", nullptr));
-        label->setText(QApplication::translate("MainWindow", "Swap .dat File", nullptr));
-#ifndef QT_NO_TOOLTIP
-        dat_swap->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 .dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.<br>(Recommended: On)</p></body></html>", nullptr));
-#endif // QT_NO_TOOLTIP
-        dat_swap->setText(QString());
         label_2->setText(QApplication::translate("MainWindow", "Game Path", nullptr));
 #ifndef QT_NO_TOOLTIP
         game_path_chooser->setToolTip(QApplication::translate("MainWindow", "Path to game directory (directory containing lotrbfme2ep1.exe)", nullptr));
@@ -663,6 +696,20 @@ public:
 #ifndef QT_NO_TOOLTIP
         default_state->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>State in which the game is left after launch. Options are:<br>RotWK - patch 2.02 (Recommended for maximum compatibility)<br>Edain - patch 2.01 with Edain enabled<br>BotTA - patch 2.01<br> Last Launched - Whatever version was launched last</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
+        label_15->setText(QApplication::translate("MainWindow", "RotWK 2.02 version", nullptr));
+#ifndef QT_NO_TOOLTIP
+        rotwk_version->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Which version of 2.02 that should be applied when launching base game</p></body></html>", nullptr));
+#endif // QT_NO_TOOLTIP
+        label->setText(QApplication::translate("MainWindow", "Swap game.dat File", nullptr));
+#ifndef QT_NO_TOOLTIP
+        dat_swap->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Specifies whether the launcher should swap game.dat files. Turning this off means the 2.02 game.dat file will always be kept active, making it possible to play 2.01 and any mods requiring it without a disc.<br>(Recommended: On)</p></body></html>", nullptr));
+#endif // QT_NO_TOOLTIP
+        dat_swap->setText(QString());
+        label_14->setText(QApplication::translate("MainWindow", "Verify Active Configuration", nullptr));
+#ifndef QT_NO_TOOLTIP
+        verify_active->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Whether the launcher should verify the integrity of the active version. Enabling this adds to the startup time.</p></body></html>", nullptr));
+#endif // QT_NO_TOOLTIP
+        verify_active->setText(QString());
         groupBox_5->setTitle(QApplication::translate("MainWindow", "Launcher", nullptr));
         label_11->setText(QApplication::translate("MainWindow", "Terminate On Launch", nullptr));
 #ifndef QT_NO_TOOLTIP

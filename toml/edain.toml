@@ -59,6 +59,11 @@ checksum = "f4622dbf4b3251d80ff7215d52fe2c2a"
 extension = "big.bak"
 
 [[disable]]
+name = "##########202_v8.0.0.big"
+checksum = "27ad912c69b83772cf62f24093450109"
+extension = "disabled"
+
+[[disable]]
 name = "########202_v6.0.0.big"
 checksum = "30d4ffc5ff682a1638264f58010d560f"
 extension = "disabled"
@@ -254,6 +259,11 @@ checksum = "d9dc2d3e244cffad31c49fe673b7cf96"
 extension = "disabled"
 
 [[disable]]
+name = "lang/englishstrings202_v8.0.0.big"
+checksum = "29f18a1f784564494f32e502276b6992"
+extension = "disabled"
+
+[[disable]]
 name = "#########202_v7.0.0.big"
 checksum = "75eea4740fc6ab777ef576291e11f020"
 extension = "disabled"
@@ -277,6 +287,20 @@ extension = "disabled"
     [swap.activate]
         name = "game.dat"
         checksum = "84659690d2b47506bb23b2b43bd3b238"
+        disabled = "game.other"
+        introduced = "v1.0"
     [swap.deactivate]
         name = "game.dat"
         checksum = "fbff091f6139eb05dc012d834e3eeb74"
+        disabled = "game.other"
+        introduced = "v1.0"
+    [swap.activate]
+        name = "asset.dat"
+        checksum = "e4573b34fcf23f184a53c81ffe3f84b3"
+        disabled = "asset2.dat"
+        introduced = "v3.0.0.0"
+    [swap.deactivate]
+        name = "asset.dat"
+        checksum = "f1333838f8a68ce2c318c421218465d8"
+        disabled = "asset2.dat"
+        introduced = "v8.0.0"

@@ -1,13 +1,14 @@
 #include "mainwindow.h"
 #include "atomic.h"
 #include "bitop.h"
-#include "concurrency_utils.h"
 #include "command.h"
 #include "config.h"
 #include "fsys.h"
 #include "game_data.h"
 #include "latch.h"
+#include "progress_callback.h"
 #include "ui_mainwindow.h"
+#include <algorithm>
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,10 +19,17 @@
 #include <QProgressDialog>
 #include <QResizeEvent>
 #include <QSize>
+#include <QVector>
 
 #if defined __CYGWIN__ || defined _WIN32
 #include <windows.h>
 #endif
+
+void gui_error_diag(char const* info) {
+    QMessageBox box;
+    box.critical(0, "Error", info);
+    box.setFixedSize(500, 200);
+}
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow{parent}, ui{new Ui::MainWindow}, launch_img_{"images/argonath.jpg"}, upd_img_{"images/minas_tirith.jpg"} {
     ui->setupUi(this);
@@ -107,8 +115,12 @@ void MainWindow::init() {
     config_exists_ = setup_launcher();
 
     ui->dat_swap->setChecked(data_.swap_dat_file);
+    ui->verify_active->setChecked(data_.verify_active);
 
     update_gui_functionality();
+
+    QVector<QString> default_states;
+    default_states.push_back("RotWK");
 
     if(config_exists_) {
         ui->edain_installed->setChecked(data_.edain_available);
@@ -125,6 +137,12 @@ void MainWindow::init() {
             ui->imspec_umount->setChecked(data_.umount_imspec);
         }
         ui->tabWidget->setCurrentWidget(ui->launch_tab);
+        if(data_.edain_available)
+            default_states.push_back("Edain");
+        if(data_.botta_available)
+            default_states.push_back("BotTA");
+        if(default_states.size() > 1)
+            default_states.push_back("Last Launched");
     }
     else {
         ui->tabWidget->setCurrentWidget(ui->pref_tab);
@@ -137,13 +155,20 @@ void MainWindow::init() {
 
     ui->kill_on_launch->setChecked(data_.kill_on_launch);
     ui->show_console->setChecked(data_.show_console);
-
-    ui->default_state->addItem("RotWK");
-    ui->default_state->addItem("Edain");
-    ui->default_state->addItem("BotTA");
-    ui->default_state->addItem("Last Launched");
+    
+    for(auto const& state : default_states)
+        ui->default_state->addItem(state);
+    
+    for(auto const& s : ROTWK_VERSIONS)
+        ui->rotwk_version->addItem(s);
 
     ui->default_state->setCurrentIndex(trailing_zerobits(data_.default_state));
+
+    {
+        auto it = std::find(std::begin(ROTWK_VERSIONS), std::end(ROTWK_VERSIONS), QString{data_.patch_version});
+        std::size_t idx = it == std::end(ROTWK_VERSIONS) ? 0 : std::distance(std::begin(ROTWK_VERSIONS), it);
+        ui->rotwk_version->setCurrentIndex(idx);
+    }
 
     show_console(data_.show_console);
 
@@ -252,8 +277,12 @@ void MainWindow::on_pref_save_clicked() {
         strcpy(data_.umount_flags, ui->umount_opt->text().toLatin1().data());
         data_.umount_imspec = ui->imspec_umount->isChecked();
 
-        construct_mount_command(data_.mount_cmd, data_.mount_exe, data_.mount_flags, data_.disc_image);
-        construct_umount_command(data_.umount_cmd, data_.mount_exe, data_.umount_flags, data_.disc_image, data_.umount_imspec);
+        char buf[PATH_SIZE];
+        construct_mount_command(buf, data_.mount_exe, data_.mount_flags, data_.disc_image);
+        sys_format(data_.mount_cmd, buf);
+        construct_umount_command(buf, data_.mount_exe, data_.umount_flags, data_.disc_image, data_.umount_imspec);
+        sys_format(data_.umount_cmd, buf);
+
     }
     data_.botta_available = ui->botta_installed->isChecked();
     if(data_.botta_available)
@@ -263,7 +292,9 @@ void MainWindow::on_pref_save_clicked() {
     chdir(data_.game_path);
 
     data_.swap_dat_file = ui->dat_swap->isChecked();
+    data_.verify_active = ui->verify_active->isChecked();
     data_.default_state = static_cast<configuration>(0x1 << ui->default_state->currentIndex());
+    strcpy(data_.patch_version, ROTWK_VERSIONS[ui->rotwk_version->currentIndex()].toLatin1().data());
 
     data_.kill_on_launch = ui->kill_on_launch->isChecked();
     data_.show_console = ui->show_console->isChecked();
@@ -321,13 +352,13 @@ void MainWindow::launch(configuration config) {
     md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
 
     if(config == rotwk) 
-        set_active_configuration(rotwk_toml_.toLatin1().data(), true);
+        set_active_configuration(rotwk_toml_.toLatin1().data(), data_.patch_version, true, data_.verify_active);
     else {
 
         if(config == edain)
-            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file);
+            set_active_configuration(edain_toml_.toLatin1().data(), data_.patch_version, data_.swap_dat_file, data_.verify_active);
         else
-            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file);
+            set_active_configuration(botta_toml_.toLatin1().data(), data_.patch_version, data_.swap_dat_file, data_.verify_active);
 
         if(data_.automatic_mount) {
             md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
@@ -366,13 +397,13 @@ void MainWindow::launch(configuration config) {
 
     switch(data_.default_state) {
         case rotwk:
-            set_active_configuration(rotwk_toml_.toLatin1().data(), true);
+            set_active_configuration(rotwk_toml_.toLatin1().data(), data_.patch_version, true, false);
             break;
         case edain:
-            set_active_configuration(edain_toml_.toLatin1().data(), data_.swap_dat_file);
+            set_active_configuration(edain_toml_.toLatin1().data(), data_.patch_version, data_.swap_dat_file, false);
             break;
         case botta:
-            set_active_configuration(botta_toml_.toLatin1().data(), data_.swap_dat_file);
+            set_active_configuration(botta_toml_.toLatin1().data(), data_.patch_version, data_.swap_dat_file, false);
             break;
         default:
             break;
@@ -418,21 +449,22 @@ void MainWindow::update_single_config(configuration config) {
     bool update_successful;
     struct latch latch;
     latch_init(&latch, 2);
+    struct progress_callback pc;
+    progress_init(&pc);
     #pragma omp parallel num_threads(2)
     {
         #pragma omp master
         {
-            prepare_progress();
             #pragma omp task
             {
-                update_successful = update_game_config(toml->toLatin1().data(), invert_dat, &latch, &data_);
+                update_successful = update_game_config(toml->toLatin1().data(), invert_dat, &latch, &data_, &pc);
 
                 atomic_dec(&tasks_running);
             }
 
             latch_count_down(&latch);
 
-            int total = 100;
+            int const total = 100;
             QProgressDialog dialog("Updating " + version + " config file...", "Cancel", 0, total, this);
             dialog.setWindowModality(Qt::WindowModal);
             dialog.setCancelButton(nullptr);
@@ -440,16 +472,18 @@ void MainWindow::update_single_config(configuration config) {
 
             dialog.show();
             int progress;
+            int tasks = atomic_read(&tasks_running);
 
-            while(tasks_running) {
-                progress = static_cast<int>(track_progress() * total);
+            while(tasks) {
+                progress = progress_get_percentage(&pc);
                 QCoreApplication::processEvents();
                 dialog.setValue(progress);
+
+                tasks = atomic_read(&tasks_running);
             }
             dialog.setValue(total);
             dialog.close();
 
-            reset_progress();
         }
     }
 
@@ -475,17 +509,18 @@ void MainWindow::update_all_configs() {
     struct latch latch;
     latch_init(&latch, sync);
 
+    struct progress_callback pc;
+    progress_init(&pc);
+
     int failed = 0x0;
 
     #pragma omp parallel num_threads(4)
     {
         #pragma omp master
         {
-            prepare_progress();
-
             #pragma omp task if(data_.edain_available)
             {
-                if(!update_game_config(edain_toml_.toLatin1().data(), invert_dat, &latch, &data_)) {
+                if(!update_game_config(edain_toml_.toLatin1().data(), invert_dat, &latch, &data_, &pc)) {
                     atomic_or(&failed, edain);
                 }
 
@@ -493,7 +528,7 @@ void MainWindow::update_all_configs() {
             }
             #pragma omp task if(data_.botta_available)
             {
-                if(!update_game_config(botta_toml_.toLatin1().data(), invert_dat, &latch, &data_)) {
+                if(!update_game_config(botta_toml_.toLatin1().data(), invert_dat, &latch, &data_, &pc)) {
                     atomic_or(&failed, botta);
                 }
 
@@ -501,7 +536,7 @@ void MainWindow::update_all_configs() {
             }
             #pragma omp task
             {
-                if(!update_game_config(rotwk_toml_.toLatin1().data(), !invert_dat, &latch, &data_)) {
+                if(!update_game_config(rotwk_toml_.toLatin1().data(), !invert_dat, &latch, &data_, &pc)) {
                     atomic_or(&failed, rotwk);
                 }
 
@@ -510,7 +545,7 @@ void MainWindow::update_all_configs() {
 
             latch_count_down(&latch);
 
-            int total = 100;
+            int const total = 100;
             QProgressDialog dialog("Updating config files...", "Cancel", 0, total, this);
             dialog.setWindowModality(Qt::WindowModal);
             dialog.setCancelButton(nullptr);
@@ -518,16 +553,17 @@ void MainWindow::update_all_configs() {
 
             dialog.show();
             int progress;
+            int tasks = atomic_read(&tasks_running);
 
-            while(tasks_running) {
-                progress = static_cast<int>(track_progress() * total);
+            while(tasks) {
+                progress = progress_get_percentage(&pc);
                 QCoreApplication::processEvents();
                 dialog.setValue(progress);
+
+                tasks = atomic_read(&tasks_running);
             }
             dialog.setValue(total);
             dialog.close();
-
-            reset_progress();
         }
     }
     if(failed) {
@@ -595,3 +631,10 @@ void MainWindow::update_gui_functionality() {
 QString const MainWindow::GAME_EXE{"lotrbfme2ep1.exe"};
 QString const MainWindow::BOTTA_LNK{"BotTa.lnk"};
 QString const MainWindow::WINDOW_TITLE{"Rise of the Witch-King Custom Launcher"};
+std::array<QString, 5> const MainWindow::ROTWK_VERSIONS {
+    "v8.0.0",
+    "v7.0.0",
+    "v6.0.0",
+    "v5.0.1",
+    "v5.0.0"
+};

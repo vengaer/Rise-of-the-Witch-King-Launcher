@@ -12,6 +12,8 @@ namespace Ui {
     class MainWindow;
 }
 
+void gui_error_diag(char const* info);
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -58,6 +60,7 @@ private:
     static QString const GAME_EXE;
     static QString const BOTTA_LNK;
     static QString const WINDOW_TITLE;
+    static std::array<QString, 5> const ROTWK_VERSIONS;
 
     void init();
     bool setup_launcher();

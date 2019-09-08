@@ -1,0 +1,18 @@
+image: archlinux/base:latest
+
+before_script:
+    - pacman --noconfirm -Syu
+    - pacman --noconfirm -S gcc make qt5-base openmp
+
+stages:
+    - build
+
+gcc:
+    stage: build
+    script:
+    - export CC=gcc
+    - export CXX=g++
+    - make release -j$(nproc)
+    artifacts:
+        paths:
+        - rotwkl

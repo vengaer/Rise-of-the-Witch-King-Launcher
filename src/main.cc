@@ -1,6 +1,7 @@
 #include "cli.h"
 #include "command.h"
 #include "mainwindow.h"
+#include "strutils.h"
 #include <QApplication>
 #include <omp.h>
 
@@ -8,9 +9,15 @@
 #include <windows.h>
 #endif
 
+void (*display_error)(char const*) = NULL;
+
 int main(int argc, char *argv[]) {
-    if(argc > 1)
+    if(argc > 1) {
+        display_error = &cli_error_diag;
         return cli_main(argc, argv);
+    }
+
+    display_error = &gui_error_diag;
 
     show_console(false);
 
