@@ -19,6 +19,7 @@ void replace_char(char* line, char orig, char repl);
 char* trim_whitespace(char* str);
 int strscpy(char* RESTRICT dst, char const* RESTRICT src, size_t count);
 int strscat(char* RESTRICT dst, char const* RESTRICT src, size_t count);
+int strscatf(char* RESTRICT dst, size_t count, char const* RESTRICT fmt, ...);
 
 void errorfmt(char const* fmt, ...);
 

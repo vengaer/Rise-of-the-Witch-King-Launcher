@@ -58,6 +58,23 @@ int strscat(char* restrict dst, char const* restrict src, size_t count) {
     return src_len;
 }
 
+int strscatf(char* restrict dst, size_t count, char const* restrict fmt, ...) {
+    size_t const dst_len = strlen(dst);
+
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(dst + dst_len, count - dst_len, fmt, args);
+    va_end(args);
+
+    /* Not null-terminated, formatted string was too long */
+    if(dst[count - 1]) {
+        dst[count - 1] = '\0';
+        return -E2BIG;
+    }
+
+    return strlen(dst) - dst_len;
+}
+
 void errorfmt(char const* fmt, ...) {
     extern void(*display_error)(char const*);
 
