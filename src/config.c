@@ -54,14 +54,14 @@ bool read_game_config(char const* filename,
 
     FILE* fp = fopen(filename, "r");
     if(!fp) {
-        fprintf(stderr, "%s could not be opened\n", filename);
+        errorfmt("%s could not be opened\n", filename);
         return false;
     }
     else {
         fseek(fp, 0, SEEK_END);
         size_t file_size = ftell(fp);
         if(file_size == 0) {
-            fprintf(stderr, "%s is empty\n", filename);
+            errorfmt("%S is empty\n", filename);
             fclose(fp);
             return false;
         }
@@ -73,7 +73,7 @@ bool read_game_config(char const* filename,
         contents = determine_line_contents(line);
 
         if(contents == content_invalid) {
-            fprintf(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
+            errorfmt("Syntax error on line %u in %s: %s\n", line_number, filename, line);
             fclose(fp);
             return false;
         }
@@ -86,7 +86,7 @@ bool read_game_config(char const* filename,
             else if(strcmp(subheader, "disable") == 0)
                 ++(*disable_size);
             else if(strcmp(subheader, "swap") != 0) {
-                fprintf(stderr, "Syntax error on line %u in %s: %s\nUnknown subheader\n", line_number, filename, line);
+                errorfmt("Syntax error on line %u in %s: %s\nUnknown subheader\n", line_number, filename, line);
                 fclose(fp);
                 return false;
             }
@@ -101,7 +101,7 @@ bool read_game_config(char const* filename,
                 }
 
                 if(!read_big_entry(line, &(*enable)[(*enable_size) - 1])) {
-                    fprintf(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
+                    errorfmt("Syntax error on line %u in %s: %s\n", line_number, filename, line);
                     fclose(fp);
                     return false;
                 }
@@ -113,7 +113,7 @@ bool read_game_config(char const* filename,
                 }
 
                 if(!read_big_entry(line, &(*disable)[(*disable_size) - 1])) {
-                    fprintf(stderr, "Syntax error on line %u in %s: %s\n", line_number, filename, line);
+                    errorfmt("Syntax error on line %u in %s: %s\n", line_number, filename, line);
                     fclose(fp);
                     return false;
                 }
@@ -134,13 +134,13 @@ bool read_game_config(char const* filename,
                     *swap_capacity *= 2;
                 }
                 if(!read_dat_entry(line, &(*swap)[(*swap_size) - 1])) {
-                    fprintf(stderr, "Invalid entry '%s' in %s\n", line, filename);
+                    errorfmt("Invalid entry '%s' in %s\n", line, filename);
                     fclose(fp);
                     return false;
                 }
             }
             else {
-                fprintf(stderr, "Unknown header %s\n", header);
+                errorfmt("Unknown header %s\n", header);
                 fclose(fp);
                 return false;
             }
@@ -158,7 +158,7 @@ void write_game_config(char const* filename,
 
     FILE* fp = fopen(filename, "w");
     if(!fp) {
-        fprintf(stderr, "%s could not be opened\n", filename);
+        errorfmt("%s could not be opened\n", filename);
         return;
     }
     size_t i;
@@ -278,7 +278,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                                     swap, swap_size);
     }
     else
-        fprintf(stderr, "Errors were encountered during hashing of %s, config file will remain unchanged\n", filename);
+        errorfmt("Errors were encountered during hashing of %s, config file will remain unchanged\n", filename);
 
     free(enable);
     free(disable);
@@ -291,7 +291,7 @@ void write_launcher_config(struct launcher_data const* cfg, char const* file) {
     FILE* fp = fopen(file, "w");
 
     if(!fp) {
-        fprintf(stderr, "Could not write config file\n");
+        display_error("Could not write config file\n");
         return;
     }
 
@@ -340,7 +340,7 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
         ++line_number;
         contents = determine_line_contents(line);
         if(contents == content_invalid) {
-            fprintf(stderr, "Syntax error on line %u in %s: %s\n", line_number, file, line);
+            errorfmt("Syntax error on line %u in %s: %s\n", line_number, file, line);
             fclose(fp);
             return false;
         }
@@ -377,7 +377,7 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
                 }
             }
             else
-                fprintf(stderr, "Unknown key %s.\n", key);
+                errorfmt("Unknown key %s\n", key);
         }
         else if(strcmp(header, "game") == 0) {
             if(strcmp(key, "path") == 0) {
@@ -388,13 +388,13 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
                 }
             }
             else
-                fprintf(stderr, "Unknown key %s.\n", key);
+                errorfmt("Unknown key %s\n", key);
         }
         else if(strcmp(header, "edain") == 0) {
             if(strcmp(key, "available") == 0)
                 cfg->edain_available = strcmp(value, "true") == 0;
             else
-                fprintf(stderr, "Unknown key %s.\n", key);
+                errorfmt("Unknown key %s\n", key);
         }
         else if(strcmp(header, "botta") == 0) {
             if(strcmp(key, "available") == 0)
@@ -407,7 +407,7 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
                 }
             }
             else
-                fprintf(stderr, "Unknown key %s.\n", key);
+                errorfmt("Unknown key %s\n", key);
         }
         else if(strcmp(header, "mount") == 0) {
             if(strcmp(key, "automatic") == 0)
@@ -447,10 +447,10 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
             else if(strcmp(key, "umount_imspec") == 0)
                 cfg->umount_imspec = strcmp(value, "true") == 0;
             else
-                fprintf(stderr, "Unknown key %s.\n", key);
+                errorfmt("Unknown key %s\n", key);
         }
         else
-            fprintf(stderr, "Unknown header %s\n", header);
+            errorfmt("Unknown header %s\n", header);
     }
 
     fclose(fp);
