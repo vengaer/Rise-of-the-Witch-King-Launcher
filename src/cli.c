@@ -16,7 +16,7 @@
 extern void(*display_error)(char const*);
 
 static void print_help(void);
-static int get_launcher_dir(char* restrict dst, char const* restrict launcher_path);
+static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_t dst_size);
 static bool setup_config(struct launcher_data* ld, char const* launch_cfg);
 static bool construct_rotwkl_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size);
 static bool construct_edain_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size);
@@ -57,7 +57,7 @@ int cli_main(int argc, char** argv) {
     struct launcher_data ld;
     char const* launch_cfg = config_file;
 
-    if(get_launcher_dir(launcher_dir, argv[0]) < 0) {
+    if(get_launcher_dir(launcher_dir, argv[0], sizeof launcher_dir) < 0) {
         display_error("Could not get launcher directory\n");
         return 1;
     }
@@ -145,7 +145,7 @@ int cli_main(int argc, char** argv) {
     }
 
     enum configuration active_config = ld.default_state;
-    if(set_cfg && set_flag) {
+    if(set_cfg && (set_flag || run_flag)) {
         active_config = set(set_cfg, &ld, edain_toml, botta_toml, rotwk_toml);
         if(active_config < 0)
             return 1;
@@ -171,15 +171,22 @@ static void print_help(void) {
     fprintf(stderr, "** Available only with the -u flag\n");
 }
 
-static int get_launcher_dir(char* restrict dst, char const* restrict launcher_path) {
+static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_t dst_size) {
     char arg[PATH_SIZE];
+    char dir[PATH_SIZE];
+    getcwd(dir, sizeof dir);
+    dst[0] = '\0';
 
-    if(strscpy(arg, launcher_path, sizeof arg) < 0)
+    if(strscatf(arg, sizeof arg, "%s/%s", dir, arg0) < 0)
         return -E2BIG;
 
     replace_char(arg, '\\', '/');
 
-    parent_path(dst, arg);
+    parent_path(dir, arg);
+
+    if(strscpy(dst, dir, dst_size) < 0)
+        return -E2BIG;
+
     return 0;
 }
 
