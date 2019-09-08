@@ -112,7 +112,7 @@ int cli_main(int argc, char** argv) {
     for(idx = optind; idx < argc; idx++)
         errorfmt("Non-option argument %s ignored\n", argv[idx]);
 
-    if(h_flag) {
+    if(h_flag || (!run_flag && !upd_flag && !set_flag)) {
         print_help();
         return 1;
     }
@@ -166,7 +166,7 @@ static void print_help(void) {
     fprintf(stderr, "    -u <config>,        Update config file for specified configuration.\n");
     fprintf(stderr, "    -h,                 Display this help message.\n");
     fprintf(stderr, "Available configurations are:\n");
-    fprintf(stderr, "    rotwk\n    edain(*)\n    botta(*)\n, all(**)\n");
+    fprintf(stderr, "    rotwk\n    edain(*)\n    botta(*)\n    all(**)\n");
     fprintf(stderr, "*  The mod to enable must be installed correctly\n");
     fprintf(stderr, "** Available only with the -u flag\n");
 }
