@@ -34,9 +34,9 @@ void progress_bar_finish(struct progress_bar* pb, char const* desc) {
     format_indent(indent, desc);
 
     if(desc)
-        printf("\r%s%s[%s] : %u%%\n", desc, indent, pb->buffer, pb->progress);
+        printf("\r%s%s[%s] : %u%%", desc, indent, pb->buffer, pb->progress);
     else
-        printf("\r%s[%s] : %u%%\n", indent, pb->buffer, pb->progress);
+        printf("\r%s[%s] : %u%%", indent, pb->buffer, pb->progress);
     fflush(stdout);
 }
 
