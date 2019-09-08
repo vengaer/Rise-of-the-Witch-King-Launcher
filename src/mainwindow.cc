@@ -445,10 +445,10 @@ void MainWindow::update_single_config(configuration config) {
             break;
     }
 
-    int tasks_running = 1;
-    bool update_successful;
+    int volatile tasks_running = 1;
+    bool volatile update_successful;
     struct latch latch;
-    latch_init(&latch, 2);
+    latch_init(&latch, tasks_running + 1);
     struct progress_callback pc;
     progress_init(&pc);
     #pragma omp parallel num_threads(2)
@@ -496,23 +496,21 @@ void MainWindow::update_single_config(configuration config) {
 void MainWindow::update_all_configs() {
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
-    int tasks_running = 1, sync = 2;
+    int volatile tasks_running = 1;
     bool invert_dat = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
-    if(data_.edain_available) {
-        ++sync;
+
+    if(data_.edain_available)
         ++tasks_running;
-    }
-    if(data_.botta_available) {
-        ++sync;
+    if(data_.botta_available)
         ++tasks_running;
-    }
+
     struct latch latch;
-    latch_init(&latch, sync);
+    latch_init(&latch, tasks_running + 1);
 
     struct progress_callback pc;
     progress_init(&pc);
 
-    int failed = 0x0;
+    int volatile failed = 0x0;
 
     #pragma omp parallel num_threads(4)
     {
