@@ -20,8 +20,7 @@ MOC_OBJ := $(addsuffix .o, $(basename $(MOC_HEADERS)))
 XML_SRC := $(wildcard xml/*.ui)
 XML_HEADER := $(SRC_DIR)/ui_mainwindow.h
 
-QT_VER := 5.12.3
-QT_PATH := D:/Qt/$(QT_VER)/mingw73_64
+QT_PATH := D:/Qt5.13/5.13.1/mingw73_64
 UIC := $(QT_PATH)/bin/uic.exe
 
 MOC := $(QT_PATH)/bin/moc.exe
