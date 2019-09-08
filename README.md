@@ -15,17 +15,8 @@ First of all:
 
 ### Windows
 
-#### Easy: use build artifacts
 
-**There seems to be an issue with the Qt dlls bundled with the artifacts causing the launcher to not run properly.**
-
-Download the latest [build artifacts](https://ci.appveyor.com/project/VilhelmEngstrom/rotwkl/build/artifacts) off of AppVeyor. Unzip the archive to your game directory. Done.  
-
-*Note that the binaries will most likely trigger [Microsoft SmartScreen](https://en.wikipedia.org/wiki/Microsoft_SmartScreen) since they are not signed.*   
-
-#### Trickier: build from source
-
-##### Install dependencies
+#### Install dependencies
 
  - Install [Qt](https://www.qt.io) (the open source version is enough)
     - Assumed to be installed to `C:\Qt`. If installed elsewhere, just use that path instead.
@@ -33,7 +24,7 @@ Download the latest [build artifacts](https://ci.appveyor.com/project/VilhelmEng
     - Assumed to be installed to `C:\msys64`.
  - Launch `C:\msys64\mingw64.exe` and run `pacman --needed -S make git gcc mingw-w64-x86_64-toolchain mingw-w64-x86_64-openssl`
 
-##### Build and package
+#### Build and package
 
 In the MSYS MinGW64 shell:
  - `cd && git clone https://gitlab.com/vilhelmengstrom/rotwkl.git && cd rotwkl`
