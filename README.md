@@ -1,6 +1,6 @@
 # Rise of the Witch-King Launcher
 
-A custom launcher for [The Battle for Middle Earth II The Rise of the Witch-King](https://bfme.fandom.com/wiki/The_Rise_of_the_Witch-king) version 2.02 supporting the [Edain](https://www.moddb.com/mods/edain-mods) and [Battles of the Third Age](https://moddb.com/mods/battles-of-the-third-age) mods.
+A custom launcher for [The Battle for Middle Earth II The Rise of the Witch-King](https://bfme.fandom.com/wiki/The_Rise_of_the_Witch-king) version 2.02 supporting the [Edain](https://www.moddb.com/mods/edain-mod) and [Battles of the Third Age](https://moddb.com/mods/battles-of-the-third-age) mods.
 
 [![Build Status](https://gitlab.com/vilhelmengstrom/rotwkl/badges/master/build.svg)](https://gitlab.com/vilhelmengstrom/rotwkl/commits/master)
 [![Build Status](https://ci.appveyor.com/api/projects/status/csbvmnmcfs5xvc33?svg=true)](https://ci.appveyor.com/project/Vilhelmengstrom/rotwkl)
@@ -37,7 +37,7 @@ Download the latest [build artifacts](https://ci.appveyor.com/project/VilhelmEng
 
 In the MSYS MinGW64 shell:
  - `cd && git clone https://gitlab.com/vilhelmengstrom/rotwkl.git && cd rotwkl`
- - `make release QT_PATH=C:\Qt\<version>\mingw73_64`
+ - `make release QT_PATH=C:/Qt/<version>/mingw73_64`
  - `mkdir rotwk_launcher`
  - `cp -r {images,toml,xml,rotwkl} rotwk_launcher`
  - `cp C:/msys64/mingw64/bin/{libgcc_s_seh-1,libstdc++-6,libwinpthread-1}.dll rotwk_launcher`
