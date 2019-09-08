@@ -496,7 +496,10 @@ static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const
         }
     }
 
-    sys_format(launch_call, launch_cmd);
+    if(sys_format(launch_call, launch_cmd, sizeof launch_call) < 0) {
+        display_error("Launch command overflowed the system call buffer");
+        return false;
+    }
 
     if(system(launch_call) != 0)
         display_error("Failed to launch game\n");

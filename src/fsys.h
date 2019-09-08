@@ -1,6 +1,7 @@
 #ifndef FSYS_H
 #define FSYS_H
 
+#include "strutils.h"
 #include <stdbool.h>
 #include "command.h"
 #include "game_data.h"
@@ -11,17 +12,11 @@
 extern "C" {
 #endif
 
-bool md5sum(char const* filename, char* csum);
-
-void set_active_configuration(char const* filename, char const* target_version, bool use_version_dat, bool verify_active);
-
-void set_extension(char* filename, char const* extension);
-
+bool md5sum(char const* RESTRICT filename, char* RESTRICT csum);
+void set_active_configuration(char const* RESTRICT filename, char const* RESTRICT target_version, bool use_version_dat, bool verify_active);
+void set_extension(char* RESTRICT filename, char const* RESTRICT extension);
 bool file_exists(char const* filename);
-
 void game_path_from_registry(char* path);
-
-void sys_format(char* dst, char const* command);
 
 #ifdef __cplusplus
 }

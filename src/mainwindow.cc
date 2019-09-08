@@ -25,6 +25,8 @@
 #include <windows.h>
 #endif
 
+extern void(*display_error)(char const*);
+
 void gui_error_diag(char const* info) {
     QMessageBox box;
     box.critical(0, "Error", info);
@@ -279,9 +281,15 @@ void MainWindow::on_pref_save_clicked() {
 
         char buf[PATH_SIZE];
         construct_mount_command(buf, data_.mount_exe, data_.mount_flags, data_.disc_image);
-        sys_format(data_.mount_cmd, buf);
+        if(sys_format(data_.mount_cmd, buf, sizeof data_.mount_cmd) < 0) {
+            display_error("Mount command overflowed the buffer");
+            return;
+        }
         construct_umount_command(buf, data_.mount_exe, data_.umount_flags, data_.disc_image, data_.umount_imspec);
-        sys_format(data_.umount_cmd, buf);
+        if(sys_format(data_.umount_cmd, buf, sizeof data_.umount_cmd) < 0) {
+            display_error("Umount command overflowed the buffer");
+            return;
+        }
 
     }
     data_.botta_available = ui->botta_installed->isChecked();

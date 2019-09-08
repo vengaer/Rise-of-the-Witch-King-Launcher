@@ -423,10 +423,20 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
                     return false;
                 }
             }
-            else if(strcmp(key, "mount_cmd") == 0)
-                sys_format(cfg->mount_cmd, value);
-            else if(strcmp(key, "umount_cmd") == 0)
-                sys_format(cfg->umount_cmd, value);
+            else if(strcmp(key, "mount_cmd") == 0) {
+                if(sys_format(cfg->mount_cmd, value, sizeof cfg->mount_cmd)  < 0) {
+                    display_error("Buffer overflow detected in mount command\n");
+                    fclose(fp);
+                    return false;
+                }
+            }
+            else if(strcmp(key, "umount_cmd") == 0) {
+                if(sys_format(cfg->umount_cmd, value, sizeof cfg->umount_cmd)  < 0) {
+                    display_error("Buffer overflow detected in umount command\n");
+                    fclose(fp);
+                    return false;
+                }
+            }
             else if(strcmp(key, "umount_imspec") == 0)
                 cfg->umount_imspec = strcmp(value, "true") == 0;
             else

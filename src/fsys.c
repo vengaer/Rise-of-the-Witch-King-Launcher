@@ -1,7 +1,6 @@
 #include "fsys.h"
 #include "config.h"
 #include "pattern.h"
-#include "strutils.h"
 #include <openssl/md5.h>
 #include <omp.h>
 #include <stdio.h>
@@ -21,7 +20,7 @@ void disable_big_file(struct big_file const* file, bool verify_active);
 bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* target_version, bool use_version_dat);
 void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version);
 
-bool md5sum(char const* filename, char* checksum) {
+bool md5sum(char const* restrict filename, char* restrict checksum) {
     int i, num_bytes;
     FILE* fp = fopen(filename, "rb");
 
@@ -47,7 +46,8 @@ bool md5sum(char const* filename, char* checksum) {
     return true;
 }
 
-void set_active_configuration(char const* filename, char const* target_version, bool use_version_dat, bool verify_active) {
+void set_active_configuration(char const* restrict filename, char const* restrict target_version,
+                              bool use_version_dat, bool verify_active) {
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 4;
     struct big_file* enable = malloc(enable_cap * sizeof(struct big_file));
@@ -77,7 +77,7 @@ void set_active_configuration(char const* filename, char const* target_version, 
     free(swap);
 }
 
-void set_extension(char* filename, char const* extension) {
+void set_extension(char* restrict filename, char const* restrict extension) {
     char* ext_begin = strrchr(filename, '.');
 
     if(strcmp(ext_begin, ".bak") == 0) {
@@ -110,21 +110,11 @@ void game_path_from_registry(char* path) {
     #endif
 }
 
-void sys_format(char* dst, char const* command) {
-    #if defined __CYGWIN__ || defined _WIN32
-        sprintf(dst, "\"%s\"", command);
-        replace_char(dst, '\'', '\"');
-    #else
-        strcpy(dst, command);
-        replace_char(dst, '\'', ' ');
-    #endif
-}
-
-void toggle_big_files(struct big_file* enable, size_t enable_size, 
-                      struct big_file* disable, size_t disable_size, 
+void toggle_big_files(struct big_file* enable, size_t enable_size,
+                      struct big_file* disable, size_t disable_size,
                       char const* target_version, bool verify_active) {
 
-    #pragma omp parallel 
+    #pragma omp parallel
     {
         size_t i;
         char in_ver[HEADER_SIZE];
@@ -240,7 +230,7 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* tar
             activate = &swap[i];
         else
             activate = &swap[j];
-    
+
         /* File introduced later than target version */
         if(strcmp(activate->introduced, target_version) > 0)
             continue;
@@ -261,7 +251,7 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* tar
 
         strcpy(tmp, activate->name);
         set_extension(tmp, SWP_EXT);
-        
+ 
         /* .dat -> .swp */
         rename(activate->name, tmp);
         /* .other -> .dat */
@@ -274,7 +264,7 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* tar
     return true;
 }
 
-void revert_changes(struct big_file* enable, size_t enable_size, 
+void revert_changes(struct big_file* enable, size_t enable_size,
                     struct big_file* disable, size_t disable_size,
                     char const* target_version) {
     toggle_big_files(disable, disable_size, enable, enable_size, target_version, false);

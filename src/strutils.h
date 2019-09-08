@@ -21,6 +21,9 @@ int strscpy(char* RESTRICT dst, char const* RESTRICT src, size_t count);
 int strscat(char* RESTRICT dst, char const* RESTRICT src, size_t count);
 int strscatf(char* RESTRICT dst, size_t count, char const* RESTRICT fmt, ...);
 
+int sys_format(char* RESTRICT dst, char const* RESTRICT command, size_t dst_size);
+int toml_format(char* RESTRICT dst, char const* RESTRICT command, size_t dst_size);
+
 void errorfmt(char const* fmt, ...);
 
 #ifdef __cplusplus
