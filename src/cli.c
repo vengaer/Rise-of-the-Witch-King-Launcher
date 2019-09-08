@@ -160,7 +160,6 @@ static void print_help(void) {
     fprintf(stderr, "    -r <config>,        Run the given configuration.\n");
     fprintf(stderr, "    -s <config>,        Specify what configuration to enable.\n");
     fprintf(stderr, "    -u <config>,        Update config file for specified configuration.\n");
-    fprintf(stderr, "    -c <path>,          Specify path to launcher config file.\n");
     fprintf(stderr, "    -h,                 Display this help message.\n");
     fprintf(stderr, "Available configurations are:\n");
     fprintf(stderr, "    rotwk\n    edain(*)\n    botta(*)\n, all(**)\n");
