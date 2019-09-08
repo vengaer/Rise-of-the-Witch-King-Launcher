@@ -1,7 +1,9 @@
 #include "cli.h"
+#include "bitop.h"
 #include "config.h"
 #include "command.h"
 #include "fsys.h"
+#include "progress_bar.h"
 #include "progress_callback.h"
 #include <ctype.h>
 #include <omp.h>
@@ -24,6 +26,9 @@ static bool construct_botta_launch_cmd(char* restrict dst, char const* restrict 
 static bool construct_dat_file_path(char* restrict dst, char const* restrict game_path, size_t dst_size);
 static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct launcher_data const* ld,
                    char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml);
+static bool update_single_config(enum configuration cfg, char const* toml, bool new_dat_enabled, struct launcher_data const* ld);
+static bool update_all_configs(char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml,
+                               bool new_dat_enabled, struct launcher_data const* ld);
 static int set(char const* restrict set_cfg, struct launcher_data const* ld, char const* restrict edain_toml,
                 char const* restrict botta_toml, char const* restrict rotwk_toml);
 static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const* restrict dat_file, struct launcher_data const* ld, 
@@ -134,7 +139,6 @@ int cli_main(int argc, char** argv) {
     md5sum(dat_file, game_csum);
     new_dat_enabled = strcmp(game_csum, NEW_DAT_CSUM) == 0;
 
-    /* Update */
     if(upd_cfg && upd_flag) {
         if(!update(upd_cfg, new_dat_enabled, &ld, edain_toml, botta_toml, rotwk_toml))
             return 1;
@@ -267,23 +271,9 @@ static bool construct_dat_file_path(char* restrict dst, char const* restrict gam
 
 static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct launcher_data const* ld,
                    char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml) {
-    unsigned sync;
-    struct latch latch;
-    struct progress_callback pc;
-    progress_init(&pc);
-
-    sync = 1;
-    if(upd_cfg && strcmp(upd_cfg, "all") == 0) {
-        if(ld->edain_available)
-            ++sync;
-        if(ld->botta_available)
-            ++sync;
-    }
-    latch_init(&latch, sync);
-
     /* Only rotwk */
-    if(strcmp(upd_cfg, "rotwk") == 0) 
-        update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc);
+    if(strcmp(upd_cfg, "rotwk") == 0)
+        return update_single_config(rotwk, rotwk_toml, new_dat_enabled, ld);
     /* Only edain */
     else if(strcmp(upd_cfg, "edain") == 0) {
 
@@ -292,7 +282,7 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
             return false;
         }
 
-        update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc);
+        return update_single_config(edain, edain_toml, new_dat_enabled, ld);
     }
     /* Only botta */
     else if(strcmp(upd_cfg, "botta") == 0) {
@@ -302,28 +292,135 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
             return false;
         }
 
-        update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc);
+        return update_single_config(botta, botta_toml, new_dat_enabled, ld);
     }
-    /* All */
-    else if(strcmp(upd_cfg, "all") == 0) {
-        #pragma omp parallel num_threads(3)
-        {
-            #pragma omp master
-            {
-                #pragma omp task if(ld->edain_available)
-                    update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc);
 
-                #pragma omp task if(ld->botta_available)
-                    update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc);
-
-                update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc);
-            }
-        }
-    }
-    else {
+    if(strcmp(upd_cfg, "all") != 0) {
         errorfmt("Unknown configuration %s\n", upd_cfg);
         return false;
     }
+    /* All */
+    return update_all_configs(edain_toml, botta_toml, rotwk_toml, new_dat_enabled, ld);
+}
+
+static bool update_single_config(enum configuration cfg, char const* toml, bool new_dat_enabled, struct launcher_data const* ld) {
+    bool volatile update_successful;
+    int volatile tasks_running = 1;
+    struct latch latch;
+    latch_init(&latch, tasks_running + 1);
+    struct progress_callback pc;
+    progress_init(&pc);
+    struct progress_bar pb;
+    progress_bar_init(&pb);
+
+    bool invert_dat = cfg == rotwk ?
+        !new_dat_enabled : new_dat_enabled;
+
+    static char const* cfgs[3] = {"Updating RotWK", "Updating Edain", "Updating BotTA"};
+
+    #pragma omp parallel num_threads(2)
+    {
+        #pragma omp master
+        {
+
+            #pragma omp task
+            {
+                update_successful = update_game_config(toml, invert_dat, &latch, ld, &pc);
+                atomic_dec(&tasks_running);
+            }
+
+            latch_count_down(&latch);
+            int tasks = atomic_read(&tasks_running);
+            int progress;
+
+            while(tasks) {
+                progress = progress_get_percentage(&pc);
+                progress_bar_set(&pb, progress);
+                progress_bar_display(&pb, cfgs[trailing_zerobits(cfg)]);
+
+                tasks = atomic_read(&tasks_running);
+            }
+            progress_bar_finish(&pb, cfgs[trailing_zerobits(cfg)]);
+        }
+    }
+            
+    return update_successful;
+}
+static bool update_all_configs(char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml,
+                               bool new_dat_enabled, struct launcher_data const* ld) {
+    int volatile tasks_running = 1;
+    if(ld->edain_available)
+        ++tasks_running;
+    if(ld->botta_available)
+        ++tasks_running;
+
+    struct latch latch;
+    latch_init(&latch, tasks_running + 1);
+
+    struct progress_callback pc;
+    progress_init(&pc);
+
+    struct progress_bar pb;
+    progress_bar_init(&pb);
+
+    int volatile failed = 0x0;
+
+    char const desc[] = "Updating all configs";
+
+    #pragma omp parallel num_threads(4)
+    {
+        #pragma omp master
+        {
+            #pragma omp task if(ld->edain_available)
+            {
+                if(!update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc))
+                    atomic_or(&failed, edain);
+
+                atomic_dec(&tasks_running);
+            }
+
+            #pragma omp task if(ld->botta_available)
+            {
+                if(!update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc))
+                    atomic_or(&failed, botta);
+
+                atomic_dec(&tasks_running);
+            }
+
+            #pragma omp task
+            {
+                if(!update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc))
+                    atomic_or(&failed, rotwk);
+
+                atomic_dec(&tasks_running);
+            }
+
+            latch_count_down(&latch);
+            int tasks = atomic_read(&tasks_running);
+            int progress;
+
+            while(tasks) {
+                progress = progress_get_percentage(&pc);
+                progress_bar_set(&pb, progress);
+                progress_bar_display(&pb, desc);
+
+                tasks = atomic_read(&tasks_running);
+            }
+            progress_bar_finish(&pb, desc);
+        }
+    }
+
+    if(failed) {
+        if(failed & rotwk)
+            display_error("Failed to update RotWK");
+        if(failed & edain)
+            display_error("Failed to update Edain");
+        if(failed & botta)
+            display_error("Failed to update BotTA");
+
+        return false;
+    }
+
     return true;
 }
 
