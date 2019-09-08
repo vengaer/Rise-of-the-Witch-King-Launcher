@@ -183,7 +183,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                                &disable, &disable_cap, &disable_size,
                                &swap, &swap_cap, &swap_size);
 
-    progress_set_total(pc, enable_size + disable_size + swap_size);
+    progress_add_total(pc, enable_size + disable_size + swap_size);
 
     latch_count_down(latch);
 

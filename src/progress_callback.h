@@ -25,6 +25,10 @@ inline void progress_set_total(struct progress_callback* pc, int new_total) {
     atomic_write(&pc->total, new_total);
 }
 
+inline void progress_add_total(struct progress_callback* pc, int add) {
+    atomic_add(&pc->total, add);
+}
+
 inline void progress_set_current(struct progress_callback* pc, int new_current) {
     atomic_write(&pc->total, new_current);
 }
