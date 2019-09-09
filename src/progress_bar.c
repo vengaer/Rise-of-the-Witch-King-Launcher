@@ -27,17 +27,7 @@ void progress_bar_display(struct progress_bar* pb, char const* desc) {
 
 void progress_bar_finish(struct progress_bar* pb, char const* desc) {
     pb->progress = 100;
-
-    update_progress_buffer(pb);
-
-    char indent[PROGRESS_BAR_INDENT_BUF_LENGTH];
-    format_indent(indent, desc);
-
-    if(desc)
-        printf("\r%s%s[%s] : %u%%", desc, indent, pb->buffer, pb->progress);
-    else
-        printf("\r%s[%s] : %u%%", indent, pb->buffer, pb->progress);
-    fflush(stdout);
+    progress_bar_display(pb, desc);
 }
 
 void update_progress_buffer(struct progress_bar* pb) {
