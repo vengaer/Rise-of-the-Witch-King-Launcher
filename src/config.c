@@ -293,8 +293,10 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                                                     disable, disable_size,
                                                     swap, swap_size);
     }
-    else
+    else {
         errorfmt("Errors were encountered during hashing of %s, config file will remain unchanged\n", filename);
+        write_success = false;
+    }
 
     free(enable);
     free(disable);
