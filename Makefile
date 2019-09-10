@@ -3,15 +3,13 @@ CXX ?= g++
 
 BIN := rotwkl
 SRC_DIR := src
-LIB_DIR := lib
-LIB := $(LIB_DIR)/librotwk.a
 
 REGSRC := $(SRC_DIR)/pattern.cc
 SRC := $(wildcard $(SRC_DIR)/*.c)
 CXXSRC :=$(filter-out $(REGSRC), $(wildcard $(SRC_DIR)/*.cc))
 
 REGOBJ := $(addsuffix .o, $(basename $(REGSRC)))
-OBJ := $(addsuffix .o, $(basename $(SRC)))
+COBJ := $(addsuffix .o, $(basename $(SRC)))
 CXXOBJ := $(addsuffix .o, $(basename $(CXXSRC)))
 
 QT_HEADERS := $(SRC_DIR)/mainwindow.h
@@ -57,12 +55,12 @@ else
 	LDFLAGS += -linput
 endif
 
-.PHONY: clean run release setup lib
+.PHONY: clean run release setup
 
 $(BIN): CXXFLAGS += $(QT_FLAGS)
-$(BIN): LDFLAGS := -L lib/ -l:librotwk.a $(QT_LDFLAGS) $(LDFLAGS)
-$(BIN): setup $(XML_HEADER) $(MOC_OBJ) $(LIB) $(CXXOBJ)
-	$(CXX) -o $@ $(CXXFLAGS) $(CXXOBJ) $(MOC_OBJ) $(LDFLAGS)
+$(BIN): LDFLAGS := $(QT_LDFLAGS) $(LDFLAGS)
+$(BIN): setup $(XML_HEADER) $(MOC_OBJ) $(CXXOBJ) $(REGOBJ) $(COBJ)
+	$(CXX) -o $@ $(CXXFLAGS) $(CXXOBJ) $(REGOBJ) $(COBJ) $(MOC_OBJ) $(LDFLAGS)
 
 $(XML_HEADER):
 	$(UIC) -o $@
@@ -73,19 +71,14 @@ $(MOC_OBJ): $(MOC_HEADERS)
 $(MOC_HEADERS): $(QT_HEADERS)
 	$(MOC) $(INC) $< -o $@
 
-$(LIB): $(REGOBJ) $(OBJ) setup
-	ar rcs $(LIB) $(REGOBJ) $(OBJ)
-
 release: CXXFLAGS += -O3
 release: $(BIN)
 
-lib: $(LIB)
-
 clean:
-	rm -f $(OBJ) $(BIN) $(LIB) $(MOC_HEADERS) $(MOC_OBJ) $(CXXOBJ) $(REGOBJ); rm -rf $(LIB_DIR) $(MOC_DIR)
+	rm -f $(COBJ) $(BIN) $(MOC_HEADERS) $(MOC_OBJ) $(CXXOBJ) $(REGOBJ); rm -rf $(MOC_DIR)
 
 run: $(BIN)
 	./$(BIN)
 
 setup:
-	mkdir -p $(LIB_DIR) $(MOC_DIR)
+	mkdir -p $(MOC_DIR)
