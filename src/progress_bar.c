@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-void update_progress_buffer(struct progress_bar* pb);
-void format_indent(char* restrict indent, char const* restrict desc);
+static void update_progress_buffer(struct progress_bar* pb);
+static void format_indent(char* restrict indent, char const* restrict desc);
 
 void progress_bar_init(struct progress_bar* pb) {
     int i;
@@ -30,7 +30,7 @@ void progress_bar_finish(struct progress_bar* pb, char const* desc) {
     progress_bar_display(pb, desc);
 }
 
-void update_progress_buffer(struct progress_bar* pb) {
+static void update_progress_buffer(struct progress_bar* pb) {
     int i;
     int const nhashes = (double)pb->progress / 100.0 * PROGRESS_BAR_LENGTH;
 
@@ -42,7 +42,7 @@ void update_progress_buffer(struct progress_bar* pb) {
     }
 }
 
-void format_indent(char* restrict indent, char const* restrict desc) {
+static void format_indent(char* restrict indent, char const* restrict desc) {
     unsigned i;
     unsigned desc_len = desc ? strlen(desc) : 0;
 

@@ -14,11 +14,11 @@
 
 extern void(*display_error)(char const*);
 
-void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version, bool verify_active);
-void enable_big_file(struct big_file const* file, bool verify_active);
-void disable_big_file(struct big_file const* file, bool verify_active);
-bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* target_version, bool use_version_dat);
-void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version);
+static void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version, bool verify_active);
+static void enable_big_file(struct big_file const* file, bool verify_active);
+static void disable_big_file(struct big_file const* file, bool verify_active);
+static bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* target_version, bool use_version_dat);
+static void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version);
 
 bool md5sum(char const* restrict filename, char* restrict checksum) {
     int i, num_bytes;
@@ -110,7 +110,7 @@ void game_path_from_registry(char* path) {
     #endif
 }
 
-void toggle_big_files(struct big_file* enable, size_t enable_size,
+static void toggle_big_files(struct big_file* enable, size_t enable_size,
                       struct big_file* disable, size_t disable_size,
                       char const* target_version, bool verify_active) {
 
@@ -137,7 +137,7 @@ void toggle_big_files(struct big_file* enable, size_t enable_size,
     }
 }
 
-void enable_big_file(struct big_file const* file, bool verify_active) {
+static void enable_big_file(struct big_file const* file, bool verify_active) {
     char toggled[ENTRY_SIZE];
     char hash[ENTRY_SIZE];
 
@@ -164,7 +164,7 @@ void enable_big_file(struct big_file const* file, bool verify_active) {
     rename(toggled, file->name);
 }
 
-void disable_big_file(struct big_file const* file, bool verify_active) {
+static void disable_big_file(struct big_file const* file, bool verify_active) {
     char toggled[ENTRY_SIZE];
     char hash[ENTRY_SIZE];
 
@@ -191,7 +191,7 @@ void disable_big_file(struct big_file const* file, bool verify_active) {
     rename(file->name, toggled);
 }
 
-bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* target_version, bool use_version_dat) {
+static bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* target_version, bool use_version_dat) {
     size_t i, j;
     char stem[ENTRY_SIZE];
     char tmp[ENTRY_SIZE];
@@ -251,7 +251,7 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* tar
 
         strcpy(tmp, activate->name);
         set_extension(tmp, SWP_EXT);
- 
+
         /* .dat -> .swp */
         rename(activate->name, tmp);
         /* .other -> .dat */
@@ -264,7 +264,7 @@ bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* tar
     return true;
 }
 
-void revert_changes(struct big_file* enable, size_t enable_size,
+static void revert_changes(struct big_file* enable, size_t enable_size,
                     struct big_file* disable, size_t disable_size,
                     char const* target_version) {
     toggle_big_files(disable, disable_size, enable, enable_size, target_version, false);

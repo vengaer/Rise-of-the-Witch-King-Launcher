@@ -13,12 +13,12 @@
 
 extern void(*display_error)(char const*);
 
-void header_name(char* line, char* header);
-void subheader_name(char* line, char* header);
-void get_table_key(char* entry, char* key);
-void get_table_value(char const* entry, char* value);
-bool read_big_entry(char* line, struct big_file* entry);
-bool read_dat_entry(char* line, struct dat_file* entry);
+static void header_name(char* line, char* header);
+static void subheader_name(char* line, char* header);
+static void get_table_key(char* entry, char* key);
+static void get_table_value(char const* entry, char* value);
+static bool read_big_entry(char* line, struct big_file* entry);
+static bool read_dat_entry(char* line, struct dat_file* entry);
 
 bool read_game_config(char const* filename,
                       struct big_file** enable, size_t* enable_capacity, size_t* enable_size,
@@ -518,21 +518,21 @@ void construct_umount_command(char* dst, char const* exe, char const* flags, cha
         sprintf(dst, "\'%s\'"SUPPRESS_OUTPUT, exe);
 }
 
-void header_name(char* line, char* header) {
+static void header_name(char* line, char* header) {
     char* str = trim_whitespace(line);
     size_t size = strlen(str);
     memcpy(header, str + 1, size - 2);
     header[size - 2] = '\0';
 }
 
-void subheader_name(char* line, char* header) {
+static void subheader_name(char* line, char* header) {
     char* str = trim_whitespace(line);
     size_t size = strlen(str);
     memcpy(header, str + 2, size - 4);
     header[size - 4] = '\0';
 }
 
-void get_table_key(char* entry, char* key) {
+static void get_table_key(char* entry, char* key) {
     char* str = trim_whitespace(entry);
     size_t i;
     for(i = 0; i < strlen(str); i++) {
@@ -543,14 +543,14 @@ void get_table_key(char* entry, char* key) {
     key[i] = '\0';
 }
 
-void get_table_value(char const* entry, char* value) {
+static void get_table_value(char const* entry, char* value) {
     char* start = strchr(entry, '"') + 1;
     char* end = strchr(start, '"');
     memcpy(value, start, end - start);
     value[end - start] = '\0';
 }
 
-bool read_big_entry(char* line, struct big_file* entry) {
+static bool read_big_entry(char* line, struct big_file* entry) {
     if(determine_line_contents(line) != content_key_value_pair)
         return false;
 
@@ -584,7 +584,7 @@ bool read_big_entry(char* line, struct big_file* entry) {
     return true;
 }
 
-bool read_dat_entry(char* line, struct dat_file* entry) {
+static bool read_dat_entry(char* line, struct dat_file* entry) {
     if(determine_line_contents(line) != content_key_value_pair)
         return false;
 
