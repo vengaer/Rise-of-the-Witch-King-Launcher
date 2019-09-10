@@ -4,12 +4,10 @@ CXX ?= g++
 BIN := rotwkl
 SRC_DIR := src
 
-REGSRC := $(SRC_DIR)/pattern.cc
-SRC := $(wildcard $(SRC_DIR)/*.c)
-CXXSRC :=$(filter-out $(REGSRC), $(wildcard $(SRC_DIR)/*.cc))
+CSRC := $(wildcard $(SRC_DIR)/*.c)
+CXXSRC := $(wildcard $(SRC_DIR)/*.cc)
 
-REGOBJ := $(addsuffix .o, $(basename $(REGSRC)))
-COBJ := $(addsuffix .o, $(basename $(SRC)))
+COBJ := $(addsuffix .o, $(basename $(CSRC)))
 CXXOBJ := $(addsuffix .o, $(basename $(CXXSRC)))
 
 QT_HEADERS := $(SRC_DIR)/mainwindow.h
@@ -45,7 +43,7 @@ else
 endif
 
 
-CFLAGS := $(CFLAGS) -c -std=c11 -O3 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
+CFLAGS := $(CFLAGS) -c -std=c11 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
 CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -Wunknown-pragmas -fopenmp $(INC)
 LDFLAGS := $(LDFLAGS) -static-libgcc -static-libstdc++ -lssl -lcrypto -lgomp -lstdc++ -lpthread -L lib/
 
@@ -59,8 +57,8 @@ endif
 
 $(BIN): CXXFLAGS += $(QT_FLAGS)
 $(BIN): LDFLAGS := $(QT_LDFLAGS) $(LDFLAGS)
-$(BIN): setup $(XML_HEADER) $(MOC_OBJ) $(CXXOBJ) $(REGOBJ) $(COBJ)
-	$(CXX) -o $@ $(CXXFLAGS) $(CXXOBJ) $(REGOBJ) $(COBJ) $(MOC_OBJ) $(LDFLAGS)
+$(BIN): setup $(XML_HEADER) $(MOC_OBJ) $(COBJ) $(CXXOBJ)
+	$(CXX) -o $@ $(CXXFLAGS) $(MOC_OBJ) $(COBJ) $(CXXOBJ) $(LDFLAGS)
 
 $(XML_HEADER):
 	$(UIC) -o $@
@@ -71,11 +69,12 @@ $(MOC_OBJ): $(MOC_HEADERS)
 $(MOC_HEADERS): $(QT_HEADERS)
 	$(MOC) $(INC) $< -o $@
 
+release: CFLAGS += -O3
 release: CXXFLAGS += -O3
 release: $(BIN)
 
 clean:
-	rm -f $(COBJ) $(BIN) $(MOC_HEADERS) $(MOC_OBJ) $(CXXOBJ) $(REGOBJ); rm -rf $(MOC_DIR)
+	rm -f $(COBJ) $(BIN) $(MOC_HEADERS) $(MOC_OBJ) $(CXXOBJ); rm -rf $(MOC_DIR)
 
 run: $(BIN)
 	./$(BIN)
