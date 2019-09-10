@@ -15,7 +15,7 @@ struct progress_bar {
     char buffer[PROGRESS_BAR_BUF_LENGTH];
 };
 
-inline void progress_bar_set(struct progress_bar* pb, unsigned progress) {
+static inline void progress_bar_set(struct progress_bar* pb, unsigned progress) {
     pb->progress = progress;
 }
 
