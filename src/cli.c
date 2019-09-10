@@ -1,3 +1,7 @@
+#ifdef __clang__
+#define _POSIX_C_SOURCE 2
+#endif
+
 #include "cli.h"
 #include "bitop.h"
 #include "config.h"
