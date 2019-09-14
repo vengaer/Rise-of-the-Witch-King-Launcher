@@ -6,18 +6,19 @@
 #include "strutils.h"
 #include <ctype.h>
 #include <omp.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 extern void(*display_error)(char const*);
 
-void header_name(char* line, char* header);
-void subheader_name(char* line, char* header);
-void get_table_key(char* entry, char* key);
-void get_table_value(char const* entry, char* value);
-bool read_big_entry(char* line, struct big_file* entry);
-bool read_dat_entry(char* line, struct dat_file* entry);
+static void header_name(char* line, char* header);
+static void subheader_name(char* line, char* header);
+static void get_table_key(char* entry, char* key);
+static void get_table_value(char const* entry, char* value);
+static bool read_big_entry(char* line, struct big_file* entry);
+static bool read_dat_entry(char* line, struct dat_file* entry);
 
 bool read_game_config(char const* filename,
                       struct big_file** enable, size_t* enable_capacity, size_t* enable_size,
@@ -81,6 +82,11 @@ bool read_game_config(char const* filename,
                 if(*enable_size >= *enable_capacity) {
                     *enable = realloc(*enable, 2 * (*enable_capacity) * sizeof(struct big_file));
                     *enable_capacity *= 2;
+                    if(!*enable) {
+                        display_error("Failed to reallocate enable");
+                        fclose(fp);
+                        return false;
+                    }
                 }
 
                 if(!read_big_entry(line, &(*enable)[(*enable_size) - 1])) {
@@ -93,6 +99,11 @@ bool read_game_config(char const* filename,
                 if(*disable_size >= *disable_capacity) {
                     *disable = realloc(*disable, 2 * (*disable_capacity) * sizeof(struct big_file));
                     *disable_capacity *= 2;
+                    if(!*disable) {
+                        display_error("Failed to reallocate disable");
+                        fclose(fp);
+                        return false;
+                    }
                 }
 
                 if(!read_big_entry(line, &(*disable)[(*disable_size) - 1])) {
@@ -115,6 +126,11 @@ bool read_game_config(char const* filename,
                 if(*swap_size >= *swap_capacity) {
                     *swap = realloc(*swap, 2 * (*swap_capacity) * sizeof(struct dat_file));
                     *swap_capacity *= 2;
+                    if(!*swap) {
+                        display_error("Failed to reallocate swap");
+                        fclose(fp);
+                        return false;
+                    }
                 }
                 if(!read_dat_entry(line, &(*swap)[(*swap_size) - 1])) {
                     errorfmt("Invalid entry '%s' in %s\n", line, filename);
@@ -134,7 +150,7 @@ bool read_game_config(char const* filename,
     return true;
 }
 
-void write_game_config(char const* filename,
+bool write_game_config(char const* filename,
                        struct big_file* enable, size_t enable_size,
                        struct big_file* disable, size_t disable_size,
                        struct dat_file* swap, size_t swap_size) {
@@ -142,7 +158,7 @@ void write_game_config(char const* filename,
     FILE* fp = fopen(filename, "w");
     if(!fp) {
         errorfmt("%s could not be opened\n", filename);
-        return;
+        return false;
     }
     size_t i;
     for(i = 0; i < enable_size; i++) {
@@ -170,26 +186,43 @@ void write_game_config(char const* filename,
     }
 
     fclose(fp);
+    return true;
 }
 
 bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, struct launcher_data const* cfg, struct progress_callback* pc) {
+    bool read_success, update_success, write_success;
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
     struct big_file* enable = malloc(enable_cap * sizeof(struct big_file));
     struct big_file* disable = malloc(disable_cap * sizeof(struct big_file));
     struct dat_file* swap = malloc(swap_cap * sizeof(struct dat_file));
 
-    read_game_config(filename, &enable, &enable_cap, &enable_size,
-                               &disable, &disable_cap, &disable_size,
-                               &swap, &swap_cap, &swap_size);
+    if(!enable || !disable || !swap) {
+        display_error("Failed to allocate memory");
+        free(enable);
+        free(disable);
+        free(swap);
+        return false;
+    }
+
+    read_success = read_game_config(filename, &enable, &enable_cap, &enable_size,
+                                              &disable, &disable_cap, &disable_size,
+                                              &swap, &swap_cap, &swap_size);
+
+    if(!read_success) {
+        display_error("Failed to read game config");
+        free(enable);
+        free(disable);
+        free(swap);
+        return false;
+    }
 
     progress_add_total(pc, enable_size + disable_size + swap_size);
-
     latch_count_down(latch);
 
-    bool success = true;
+    update_success = true;
 
-    #pragma omp parallel reduction(&& : success)
+    #pragma omp parallel reduction(&& : update_success)
     {
         size_t i;
         char toggled[ENTRY_SIZE];
@@ -205,10 +238,10 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                 strcpy(toggled, enable[i].name);
                 set_extension(toggled, enable[i].extension);
                 if(!md5sum(toggled, enable[i].checksum))
-                    success = false;
+                    update_success = false;
             }
             else if(!md5sum(enable[i].name, enable[i].checksum))
-                    success = false;
+                    update_success = false;
 
             progress_increment(pc);
         }
@@ -222,10 +255,10 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                 strcpy(toggled, disable[i].name);
                 set_extension(toggled, disable[i].extension);
                 if(!md5sum(toggled, disable[i].checksum))
-                    success = false;
+                    update_success = false;
             }
             else if(!md5sum(disable[i].name, disable[i].checksum))
-                    success = false;
+                    update_success = false;
 
             progress_increment(pc);
         }
@@ -234,20 +267,20 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
             if(swap[i].state == active) {
                 if(config_enabled && !invert_dat_files) {
                     if(!md5sum(swap[i].name, swap[i].checksum))
-                        success = false;
+                        update_success = false;
                 }
                 else {
                     if(!md5sum(swap[i].disabled, swap[i].checksum))
-                        success = false;
+                        update_success = false;
                 }
             }
             else {
                 if(config_enabled && !invert_dat_files) {
                     if(!md5sum(swap[i].disabled, swap[i].checksum))
-                        success = false;
+                        update_success = false;
                 }
                 else if(!md5sum(swap[i].name, swap[i].checksum))
-                        success = false;
+                        update_success = false;
             }
 
             progress_increment(pc);
@@ -255,19 +288,21 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
 
     }
 
-    if(success) {
-        write_game_config(filename, enable, enable_size,
-                                    disable, disable_size,
-                                    swap, swap_size);
+    if(update_success) {
+        write_success = write_game_config(filename, enable, enable_size,
+                                                    disable, disable_size,
+                                                    swap, swap_size);
     }
-    else
+    else {
         errorfmt("Errors were encountered during hashing of %s, config file will remain unchanged\n", filename);
+        write_success = false;
+    }
 
     free(enable);
     free(disable);
     free(swap);
 
-    return success;
+    return update_success && write_success;
 }
 
 bool write_launcher_config(struct launcher_data const* cfg, char const* file) {
@@ -483,21 +518,21 @@ void construct_umount_command(char* dst, char const* exe, char const* flags, cha
         sprintf(dst, "\'%s\'"SUPPRESS_OUTPUT, exe);
 }
 
-void header_name(char* line, char* header) {
+static void header_name(char* line, char* header) {
     char* str = trim_whitespace(line);
     size_t size = strlen(str);
     memcpy(header, str + 1, size - 2);
     header[size - 2] = '\0';
 }
 
-void subheader_name(char* line, char* header) {
+static void subheader_name(char* line, char* header) {
     char* str = trim_whitespace(line);
     size_t size = strlen(str);
     memcpy(header, str + 2, size - 4);
     header[size - 4] = '\0';
 }
 
-void get_table_key(char* entry, char* key) {
+static void get_table_key(char* entry, char* key) {
     char* str = trim_whitespace(entry);
     size_t i;
     for(i = 0; i < strlen(str); i++) {
@@ -508,14 +543,14 @@ void get_table_key(char* entry, char* key) {
     key[i] = '\0';
 }
 
-void get_table_value(char const* entry, char* value) {
+static void get_table_value(char const* entry, char* value) {
     char* start = strchr(entry, '"') + 1;
     char* end = strchr(start, '"');
     memcpy(value, start, end - start);
     value[end - start] = '\0';
 }
 
-bool read_big_entry(char* line, struct big_file* entry) {
+static bool read_big_entry(char* line, struct big_file* entry) {
     if(determine_line_contents(line) != content_key_value_pair)
         return false;
 
@@ -549,7 +584,7 @@ bool read_big_entry(char* line, struct big_file* entry) {
     return true;
 }
 
-bool read_dat_entry(char* line, struct dat_file* entry) {
+static bool read_dat_entry(char* line, struct dat_file* entry) {
     if(determine_line_contents(line) != content_key_value_pair)
         return false;
 
