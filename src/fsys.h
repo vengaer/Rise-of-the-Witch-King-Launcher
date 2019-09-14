@@ -14,6 +14,8 @@ void set_active_configuration(char const* RESTRICT filename, char const* RESTRIC
 void set_extension(char* RESTRICT filename, char const* RESTRICT extension);
 bool file_exists(char const* filename);
 void game_path_from_registry(char* path);
+void file_stem(char* dst, char const* file);
+void parent_path(char* dst, char const* file);
 
 #ifdef __cplusplus
 }

@@ -624,20 +624,3 @@ static bool read_dat_entry(char* line, struct dat_file* entry) {
 
     return true;
 }
-
-void file_stem(char* dst, char const* file) {
-    char* end = strchr(file, '.');
-    memcpy(dst, file, end - file);
-    dst[end - file] = '\0';
-}
-
-void parent_path(char* dst, char const* file) {
-    char* end = strrchr(file, '/') + 1;
-
-    if(end) {
-        memcpy(dst, file, end - file);
-        dst[end - file] = '\0';
-    }
-    else
-        strcpy(dst, file);
-}

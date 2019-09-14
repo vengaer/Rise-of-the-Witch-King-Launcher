@@ -84,6 +84,23 @@ void game_path_from_registry(char* path) {
     #endif
 }
 
+void file_stem(char* dst, char const* file) {
+    char* end = strchr(file, '.');
+    memcpy(dst, file, end - file);
+    dst[end - file] = '\0';
+}
+
+void parent_path(char* dst, char const* file) {
+    char* end = strrchr(file, '/') + 1;
+
+    if(end) {
+        memcpy(dst, file, end - file);
+        dst[end - file] = '\0';
+    }
+    else
+        strcpy(dst, file);
+}
+
 static void toggle_big_files(struct big_file* enable, size_t enable_size,
                       struct big_file* disable, size_t disable_size,
                       char const* target_version, bool verify_active) {
