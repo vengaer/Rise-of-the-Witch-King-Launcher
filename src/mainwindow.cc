@@ -3,6 +3,7 @@
 #include "bitop.h"
 #include "command.h"
 #include "config.h"
+#include "crypto.h"
 #include "fsys.h"
 #include "game_data.h"
 #include "latch.h"

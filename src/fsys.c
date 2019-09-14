@@ -1,7 +1,7 @@
 #include "fsys.h"
 #include "config.h"
+#include "crypto.h"
 #include "pattern.h"
-#include <openssl/md5.h>
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,32 +19,6 @@ static void enable_big_file(struct big_file const* file, bool verify_active);
 static void disable_big_file(struct big_file const* file, bool verify_active);
 static bool handle_swaps(struct dat_file const* swap, size_t swap_size, char const* target_version, bool use_version_dat);
 static void revert_changes(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version);
-
-bool md5sum(char const* restrict filename, char* restrict checksum) {
-    int i, num_bytes;
-    FILE* fp = fopen(filename, "rb");
-
-    if(!fp) {
-        errorfmt("%s could not be opened for hashing\n", filename);
-        return false;
-    }
-
-    char data[CHUNK_SIZE];
-    unsigned char hash[MD5_DIGEST_LENGTH];
-    MD5_CTX context;
-    MD5_Init(&context);
-
-    while((num_bytes = fread(data, 1, CHUNK_SIZE, fp)))
-        MD5_Update(&context, data, num_bytes);
-
-    MD5_Final(hash, &context);
-    fclose(fp);
-
-    for(i = 0; i < MD5_DIGEST_LENGTH; i++)
-        sprintf(&checksum[i*2], "%02x", (unsigned int)hash[i]);
-
-    return true;
-}
 
 void set_active_configuration(char const* restrict filename, char const* restrict target_version,
                               bool use_version_dat, bool verify_active) {

@@ -1,6 +1,7 @@
 #include "config.h"
 #include "atomic.h"
 #include "bitop.h"
+#include "crypto.h"
 #include "fsys.h"
 #include "pattern.h"
 #include "strutils.h"

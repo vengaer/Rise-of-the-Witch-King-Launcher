@@ -6,6 +6,7 @@
 #include "bitop.h"
 #include "config.h"
 #include "command.h"
+#include "crypto.h"
 #include "fsys.h"
 #include "progress_bar.h"
 #include "progress_callback.h"
