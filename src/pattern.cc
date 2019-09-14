@@ -11,8 +11,7 @@ bool is_subheader(std::string_view view);
 bool is_key_value_pair(std::string_view view);
 
 enum line_contents determine_line_contents(char const* line) {
-    std::string const contents{line};
-    std::string_view const view{contents};
+    std::string_view const view{line};
 
     if(is_blank_line(view))
         return content_blank;
@@ -27,8 +26,7 @@ enum line_contents determine_line_contents(char const* line) {
 }
 
 void version_introduced_in(char* dst, char const* filename) {
-    std::string const contents{filename};
-    std::string_view view{contents};
+    std::string_view view{filename};
 
     std::regex const rgx{"(v[0-9](\\.[0-9]){2,3})\\.[a-zA-Z]{1,4}$"};
     svmatch match;
@@ -37,6 +35,17 @@ void version_introduced_in(char* dst, char const* filename) {
         memcpy(dst, match[1].str().data(), match[1].length());
     else
         dst[0] = '\0';
+}
+
+bool is_absolute_path(char const* path) {
+    #if defined _WIN32 || __CYGWIN__
+    std::regex const rgx{"^[A-Z]:.*$"};
+    #else
+    std::regex const rgx{"^/.*$"};
+    #endif
+    std::string_view const view{path};
+    svmatch match;
+    return std::regex_search(std::begin(view), std::end(view), match, rgx);
 }
 
 bool is_blank_line(std::string_view view) {

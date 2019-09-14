@@ -8,6 +8,7 @@
 #include "command.h"
 #include "crypto.h"
 #include "fsys.h"
+#include "pattern.h"
 #include "progress_bar.h"
 #include "progress_callback.h"
 #include <ctype.h>
@@ -36,7 +37,7 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
                                bool new_dat_enabled, struct launcher_data const* ld);
 static int set(char const* restrict set_cfg, struct launcher_data const* ld, char const* restrict edain_toml,
                 char const* restrict botta_toml, char const* restrict rotwk_toml);
-static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const* restrict dat_file, struct launcher_data const* ld, 
+static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const* restrict dat_file, struct launcher_data const* ld,
                    enum configuration active_config, char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml);
 
 void cli_error_diag(char const* info) {
@@ -179,18 +180,29 @@ static void print_help(void) {
 static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_t dst_size) {
     char arg[PATH_SIZE];
     char dir[PATH_SIZE];
-    getcwd(dir, sizeof dir);
     dst[0] = '\0';
-
-    if(strscatf(arg, sizeof arg, "%s/%s", dir, arg0) < 0)
-        return -E2BIG;
+    if(is_absolute_path(arg0)) {
+        if(strscpy(arg, arg0, sizeof arg) < 0) {
+            errorfmt("%s overflowed the arg buffer\n", arg0);
+            return -E2BIG;
+        }
+    }
+    else{
+        if(strscatf(arg, sizeof arg, "%s/%s", dir, arg0) < 0) {
+            getcwd(dir, sizeof dir);
+            errorfmt("%s/%s overflowed the arg buffer\n", dir, arg0);
+            return -E2BIG;
+        }
+    }
 
     replace_char(arg, '\\', '/');
 
     parent_path(dir, arg);
 
-    if(strscpy(dst, dir, dst_size) < 0)
+    if(strscpy(dst, dir, dst_size) < 0) {
+        errorfmt("%s overflowed the dst buffer\n", dir);
         return -E2BIG;
+    }
 
     return 0;
 }
@@ -355,7 +367,6 @@ static bool update_single_config(enum configuration cfg, char const* toml, bool 
             progress_bar_finish(&pb, cfgs[trailing_zerobits(cfg)]);
         }
     }
-            
     return update_successful;
 }
 static bool update_all_configs(char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml,
@@ -472,7 +483,7 @@ static int set(char const* restrict set_cfg, struct launcher_data const* ld, cha
     return active_config;
 }
 
-static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const* restrict dat_file, struct launcher_data const* ld, 
+static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const* restrict dat_file, struct launcher_data const* ld,
                    enum configuration active_config, char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml) {
     char csum[ENTRY_SIZE];
     char launch_call[PATH_SIZE];
