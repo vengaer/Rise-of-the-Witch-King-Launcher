@@ -138,7 +138,8 @@ int cli_main(int argc, char** argv) {
     if(!setup_config(&ld, launch_cfg))
         return 1;
 
-    show_console(ld.show_console);
+    if(!upd_flag)
+        show_console(ld.show_console);
 
     if(!construct_rotwkl_toml_path(rotwk_toml, launcher_dir, sizeof rotwk_toml))
         return 1;
