@@ -29,6 +29,13 @@
 
 extern void(*errdisp)(char const*);
 
+
+/* Use RAII to restore cursor */
+struct busy_cursor {
+    busy_cursor() { QApplication::setOverrideCursor(Qt::BusyCursor); }
+    ~busy_cursor() { QApplication::restoreOverrideCursor(); }
+};
+
 void gui_error_diag(char const* info) {
     QMessageBox box;
     box.critical(0, "Error", info);
@@ -246,12 +253,7 @@ void MainWindow::on_rotwk_upd_clicked() {
 }
 
 void MainWindow::on_pref_save_clicked() {
-
-    /* Use RAII to restore cursor */
-    struct busy_cursor {
-        busy_cursor() { QApplication::setOverrideCursor(Qt::BusyCursor); }
-        ~busy_cursor() { QApplication::restoreOverrideCursor(); }
-    } cursor{};
+    busy_cursor cursor{};
 
     QString exe = game_path_ + "/" + GAME_EXE;
 
@@ -454,6 +456,13 @@ void MainWindow::launch(configuration config) {
 }
 
 void MainWindow::update_single_config(configuration config) {
+    if(is_updating) {
+        errdisp("Update already running");
+        return;
+    }
+    is_updating = true;
+
+    busy_cursor cursor{};
     QString version;
     QString const* toml;
     bool new_dat_enabled = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
@@ -525,15 +534,22 @@ void MainWindow::update_single_config(configuration config) {
                 dialog.setValue(total);
 
             dialog.close();
-
         }
     }
 
     if(!update_successful) 
         QMessageBox::warning(this, tr("Warning"), "Failed to update the " + version + " config.\nNo changes will be written");
+    is_updating = false;
 }
 
 void MainWindow::update_all_configs() {
+    if(is_updating) {
+        errdisp("Update already running");
+        return;
+    }
+    is_updating = true;
+
+    busy_cursor cursor{};
     int volatile tasks_running = 1;
     int volatile cancel = 0;
     int volatile failed = 0x0;
@@ -632,6 +648,7 @@ void MainWindow::update_all_configs() {
 
         QMessageBox::warning(this, tr("Warning"), msg);
     }
+    is_updating = false;
 }
 
 QString MainWindow::wrap_text(QString const& text) {
@@ -677,3 +694,4 @@ std::array<QString, 5> const MainWindow::ROTWK_VERSIONS {
     "v5.0.1",
     "v5.0.0"
 };
+bool MainWindow::is_updating{0};

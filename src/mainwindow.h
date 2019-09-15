@@ -61,6 +61,7 @@ private:
     static QString const BOTTA_LNK;
     static QString const WINDOW_TITLE;
     static std::array<QString, 5> const ROTWK_VERSIONS;
+    static bool is_updating;
 
     void init();
     bool setup_launcher();
