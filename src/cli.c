@@ -213,7 +213,10 @@ static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_
 
     replace_char(arg, '\\', '/');
 
-    parent_path(dir, arg);
+    if(parent_path(dir, arg, sizeof dir) < 0) {
+        errdispf("Parent path of %s would overflow the buffer\n", arg);
+        return -E2BIG;
+    }
 
     if(strscpy(dst, dir, dst_size) < 0) {
         errdispf("%s overflowed the dst buffer\n", dir);
@@ -224,6 +227,7 @@ static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_
 }
 
 static bool setup_config(struct launcher_data* ld, char const* launch_cfg) {
+    printf("%s\n", launch_cfg);
     if(!file_exists(launch_cfg)) {
         errdisp("No config file found");
         return false;

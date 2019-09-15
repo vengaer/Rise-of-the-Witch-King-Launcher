@@ -1,6 +1,8 @@
 #ifndef GAME_DATA_H
 #define GAME_DATA_H
 
+#include <stdbool.h>
+
 #define ACTIVE_EXT "big"
 #define DAT_EXT "dat"
 #define SWP_EXT "swp"
@@ -8,13 +10,13 @@
 #define INVALID_EXT "invalid"
 #define NEW_DAT_CSUM "fbff091f6139eb05dc012d834e3eeb74"
 
-#include <stdbool.h>
-
 #define PATH_SIZE 1024
 #define LINE_SIZE 256
 #define ENTRY_SIZE 64
 #define HEADER_SIZE 32
 #define VERSION_SIZE 16
+
+#define MEMBER_SIZE(type, member) sizeof(((type*)0)->member)
 
 #ifdef __cplusplus
 extern "C" {

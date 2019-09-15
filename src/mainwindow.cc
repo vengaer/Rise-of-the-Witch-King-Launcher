@@ -8,6 +8,7 @@
 #include "game_data.h"
 #include "latch.h"
 #include "progress_callback.h"
+#include "strutils.h"
 #include "ui_mainwindow.h"
 #include <algorithm>
 #include <omp.h>
@@ -245,13 +246,17 @@ void MainWindow::on_rotwk_upd_clicked() {
 }
 
 void MainWindow::on_pref_save_clicked() {
-    QApplication::setOverrideCursor(Qt::BusyCursor);
+
+    /* Use RAII to restore cursor */
+    struct busy_cursor {
+        busy_cursor() { QApplication::setOverrideCursor(Qt::BusyCursor); }
+        ~busy_cursor() { QApplication::restoreOverrideCursor(); }
+    } cursor{};
 
     QString exe = game_path_ + "/" + GAME_EXE;
 
     if(!file_exists(exe.toLatin1().data())) {
         QMessageBox::information(this, tr("Invalid Game Path"), "Could not locate lotrbfme2ep1.exe at specified path");
-        QApplication::restoreOverrideCursor();
         return;
     }
 
@@ -259,7 +264,6 @@ void MainWindow::on_pref_save_clicked() {
         exe = botta_path_ + "/" + BOTTA_LNK;
         if(!file_exists(exe.toLatin1().data())) {
             QMessageBox::information(this, tr("Invalid BotTA Path"), "Could not locate the BotTa shortcut at specified path");
-            QApplication::restoreOverrideCursor();
             return;
         }
     }
@@ -268,48 +272,65 @@ void MainWindow::on_pref_save_clicked() {
     if(data_.automatic_mount) {
         if(!file_exists(mount_exe_.toLatin1().data())) {
             QMessageBox::information(this, tr("File Does Not Exist"), "Could not locate specified mounting executable");
-            QApplication::restoreOverrideCursor();
             return;
         }
         if(!file_exists(mount_image_.toLatin1().data())) {
             QMessageBox::information(this, tr("File Does Not Exist"), "Could not locate specified image file");
-            QApplication::restoreOverrideCursor();
             return;
         }
 
-        strcpy(data_.disc_image, mount_image_.toLatin1().data());
-        strcpy(data_.mount_exe, mount_exe_.toLatin1().data());
-
-        strcpy(data_.mount_flags, ui->mount_opt->text().toLatin1().data());
-        strcpy(data_.umount_flags, ui->umount_opt->text().toLatin1().data());
+        if(strscpy(data_.disc_image, mount_image_.toLatin1().data(), sizeof data_.disc_image) < 0) {
+            errdispf("%s overflows the disc image buffer", mount_image_.toLatin1().data());
+            return;
+        }
+        if(strscpy(data_.mount_exe, mount_exe_.toLatin1().data(), sizeof data_.mount_exe) < 0) {
+            errdispf("%s overflows the mount exe buffer", mount_exe_.toLatin1().data());
+            return;
+        }
+        if(strscpy(data_.mount_flags, ui->mount_opt->text().toLatin1().data(), sizeof data_.mount_flags) < 0) {
+            errdispf("%s overflows the mount flags buffer");
+            return;
+        }
+        if(strscpy(data_.umount_flags, ui->umount_opt->text().toLatin1().data(), sizeof data_.umount_flags) < 0) {
+            errdispf("%s overflows the umount flags buffer");
+            return;
+        }
         data_.umount_imspec = ui->imspec_umount->isChecked();
 
         char buf[PATH_SIZE];
         construct_mount_command(buf, data_.mount_exe, data_.mount_flags, data_.disc_image);
         if(sys_format(data_.mount_cmd, buf, sizeof data_.mount_cmd) < 0) {
             errdisp("Mount command overflowed the buffer");
-            QApplication::restoreOverrideCursor();
             return;
         }
         construct_umount_command(buf, data_.mount_exe, data_.umount_flags, data_.disc_image, data_.umount_imspec);
         if(sys_format(data_.umount_cmd, buf, sizeof data_.umount_cmd) < 0) {
             errdisp("Umount command overflowed the buffer");
-            QApplication::restoreOverrideCursor();
             return;
         }
 
     }
     data_.botta_available = ui->botta_installed->isChecked();
-    if(data_.botta_available)
-        strcpy(data_.botta_path, botta_path_.toLatin1().data());
+    if(data_.botta_available) {
+        if(strscpy(data_.botta_path, botta_path_.toLatin1().data(), sizeof data_.botta_path) < 0) {
+            errdispf("%s overflows the botta path buffer");
+            return;
+        }
+    }
 
-    strcpy(data_.game_path, game_path_.toLatin1().data());
+    if(strscpy(data_.game_path, game_path_.toLatin1().data(), sizeof data_.game_path) < 0) {
+        errdispf("%s overflows the game path buffer");
+        return;
+    }
     chdir(data_.game_path);
 
     data_.swap_dat_file = ui->dat_swap->isChecked();
     data_.verify_active = ui->verify_active->isChecked();
     data_.default_state = static_cast<configuration>(0x1 << ui->default_state->currentIndex());
-    strcpy(data_.patch_version, ROTWK_VERSIONS[ui->rotwk_version->currentIndex()].toLatin1().data());
+    if(strscpy(data_.patch_version, ROTWK_VERSIONS[ui->rotwk_version->currentIndex()].toLatin1().data(), sizeof data_.patch_version) < 0) {
+        errdispf("%s overflows the patch version buffer", ROTWK_VERSIONS[ui->rotwk_version->currentIndex()].toLatin1().data());
+        return;
+    }
 
     data_.kill_on_launch = ui->kill_on_launch->isChecked();
     data_.show_console = ui->show_console->isChecked();
@@ -322,7 +343,6 @@ void MainWindow::on_pref_save_clicked() {
 
     if(!write_launcher_config(&data_, config_file_.toLatin1().data())) {
         errdisp("Failed to write launcher config");
-        QApplication::restoreOverrideCursor();
         return;
     }
 
@@ -340,7 +360,6 @@ void MainWindow::on_pref_save_clicked() {
     }
     setup_paths();
     md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
-    QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::resizeEvent(QResizeEvent*) {

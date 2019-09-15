@@ -226,7 +226,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
     #pragma omp parallel reduction(&& : update_success)
     {
         size_t i;
-        char toggled[ENTRY_SIZE];
+        char toggled[MEMBER_SIZE(struct big_file, name)];
         bool config_enabled;
         bool is_canceled = false;
 
@@ -238,7 +238,10 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
             if(!file_exists(enable[i].name)) {
                 config_enabled = false;
                 strcpy(toggled, enable[i].name);
-                set_extension(toggled, enable[i].extension);
+                if(set_extension(toggled, enable[i].extension, sizeof toggled) < 0) {
+                    errdispf("Appending extension %s to %s would overflow the buffer, canceling", enable[i].extension, toggled);
+                    atomic_write(cancel, 1);
+                }
                 if(!md5sum(toggled, enable[i].checksum))
                     update_success = false;
             }
@@ -256,7 +259,10 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
             if(!file_exists(disable[i].name)) {
                 config_enabled = true;
                 strcpy(toggled, disable[i].name);
-                set_extension(toggled, disable[i].extension);
+                if(set_extension(toggled, disable[i].extension, sizeof toggled) < 0) {
+                    errdispf("Appending extension %s to %s would overflow the buffer, canceling", disable[i].extension, toggled);
+                    atomic_write(cancel, 1);
+                }
                 if(!md5sum(toggled, disable[i].checksum))
                     update_success = false;
             }
