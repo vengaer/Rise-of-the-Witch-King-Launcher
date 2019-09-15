@@ -130,7 +130,10 @@ int cli_main(int argc, char** argv) {
     for(idx = optind; idx < argc; idx++)
         errdispf("Non-option argument %s ignored\n", argv[idx]);
 
-    if(h_flag || (!run_flag && !upd_flag && !set_flag)) {
+    if(h_flag) {
+        if(run_flag  || upd_flag || set_flag) {
+            errdisp("-h cannot be combined with any other flag");
+        }
         print_help();
         return 1;
     }
@@ -179,10 +182,10 @@ int cli_main(int argc, char** argv) {
 }
 
 static void print_help(void) {
-    fprintf(stderr, "Usage: rotwkl [OPTION]\n\n");
-    fprintf(stderr, "    -r <config>,        Run the given configuration.\n");
-    fprintf(stderr, "    -s <config>,        Specify what configuration to enable.\n");
-    fprintf(stderr, "    -u <config>,        Update config file for specified configuration.\n");
+    fprintf(stderr, "Usage: rotwkl -h|[-u config] [-s config] [-r config]\n\n");
+    fprintf(stderr, "    -r,                 Run the given configuration.\n");
+    fprintf(stderr, "    -s,                 Specify what configuration to enable.\n");
+    fprintf(stderr, "    -u,                 Update config file for specified configuration.\n");
     fprintf(stderr, "    -h,                 Display this help message.\n");
     fprintf(stderr, "Available configurations are:\n");
     fprintf(stderr, "    rotwk\n    edain(*)\n    botta(*)\n    all(**)\n");
