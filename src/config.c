@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern void(*display_error)(char const*);
+extern void(*errdisp)(char const*);
 
 static void header_name(char* line, char* header);
 static void subheader_name(char* line, char* header);
@@ -39,14 +39,14 @@ bool read_game_config(char const* filename,
 
     FILE* fp = fopen(filename, "r");
     if(!fp) {
-        errorfmt("%s could not be opened\n", filename);
+        errdispf("%s could not be opened\n", filename);
         return false;
     }
     else {
         fseek(fp, 0, SEEK_END);
         size_t file_size = ftell(fp);
         if(file_size == 0) {
-            errorfmt("%S is empty\n", filename);
+            errdispf("%S is empty\n", filename);
             fclose(fp);
             return false;
         }
@@ -58,7 +58,7 @@ bool read_game_config(char const* filename,
         contents = determine_line_contents(line);
 
         if(contents == content_invalid) {
-            errorfmt("Syntax error on line %u in %s: %s\n", line_number, filename, line);
+            errdispf("Syntax error on line %u in %s: %s\n", line_number, filename, line);
             fclose(fp);
             return false;
         }
@@ -71,7 +71,7 @@ bool read_game_config(char const* filename,
             else if(strcmp(subheader, "disable") == 0)
                 ++(*disable_size);
             else if(strcmp(subheader, "swap") != 0) {
-                errorfmt("Syntax error on line %u in %s: %s\nUnknown subheader\n", line_number, filename, line);
+                errdispf("Syntax error on line %u in %s: %s\nUnknown subheader\n", line_number, filename, line);
                 fclose(fp);
                 return false;
             }
@@ -84,14 +84,14 @@ bool read_game_config(char const* filename,
                     *enable = realloc(*enable, 2 * (*enable_capacity) * sizeof(struct big_file));
                     *enable_capacity *= 2;
                     if(!*enable) {
-                        display_error("Failed to reallocate enable");
+                        errdisp("Failed to reallocate enable");
                         fclose(fp);
                         return false;
                     }
                 }
 
                 if(!read_big_entry(line, &(*enable)[(*enable_size) - 1])) {
-                    errorfmt("Syntax error on line %u in %s: %s\n", line_number, filename, line);
+                    errdispf("Syntax error on line %u in %s: %s\n", line_number, filename, line);
                     fclose(fp);
                     return false;
                 }
@@ -101,14 +101,14 @@ bool read_game_config(char const* filename,
                     *disable = realloc(*disable, 2 * (*disable_capacity) * sizeof(struct big_file));
                     *disable_capacity *= 2;
                     if(!*disable) {
-                        display_error("Failed to reallocate disable");
+                        errdisp("Failed to reallocate disable");
                         fclose(fp);
                         return false;
                     }
                 }
 
                 if(!read_big_entry(line, &(*disable)[(*disable_size) - 1])) {
-                    errorfmt("Syntax error on line %u in %s: %s\n", line_number, filename, line);
+                    errdispf("Syntax error on line %u in %s: %s\n", line_number, filename, line);
                     fclose(fp);
                     return false;
                 }
@@ -128,19 +128,19 @@ bool read_game_config(char const* filename,
                     *swap = realloc(*swap, 2 * (*swap_capacity) * sizeof(struct dat_file));
                     *swap_capacity *= 2;
                     if(!*swap) {
-                        display_error("Failed to reallocate swap");
+                        errdisp("Failed to reallocate swap");
                         fclose(fp);
                         return false;
                     }
                 }
                 if(!read_dat_entry(line, &(*swap)[(*swap_size) - 1])) {
-                    errorfmt("Invalid entry '%s' in %s\n", line, filename);
+                    errdispf("Invalid entry '%s' in %s\n", line, filename);
                     fclose(fp);
                     return false;
                 }
             }
             else {
-                errorfmt("Unknown header %s\n", header);
+                errdispf("Unknown header %s\n", header);
                 fclose(fp);
                 return false;
             }
@@ -158,7 +158,7 @@ bool write_game_config(char const* filename,
 
     FILE* fp = fopen(filename, "w");
     if(!fp) {
-        errorfmt("%s could not be opened\n", filename);
+        errdispf("%s could not be opened\n", filename);
         return false;
     }
     size_t i;
@@ -199,7 +199,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
     struct dat_file* swap = malloc(swap_cap * sizeof(struct dat_file));
 
     if(!enable || !disable || !swap) {
-        display_error("Failed to allocate memory");
+        errdisp("Failed to allocate memory");
         free(enable);
         free(disable);
         free(swap);
@@ -211,7 +211,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                                               &swap, &swap_cap, &swap_size);
 
     if(!read_success) {
-        display_error("Failed to read game config");
+        errdisp("Failed to read game config");
         free(enable);
         free(disable);
         free(swap);
@@ -295,7 +295,7 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                                                     swap, swap_size);
     }
     else {
-        errorfmt("Errors were encountered during hashing of %s, config file will remain unchanged\n", filename);
+        errdispf("Errors were encountered during hashing of %s, config file will remain unchanged\n", filename);
         write_success = false;
     }
 
@@ -311,18 +311,18 @@ bool write_launcher_config(struct launcher_data const* cfg, char const* file) {
     char umount[sizeof cfg->umount_cmd];
 
     if(toml_format(mount, cfg->mount_cmd, sizeof mount) < 0) {
-        display_error("Mount command overflowed the toml buffer");
+        errdisp("Mount command overflowed the toml buffer");
         return false;
     }
     if(toml_format(umount, cfg->umount_cmd, sizeof umount) < 0) {
-        display_error("Umount command overflowed the toml buffer");
+        errdisp("Umount command overflowed the toml buffer");
         return false;
     }
 
     FILE* fp = fopen(file, "w");
 
     if(!fp) {
-        display_error("Could not write config file\n");
+        errdisp("Could not write config file\n");
         return false;
     }
 
@@ -373,7 +373,7 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
         ++line_number;
         contents = determine_line_contents(line);
         if(contents == content_invalid) {
-            errorfmt("Syntax error on line %u in %s: %s\n", line_number, file, line);
+            errdispf("Syntax error on line %u in %s: %s\n", line_number, file, line);
             fclose(fp);
             return false;
         }
@@ -404,85 +404,85 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
                 cfg->verify_active = strcmp(value, "true") == 0;
             else if(strcmp(key, "patch_version") == 0) {
                 if(strscpy(cfg->patch_version, value, sizeof cfg->patch_version) < 0) {
-                    display_error("Buffer overflow detected in patch version");
+                    errdisp("Buffer overflow detected in patch version");
                     fclose(fp);
                     return false;
                 }
             }
             else
-                errorfmt("Unknown key %s\n", key);
+                errdispf("Unknown key %s\n", key);
         }
         else if(strcmp(header, "game") == 0) {
             if(strcmp(key, "path") == 0) {
                 if(strscpy(cfg->game_path, value, sizeof cfg->game_path) < 0) {
-                    display_error("Buffer overflow detected in game path\n");
+                    errdisp("Buffer overflow detected in game path\n");
                     fclose(fp);
                     return false;
                 }
             }
             else
-                errorfmt("Unknown key %s\n", key);
+                errdispf("Unknown key %s\n", key);
         }
         else if(strcmp(header, "edain") == 0) {
             if(strcmp(key, "available") == 0)
                 cfg->edain_available = strcmp(value, "true") == 0;
             else
-                errorfmt("Unknown key %s\n", key);
+                errdispf("Unknown key %s\n", key);
         }
         else if(strcmp(header, "botta") == 0) {
             if(strcmp(key, "available") == 0)
                 cfg->botta_available = strcmp(value, "true") == 0;
             else if(strcmp(key, "path") == 0) {
                 if(strscpy(cfg->botta_path, value, sizeof cfg->botta_path) < 0) {
-                    display_error("Buffer overflow detected in botta path\n");
+                    errdisp("Buffer overflow detected in botta path\n");
                     fclose(fp);
                     return false;
                 }
             }
             else
-                errorfmt("Unknown key %s\n", key);
+                errdispf("Unknown key %s\n", key);
         }
         else if(strcmp(header, "mount") == 0) {
             if(strcmp(key, "automatic") == 0)
                 cfg->automatic_mount = strcmp(value, "true") == 0;
             else if(strcmp(key, "mount_exe") == 0) {
                 if(strscpy(cfg->mount_exe, value, sizeof cfg->mount_exe) < 0) {
-                    display_error("Buffer overflow detected in mount exe\n");
+                    errdisp("Buffer overflow detected in mount exe\n");
                     fclose(fp);
                     return false;
                 }
             }
             else if(strcmp(key, "disc_image") == 0) {
                 if(strscpy(cfg->disc_image, value, sizeof cfg->disc_image) < 0) {
-                    display_error("Buffer overflow detected in disc image\n");
+                    errdisp("Buffer overflow detected in disc image\n");
                     fclose(fp);
                     return false;
                 }
             }
             else if(strcmp(key, "mount_flags") == 0) {
                 if(strscpy(cfg->mount_flags, value, sizeof cfg->mount_flags) < 0) {
-                    display_error("Buffer overflow detected in mount flags\n");
+                    errdisp("Buffer overflow detected in mount flags\n");
                     fclose(fp);
                     return false;
                 }
             }
             else if(strcmp(key, "umount_flags") == 0) {
                 if(strscpy(cfg->umount_flags, value, sizeof cfg->umount_flags) < 0) {
-                    display_error("Buffer overflow detected in umount flags\n");
+                    errdisp("Buffer overflow detected in umount flags\n");
                     fclose(fp);
                     return false;
                 }
             }
             else if(strcmp(key, "mount_cmd") == 0) {
                 if(sys_format(cfg->mount_cmd, value, sizeof cfg->mount_cmd)  < 0) {
-                    display_error("Buffer overflow detected in mount command\n");
+                    errdisp("Buffer overflow detected in mount command\n");
                     fclose(fp);
                     return false;
                 }
             }
             else if(strcmp(key, "umount_cmd") == 0) {
                 if(sys_format(cfg->umount_cmd, value, sizeof cfg->umount_cmd)  < 0) {
-                    display_error("Buffer overflow detected in umount command\n");
+                    errdisp("Buffer overflow detected in umount command\n");
                     fclose(fp);
                     return false;
                 }
@@ -490,10 +490,10 @@ bool read_launcher_config(struct launcher_data* cfg, char const* file) {
             else if(strcmp(key, "umount_imspec") == 0)
                 cfg->umount_imspec = strcmp(value, "true") == 0;
             else
-                errorfmt("Unknown key %s\n", key);
+                errdispf("Unknown key %s\n", key);
         }
         else
-            errorfmt("Unknown header %s\n", header);
+            errdispf("Unknown header %s\n", header);
     }
 
     fclose(fp);
@@ -563,19 +563,19 @@ static bool read_big_entry(char* line, struct big_file* entry) {
 
     if(strcmp(key, "name") == 0) {
         if(strscpy(entry->name, value, sizeof entry->name) < 0) {
-            display_error("Buffer overflow detected for big file name\n");
+            errdisp("Buffer overflow detected for big file name\n");
             return false;
         }
     }
     else if(strcmp(key, "checksum") == 0) {
         if(strscpy(entry->checksum, value, sizeof entry->checksum) < 0) {
-            display_error("Buffer overflow detected for big file checksum\n");
+            errdisp("Buffer overflow detected for big file checksum\n");
             return false;
         }
     }
     else if(strcmp(key, "extension") == 0) {
         if(strscpy(entry->extension, value, sizeof entry->extension) < 0) {
-            display_error("Buffer overflow detected for big file extension\n");
+            errdisp("Buffer overflow detected for big file extension\n");
             return false;
         }
     }
@@ -597,25 +597,25 @@ static bool read_dat_entry(char* line, struct dat_file* entry) {
 
     if(strcmp(key, "name") == 0) {
         if(strscpy(entry->name, value, sizeof entry->name) < 0) {
-            display_error("Buffer overflow detected in dat file name\n");
+            errdisp("Buffer overflow detected in dat file name\n");
             return false;
         }
     }
     else if(strcmp(key, "checksum") == 0) {
         if(strscpy(entry->checksum, value, sizeof entry->checksum) < 0) {
-            display_error("Buffer overflow detected in dat file checksum\n");
+            errdisp("Buffer overflow detected in dat file checksum\n");
             return false;
         }
     }
     else if(strcmp(key, "disabled") == 0) {
         if(strscpy(entry->disabled, value, sizeof entry->disabled) < 0) {
-            display_error("Buffer overflow detected in dat file disabled\n");
+            errdisp("Buffer overflow detected in dat file disabled\n");
             return false;
         }
     }
     else if(strcmp(key, "introduced") == 0) {
         if(strscpy(entry->introduced, value, sizeof entry->introduced) < 0) {
-            display_error("Buffer overflow detected in dat file introduced\n");
+            errdisp("Buffer overflow detected in dat file introduced\n");
             return false;
         }
     }

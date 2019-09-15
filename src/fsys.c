@@ -12,7 +12,7 @@
 #include <windows.h>
 #endif
 
-extern void(*display_error)(char const*);
+extern void(*errdisp)(char const*);
 
 static void toggle_big_files(struct big_file* enable, size_t enable_size, struct big_file* disable, size_t disable_size, char const* target_version, bool verify_active);
 static void enable_big_file(struct big_file const* file, bool verify_active);
@@ -39,12 +39,12 @@ void set_active_configuration(char const* restrict filename, char const* restric
         bool const swap_successful = handle_swaps(swap, swap_size, target_version, use_version_dat);
 
         if(!swap_successful) {
-            display_error("Failed to swap .dat files, reverting\n");
+            errdisp("Failed to swap .dat files, reverting\n");
             revert_changes(enable, enable_size, disable, disable_size, target_version);
         }
     }
     else
-        display_error("Errors encountered while reading game config, no changes will be made\n");
+        errdisp("Errors encountered while reading game config, no changes will be made\n");
 
     free(enable);
     free(disable);
@@ -141,7 +141,7 @@ static void enable_big_file(struct big_file const* file, bool verify_active) {
             char invalid[ENTRY_SIZE];
             strcpy(invalid, file->name);
             set_extension(invalid, INVALID_EXT);
-            errorfmt("File %s already exists, will be moved to %s\n", file->name, invalid);
+            errdispf("File %s already exists, will be moved to %s\n", file->name, invalid);
 
             rename(file->name, invalid);
         }
@@ -168,7 +168,7 @@ static void disable_big_file(struct big_file const* file, bool verify_active) {
             char invalid[ENTRY_SIZE];
             strcpy(invalid, toggled);
             set_extension(invalid, INVALID_EXT);
-            errorfmt("File %s already exists, will be moved to %s\n", toggled, invalid);
+            errdispf("File %s already exists, will be moved to %s\n", toggled, invalid);
 
             rename(toggled, invalid);
         }
@@ -235,7 +235,7 @@ static bool handle_swaps(struct dat_file const* swap, size_t swap_size, char con
         md5sum(activate->disabled, hash);
 
         if(strcmp(activate->checksum, hash) != 0) {
-            display_error("No file matches the desired checksum\n");
+            errdisp("No file matches the desired checksum\n");
             free(done);
             return false;
         }
@@ -267,5 +267,5 @@ static void revert_changes(struct big_file* enable, size_t enable_size,
     if(file_exists(swp))
         rename(swp, toggled);
     else
-        display_error("Failed to restore .dat file\n");
+        errdisp("Failed to restore .dat file\n");
 }

@@ -9,7 +9,7 @@ bool md5sum(char const* restrict filename, char* restrict checksum) {
     FILE* fp = fopen(filename, "rb");
 
     if(!fp) {
-        errorfmt("%s could not be opened for hashing\n", filename);
+        errdispf("%s could not be opened for hashing\n", filename);
         return false;
     }
 

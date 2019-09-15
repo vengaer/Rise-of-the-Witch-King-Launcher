@@ -150,8 +150,8 @@ int toml_format(char* restrict dst, char const* restrict command, size_t dst_siz
 }
 
 
-void errorfmt(char const* fmt, ...) {
-    extern void(*display_error)(char const*);
+void errdispf(char const* fmt, ...) {
+    extern void(*errdisp)(char const*);
 
     char buf[LINE_SIZE];
 
@@ -163,5 +163,5 @@ void errorfmt(char const* fmt, ...) {
     if(buf[sizeof buf - 1])
         sprintf(buf, "Error message overflowed the buffer");
 
-    display_error(buf);
+    errdisp(buf);
 }

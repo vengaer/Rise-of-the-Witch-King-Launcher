@@ -9,15 +9,15 @@
 #include <windows.h>
 #endif
 
-void (*display_error)(char const*) = NULL;
+void (*errdisp)(char const*) = NULL;
 
 int main(int argc, char *argv[]) {
     if(argc > 1) {
-        display_error = &cli_error_diag;
+        errdisp = &cli_error_diag;
         return cli_main(argc, argv);
     }
 
-    display_error = &gui_error_diag;
+    errdisp = &gui_error_diag;
 
     show_console(false);
 

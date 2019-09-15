@@ -26,7 +26,7 @@
 #include <windows.h>
 #endif
 
-extern void(*display_error)(char const*);
+extern void(*errdisp)(char const*);
 
 void gui_error_diag(char const* info) {
     QMessageBox box;
@@ -287,13 +287,13 @@ void MainWindow::on_pref_save_clicked() {
         char buf[PATH_SIZE];
         construct_mount_command(buf, data_.mount_exe, data_.mount_flags, data_.disc_image);
         if(sys_format(data_.mount_cmd, buf, sizeof data_.mount_cmd) < 0) {
-            display_error("Mount command overflowed the buffer");
+            errdisp("Mount command overflowed the buffer");
             QApplication::restoreOverrideCursor();
             return;
         }
         construct_umount_command(buf, data_.mount_exe, data_.umount_flags, data_.disc_image, data_.umount_imspec);
         if(sys_format(data_.umount_cmd, buf, sizeof data_.umount_cmd) < 0) {
-            display_error("Umount command overflowed the buffer");
+            errdisp("Umount command overflowed the buffer");
             QApplication::restoreOverrideCursor();
             return;
         }
@@ -321,7 +321,7 @@ void MainWindow::on_pref_save_clicked() {
     update_gui_functionality();
 
     if(!write_launcher_config(&data_, config_file_.toLatin1().data())) {
-        display_error("Failed to write launcher config");
+        errdisp("Failed to write launcher config");
         QApplication::restoreOverrideCursor();
         return;
     }

@@ -19,7 +19,7 @@
 #include <string.h>
 #include <unistd.h>
 
-extern void(*display_error)(char const*);
+extern void(*errdisp)(char const*);
 
 static void print_help(void);
 static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_t dst_size);
@@ -64,7 +64,7 @@ int cli_main(int argc, char** argv) {
     char const* launch_cfg = config_file;
 
     if(get_launcher_dir(launcher_dir, argv[0], sizeof launcher_dir) < 0) {
-        display_error("Could not get launcher directory\n");
+        errdisp("Could not get launcher directory\n");
         return 1;
     }
 
@@ -104,11 +104,11 @@ int cli_main(int argc, char** argv) {
                 break;
             case '?':
                 if(optopt == 'r' || optopt == 's' || optopt == 'u')
-                    errorfmt("Option -%c requires an argument\n", optopt);
+                    errdispf("Option -%c requires an argument\n", optopt);
                 else if(isprint(optopt))
-                    errorfmt("Unknown option '-%c'\n", optopt);
+                    errdispf("Unknown option '-%c'\n", optopt);
                 else
-                    errorfmt("Unknown option character '\\x%x'\n", optopt);
+                    errdispf("Unknown option character '\\x%x'\n", optopt);
                 return 1;
             default:
                 return 1;
@@ -116,7 +116,7 @@ int cli_main(int argc, char** argv) {
     }
 
     for(idx = optind; idx < argc; idx++)
-        errorfmt("Non-option argument %s ignored\n", argv[idx]);
+        errdispf("Non-option argument %s ignored\n", argv[idx]);
 
     if(h_flag || (!run_flag && !upd_flag && !set_flag)) {
         print_help();
@@ -183,14 +183,14 @@ static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_
     dst[0] = '\0';
     if(is_absolute_path(arg0)) {
         if(strscpy(arg, arg0, sizeof arg) < 0) {
-            errorfmt("%s overflowed the arg buffer\n", arg0);
+            errdispf("%s overflowed the arg buffer\n", arg0);
             return -E2BIG;
         }
     }
     else{
         if(strscatf(arg, sizeof arg, "%s/%s", dir, arg0) < 0) {
             getcwd(dir, sizeof dir);
-            errorfmt("%s/%s overflowed the arg buffer\n", dir, arg0);
+            errdispf("%s/%s overflowed the arg buffer\n", dir, arg0);
             return -E2BIG;
         }
     }
@@ -200,7 +200,7 @@ static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_
     parent_path(dir, arg);
 
     if(strscpy(dst, dir, dst_size) < 0) {
-        errorfmt("%s overflowed the dst buffer\n", dir);
+        errdispf("%s overflowed the dst buffer\n", dir);
         return -E2BIG;
     }
 
@@ -209,12 +209,12 @@ static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_
 
 static bool setup_config(struct launcher_data* ld, char const* launch_cfg) {
     if(!file_exists(launch_cfg)) {
-        display_error("No config file found");
+        errdisp("No config file found");
         return false;
     }
     else  {
         if(!read_launcher_config(ld, launch_cfg)) {
-            display_error("Failed to read launcher config");
+            errdisp("Failed to read launcher config");
             return false;
         }
     }
@@ -223,11 +223,11 @@ static bool setup_config(struct launcher_data* ld, char const* launch_cfg) {
 
 static bool construct_rotwkl_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size) {
     if(strscpy(dst, launcher_dir, dst_size) < 0) {
-        display_error("Launcher path overflowed the rotwk toml buffer");
+        errdisp("Launcher path overflowed the rotwk toml buffer");
         return false;
     }
     if(strscat(dst, "/toml/rotwk.toml", dst_size) < 0) {
-        display_error("rotwkl toml overflowed the buffer");
+        errdisp("rotwkl toml overflowed the buffer");
         return false;
     }
     return true;
@@ -235,11 +235,11 @@ static bool construct_rotwkl_toml_path(char* restrict dst, char const* restrict 
 
 static bool construct_edain_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size) {
     if(strscpy(dst, launcher_dir, dst_size) < 0) {
-        display_error("Launcher path overflowed the edain toml buffer");
+        errdisp("Launcher path overflowed the edain toml buffer");
         return false;
     }
     if(strscat(dst, "/toml/edain.toml", dst_size) < 0) {
-        display_error("Edain toml overflowed the buffer");
+        errdisp("Edain toml overflowed the buffer");
         return false;
     }
     return true;
@@ -247,11 +247,11 @@ static bool construct_edain_toml_path(char* restrict dst, char const* restrict l
 
 static bool construct_botta_toml_path(char* restrict dst, char const* restrict launcher_dir, size_t dst_size) {
     if(strscpy(dst, launcher_dir, dst_size) < 0) {
-        display_error("Launcher path overflowed the botta toml buffer");
+        errdisp("Launcher path overflowed the botta toml buffer");
         return false;
     }
     if(strscat(dst, "/toml/botta.toml", dst_size) < 0) {
-        display_error("Botta toml overflowed the buffer");
+        errdisp("Botta toml overflowed the buffer");
         return false;
     }
     return true;
@@ -259,11 +259,11 @@ static bool construct_botta_toml_path(char* restrict dst, char const* restrict l
 
 static bool construct_launch_cmd(char* restrict dst, char const* restrict game_path, size_t dst_size) {
     if(strscpy(dst, game_path, dst_size) < 0) {
-        display_error("Game path overflowed the launch command buffer");
+        errdisp("Game path overflowed the launch command buffer");
         return false;
     }
     if(strscat(dst, "/lotrbfme2ep1.exe", dst_size) < 0) {
-        display_error("Exe path overflowed the launch command buffer");
+        errdisp("Exe path overflowed the launch command buffer");
         return false;
     }
     return true;
@@ -271,11 +271,11 @@ static bool construct_launch_cmd(char* restrict dst, char const* restrict game_p
 
 static bool construct_botta_launch_cmd(char* restrict dst, char const* restrict botta_path, size_t dst_size) {
     if(strscpy(dst, botta_path, dst_size) < 0) {
-        display_error("Botta path overflowed the launch buffer");
+        errdisp("Botta path overflowed the launch buffer");
         return false;
     }
     if(strscat(dst, "/BotTa.lnk", dst_size) < 0) {
-        display_error("Botta lnk overflowed the buffer");
+        errdisp("Botta lnk overflowed the buffer");
         return false;
     }
     return true;
@@ -283,11 +283,11 @@ static bool construct_botta_launch_cmd(char* restrict dst, char const* restrict 
 
 static bool construct_dat_file_path(char* restrict dst, char const* restrict game_path, size_t dst_size) {
     if(strscpy(dst, game_path, dst_size) < 0) {
-        display_error("Game path overflowed the game.dat buffer");
+        errdisp("Game path overflowed the game.dat buffer");
         return false;
     }
     if(strscat(dst, "/game.dat", dst_size) < 0) {
-        display_error("game.dat path overflowed the buffer");
+        errdisp("game.dat path overflowed the buffer");
         return false;
     }
     return true;
@@ -302,7 +302,7 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
     else if(strcmp(upd_cfg, "edain") == 0) {
 
         if(!ld->edain_available) {
-            display_error("Edain is not avaialble");
+            errdisp("Edain is not avaialble");
             return false;
         }
 
@@ -312,7 +312,7 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
     else if(strcmp(upd_cfg, "botta") == 0) {
 
         if(!ld->botta_available) {
-            display_error("BotTA is not available");
+            errdisp("BotTA is not available");
             return false;
         }
 
@@ -320,7 +320,7 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
     }
 
     if(strcmp(upd_cfg, "all") != 0) {
-        errorfmt("Unknown configuration %s\n", upd_cfg);
+        errdispf("Unknown configuration %s\n", upd_cfg);
         return false;
     }
     /* All */
@@ -435,11 +435,11 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
 
     if(failed) {
         if(failed & rotwk)
-            display_error("Failed to update RotWK");
+            errdisp("Failed to update RotWK");
         if(failed & edain)
-            display_error("Failed to update Edain");
+            errdisp("Failed to update Edain");
         if(failed & botta)
-            display_error("Failed to update BotTA");
+            errdisp("Failed to update BotTA");
 
         return false;
     }
@@ -458,7 +458,7 @@ static int set(char const* restrict set_cfg, struct launcher_data const* ld, cha
     else {
         if(strcmp(set_cfg, "edain") == 0) {
             if(!ld->edain_available) {
-                display_error("Edain is not available");
+                errdisp("Edain is not available");
                 return -1;
             }
 
@@ -468,7 +468,7 @@ static int set(char const* restrict set_cfg, struct launcher_data const* ld, cha
         }
         else if(strcmp(set_cfg, "botta") == 0) {
             if(!ld->botta_available) {
-                display_error("BotTA is not avaialble");
+                errdisp("BotTA is not avaialble");
                 return -1;
             }
 
@@ -476,7 +476,7 @@ static int set(char const* restrict set_cfg, struct launcher_data const* ld, cha
             active_config = botta;
         }
         else {
-            display_error("Unknown configuration");
+            errdisp("Unknown configuration");
             return -1;
         }
     }
@@ -495,7 +495,7 @@ static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const
 
         if(mounting_necessary) {
             if(system(ld->mount_cmd) != 0) {
-                errorfmt("'%s' returned an error\n", ld->mount_cmd);
+                errdispf("'%s' returned an error\n", ld->mount_cmd);
                 return false;
             }
         }
@@ -506,19 +506,19 @@ static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const
             /* Unmount if necessary */
             if(ld->automatic_mount && mounting_necessary) {
                 if(system(ld->umount_cmd) != 0)
-                    errorfmt("'%s' returned an error\n", ld->umount_cmd);
+                    errdispf("'%s' returned an error\n", ld->umount_cmd);
             }
             return false;
         }
     }
 
     if(sys_format(launch_call, launch_cmd, sizeof launch_call) < 0) {
-        display_error("Launch command overflowed the system call buffer");
+        errdisp("Launch command overflowed the system call buffer");
         return false;
     }
 
     if(system(launch_call) != 0)
-        display_error("Failed to launch game");
+        errdisp("Failed to launch game");
 
     while(game_running())
         sleep_for(SLEEP_TIME);
@@ -539,7 +539,7 @@ static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const
 
     if(ld->automatic_mount && mounting_necessary) {
         if(system(ld->umount_cmd) != 0) {
-            errorfmt("'%s' returned an error\n", ld->umount_cmd);
+            errdispf("'%s' returned an error\n", ld->umount_cmd);
             return false;
         }
     }
