@@ -11,15 +11,19 @@
 #include "pattern.h"
 #include "progress_bar.h"
 #include "progress_callback.h"
+
 #include <ctype.h>
-#include <omp.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <omp.h>
+#include <signal.h>
 #include <unistd.h>
 
 extern void(*errdisp)(char const*);
+static int volatile cancel_update = 0;
 
 static void print_help(void);
 static int get_launcher_dir(char* restrict dst, char const* restrict arg0, size_t dst_size);
@@ -40,11 +44,19 @@ static int set(char const* restrict set_cfg, struct launcher_data const* ld, cha
 static bool launch(char* restrict launch_cmd, size_t launch_cmd_size, char const* restrict dat_file, struct launcher_data const* ld,
                    enum configuration active_config, char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml);
 
+void signal_handler(int signal) {
+    if(signal == SIGINT) {
+        atomic_write(&cancel_update, 1);
+    }
+}
+
 void cli_error_diag(char const* info) {
     fprintf(stderr, "\nError: %s\n\n", info);
 }
 
 int cli_main(int argc, char** argv) {
+    signal(SIGINT, signal_handler);
+
     char config_file[PATH_SIZE];
     char launcher_dir[PATH_SIZE];
 
@@ -330,18 +342,22 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
 static bool update_single_config(enum configuration cfg, char const* toml, bool new_dat_enabled, struct launcher_data const* ld) {
     bool volatile update_successful;
     int volatile tasks_running = 1;
-    int volatile cancel = 0;
+
+    atomic_write(&cancel_update, 0);
+
     struct latch latch;
     latch_init(&latch, tasks_running + 1);
+
     struct progress_callback pc;
     progress_init(&pc);
+
     struct progress_bar pb;
     progress_bar_init(&pb);
 
     bool invert_dat = cfg == rotwk ?
         !new_dat_enabled : new_dat_enabled;
 
-    static char const* cfgs[3] = {"Updating RotWK", "Updating Edain", "Updating BotTA"};
+    static char const* cfgs[3] = {"Updating RotWK (Ctrl-C to cancel)", "Updating Edain (Ctrl-C to cancel)", "Updating BotTA (Ctrl-C to cancel)"};
 
     #pragma omp parallel num_threads(2)
     {
@@ -350,7 +366,7 @@ static bool update_single_config(enum configuration cfg, char const* toml, bool 
 
             #pragma omp task
             {
-                update_successful = update_game_config(toml, invert_dat, &latch, ld, &pc, &cancel);
+                update_successful = update_game_config(toml, invert_dat, &latch, ld, &pc, &cancel_update);
                 atomic_dec(&tasks_running);
             }
 
@@ -373,11 +389,12 @@ static bool update_single_config(enum configuration cfg, char const* toml, bool 
 static bool update_all_configs(char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml,
                                bool new_dat_enabled, struct launcher_data const* ld) {
     int volatile tasks_running = 1;
-    int volatile cancel = 0;
     if(ld->edain_available)
         ++tasks_running;
     if(ld->botta_available)
         ++tasks_running;
+
+    atomic_write(&cancel_update, 0);
 
     struct latch latch;
     latch_init(&latch, tasks_running + 1);
@@ -390,7 +407,7 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
 
     int volatile failed = 0x0;
 
-    char const desc[] = "Updating all configs";
+    char const desc[] = "Updating all configs (Ctrl-C to cancel)";
 
     #pragma omp parallel num_threads(4)
     {
@@ -398,7 +415,7 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
         {
             #pragma omp task if(ld->edain_available)
             {
-                if(!update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc, &cancel))
+                if(!update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc, &cancel_update))
                     atomic_or(&failed, edain);
 
                 atomic_dec(&tasks_running);
@@ -406,7 +423,7 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
 
             #pragma omp task if(ld->botta_available)
             {
-                if(!update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc, &cancel))
+                if(!update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc, &cancel_update))
                     atomic_or(&failed, botta);
 
                 atomic_dec(&tasks_running);
@@ -414,7 +431,7 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
 
             #pragma omp task
             {
-                if(!update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc, &cancel))
+                if(!update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc, &cancel_update))
                     atomic_or(&failed, rotwk);
 
                 atomic_dec(&tasks_running);
@@ -431,7 +448,8 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
 
                 tasks = atomic_read(&tasks_running);
             }
-            progress_bar_finish(&pb, desc);
+            if(!atomic_read(&cancel_update))
+                progress_bar_finish(&pb, desc);
         }
     }
 
