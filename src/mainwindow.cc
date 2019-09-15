@@ -10,11 +10,14 @@
 #include "progress_callback.h"
 #include "strutils.h"
 #include "ui_mainwindow.h"
-#include <algorithm>
+
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <algorithm>
+
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -29,13 +32,21 @@
 
 extern void(*errdisp)(char const*);
 
-
-/* Use RAII to restore cursor */
-struct busy_cursor {
-    busy_cursor() { QApplication::setOverrideCursor(Qt::BusyCursor); }
-    ~busy_cursor() { QApplication::restoreOverrideCursor(); }
+/* RAII utilities */
+struct scoped_cursor {
+    scoped_cursor(Qt::CursorShape shape) { QApplication::setOverrideCursor(shape); }
+    ~scoped_cursor() { QApplication::restoreOverrideCursor(); }
 };
 
+struct scoped_bool {
+    scoped_bool(bool& b) : b_{b} { b_ = true; }
+    ~scoped_bool() { b_ = false; }
+
+    private:
+        bool& b_;
+};
+
+/* GUI error dialog */
 void gui_error_diag(char const* info) {
     QMessageBox box;
     box.critical(0, "Error", info);
@@ -253,7 +264,7 @@ void MainWindow::on_rotwk_upd_clicked() {
 }
 
 void MainWindow::on_pref_save_clicked() {
-    busy_cursor cursor{};
+    scoped_cursor cursor{Qt::BusyCursor};
 
     QString exe = game_path_ + "/" + GAME_EXE;
 
@@ -382,9 +393,9 @@ void MainWindow::resizeEvent(QResizeEvent*) {
 }
 
 void MainWindow::launch(configuration config) {
-    bool mounting_necessary = false;
+    scoped_cursor lock{Qt::WaitCursor};
 
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+    bool mounting_necessary = false;
 
     if(data_.kill_on_launch)
         hide();
@@ -449,8 +460,6 @@ void MainWindow::launch(configuration config) {
             break;
     }
 
-    QApplication::restoreOverrideCursor();
-
     if(data_.kill_on_launch)
         QApplication::quit();
 }
@@ -460,9 +469,9 @@ void MainWindow::update_single_config(configuration config) {
         errdisp("Update already running");
         return;
     }
-    is_updating = true;
+    scoped_cursor cursor{Qt::BusyCursor};
+    scoped_bool sb(is_updating);
 
-    busy_cursor cursor{};
     QString version;
     QString const* toml;
     bool new_dat_enabled = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
@@ -539,7 +548,6 @@ void MainWindow::update_single_config(configuration config) {
 
     if(!update_successful) 
         QMessageBox::warning(this, tr("Warning"), "Failed to update the " + version + " config.\nNo changes will be written");
-    is_updating = false;
 }
 
 void MainWindow::update_all_configs() {
@@ -547,9 +555,9 @@ void MainWindow::update_all_configs() {
         errdisp("Update already running");
         return;
     }
-    is_updating = true;
+    scoped_bool sb{is_updating};
+    scoped_cursor cursor{Qt::BusyCursor};
 
-    busy_cursor cursor{};
     int volatile tasks_running = 1;
     int volatile cancel = 0;
     int volatile failed = 0x0;
@@ -648,7 +656,6 @@ void MainWindow::update_all_configs() {
 
         QMessageBox::warning(this, tr("Warning"), msg);
     }
-    is_updating = false;
 }
 
 QString MainWindow::wrap_text(QString const& text) {
