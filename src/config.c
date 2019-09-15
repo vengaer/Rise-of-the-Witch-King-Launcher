@@ -190,7 +190,7 @@ bool write_game_config(char const* filename,
     return true;
 }
 
-bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, struct launcher_data const* cfg, struct progress_callback* pc) {
+bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, struct launcher_data const* cfg, struct progress_callback* pc, int volatile* cancel) {
     bool read_success, update_success, write_success;
     size_t enable_size, disable_size, swap_size;
     size_t enable_cap = 64, disable_cap = 64, swap_cap = 2;
@@ -228,10 +228,11 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
         size_t i;
         char toggled[ENTRY_SIZE];
         bool config_enabled;
+        bool is_canceled = false;
 
         #pragma omp for schedule(dynamic)
         for(i = 0; i < enable_size; i++) {
-            if(!cfg->edain_available && strstr(enable[i].name, "edain"))
+            if(is_canceled || (!cfg->edain_available && strstr(enable[i].name, "edain")))
                 continue;
 
             if(!file_exists(enable[i].name)) {
@@ -244,11 +245,12 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
             else if(!md5sum(enable[i].name, enable[i].checksum))
                     update_success = false;
 
+            is_canceled = atomic_read(cancel);
             progress_increment(pc);
         }
         #pragma omp for schedule(dynamic)
         for(i = 0; i < disable_size; i++) {
-            if(!cfg->edain_available && strstr(disable[i].name, "edain"))
+            if(is_canceled || (!cfg->edain_available && strstr(disable[i].name, "edain")))
                 continue;
 
             if(!file_exists(disable[i].name)) {
@@ -261,10 +263,14 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
             else if(!md5sum(disable[i].name, disable[i].checksum))
                     update_success = false;
 
+            is_canceled = atomic_read(cancel);
             progress_increment(pc);
         }
         #pragma omp for schedule(dynamic)
         for(i = 0; i < swap_size; i++) {
+            if(is_canceled)
+                continue;
+
             if(swap[i].state == active) {
                 if(config_enabled && !invert_dat_files) {
                     if(!md5sum(swap[i].name, swap[i].checksum))
@@ -284,9 +290,17 @@ bool update_game_config(char const* filename, bool invert_dat_files, struct latc
                         update_success = false;
             }
 
+            is_canceled = atomic_read(cancel);
             progress_increment(pc);
         }
 
+    }
+
+    if(atomic_read(cancel)) {
+        free(enable);
+        free(disable);
+        free(swap);
+        return true;
     }
 
     if(update_success) {

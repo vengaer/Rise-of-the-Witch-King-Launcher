@@ -21,7 +21,7 @@ bool write_game_config(char const* filename,
                        struct big_file* disable, size_t disable_size,
                        struct dat_file* swap, size_t swap_size);
 
-bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, struct launcher_data const* cfg, struct progress_callback* pc);
+bool update_game_config(char const* filename, bool invert_dat_files, struct latch* latch, struct launcher_data const* cfg, struct progress_callback* pc, int volatile* cancel);
 
 bool write_launcher_config(struct launcher_data const* cfg, char const* file);
 bool read_launcher_config(struct launcher_data* cfg, char const* file);

@@ -330,6 +330,7 @@ static bool update(char const* restrict upd_cfg, bool new_dat_enabled, struct la
 static bool update_single_config(enum configuration cfg, char const* toml, bool new_dat_enabled, struct launcher_data const* ld) {
     bool volatile update_successful;
     int volatile tasks_running = 1;
+    int volatile cancel = 0;
     struct latch latch;
     latch_init(&latch, tasks_running + 1);
     struct progress_callback pc;
@@ -349,7 +350,7 @@ static bool update_single_config(enum configuration cfg, char const* toml, bool 
 
             #pragma omp task
             {
-                update_successful = update_game_config(toml, invert_dat, &latch, ld, &pc);
+                update_successful = update_game_config(toml, invert_dat, &latch, ld, &pc, &cancel);
                 atomic_dec(&tasks_running);
             }
 
@@ -372,6 +373,7 @@ static bool update_single_config(enum configuration cfg, char const* toml, bool 
 static bool update_all_configs(char const* restrict edain_toml, char const* restrict botta_toml, char const* restrict rotwk_toml,
                                bool new_dat_enabled, struct launcher_data const* ld) {
     int volatile tasks_running = 1;
+    int volatile cancel = 0;
     if(ld->edain_available)
         ++tasks_running;
     if(ld->botta_available)
@@ -396,7 +398,7 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
         {
             #pragma omp task if(ld->edain_available)
             {
-                if(!update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc))
+                if(!update_game_config(edain_toml, new_dat_enabled, &latch, ld, &pc, &cancel))
                     atomic_or(&failed, edain);
 
                 atomic_dec(&tasks_running);
@@ -404,7 +406,7 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
 
             #pragma omp task if(ld->botta_available)
             {
-                if(!update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc))
+                if(!update_game_config(botta_toml, new_dat_enabled, &latch, ld, &pc, &cancel))
                     atomic_or(&failed, botta);
 
                 atomic_dec(&tasks_running);
@@ -412,7 +414,7 @@ static bool update_all_configs(char const* restrict edain_toml, char const* rest
 
             #pragma omp task
             {
-                if(!update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc))
+                if(!update_game_config(rotwk_toml, !new_dat_enabled, &latch, ld, &pc, &cancel))
                     atomic_or(&failed, rotwk);
 
                 atomic_dec(&tasks_running);

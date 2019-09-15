@@ -435,8 +435,6 @@ void MainWindow::launch(configuration config) {
 }
 
 void MainWindow::update_single_config(configuration config) {
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-
     QString version;
     QString const* toml;
     bool new_dat_enabled = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
@@ -465,6 +463,7 @@ void MainWindow::update_single_config(configuration config) {
     }
 
     int volatile tasks_running = 1;
+    int volatile cancel = 0;
     bool volatile update_successful;
     struct latch latch;
     latch_init(&latch, tasks_running + 1);
@@ -476,7 +475,7 @@ void MainWindow::update_single_config(configuration config) {
         {
             #pragma omp task
             {
-                update_successful = update_game_config(toml->toLatin1().data(), invert_dat, &latch, &data_, &pc);
+                update_successful = update_game_config(toml->toLatin1().data(), invert_dat, &latch, &data_, &pc, &cancel);
 
                 atomic_dec(&tasks_running);
             }
@@ -486,7 +485,6 @@ void MainWindow::update_single_config(configuration config) {
             int const total = 100;
             QProgressDialog dialog("Updating " + version + " config file...", "Cancel", 0, total, this);
             dialog.setWindowModality(Qt::WindowModal);
-            dialog.setCancelButton(nullptr);
             dialog.setWindowTitle("Update");
 
             dialog.show();
@@ -496,26 +494,30 @@ void MainWindow::update_single_config(configuration config) {
             while(tasks) {
                 progress = progress_get_percentage(&pc);
                 QCoreApplication::processEvents();
-                dialog.setValue(progress);
+
+                if(dialog.wasCanceled())
+                    atomic_write(&cancel, 1);
+                else
+                    dialog.setValue(progress);
 
                 tasks = atomic_read(&tasks_running);
             }
-            dialog.setValue(total);
+            if(!cancel)
+                dialog.setValue(total);
+
             dialog.close();
 
         }
     }
-
-    QApplication::restoreOverrideCursor();
 
     if(!update_successful) 
         QMessageBox::warning(this, tr("Warning"), "Failed to update the " + version + " config.\nNo changes will be written");
 }
 
 void MainWindow::update_all_configs() {
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-
     int volatile tasks_running = 1;
+    int volatile cancel = 0;
+    int volatile failed = 0x0;
     bool invert_dat = strcmp(&game_hash[0], NEW_DAT_CSUM) == 0;
 
     if(data_.edain_available)
@@ -529,15 +531,13 @@ void MainWindow::update_all_configs() {
     struct progress_callback pc;
     progress_init(&pc);
 
-    int volatile failed = 0x0;
-
     #pragma omp parallel num_threads(4)
     {
         #pragma omp master
         {
             #pragma omp task if(data_.edain_available)
             {
-                if(!update_game_config(edain_toml_.toLatin1().data(), invert_dat, &latch, &data_, &pc)) {
+                if(!update_game_config(edain_toml_.toLatin1().data(), invert_dat, &latch, &data_, &pc, &cancel)) {
                     atomic_or(&failed, edain);
                 }
 
@@ -545,7 +545,7 @@ void MainWindow::update_all_configs() {
             }
             #pragma omp task if(data_.botta_available)
             {
-                if(!update_game_config(botta_toml_.toLatin1().data(), invert_dat, &latch, &data_, &pc)) {
+                if(!update_game_config(botta_toml_.toLatin1().data(), invert_dat, &latch, &data_, &pc, &cancel)) {
                     atomic_or(&failed, botta);
                 }
 
@@ -553,7 +553,7 @@ void MainWindow::update_all_configs() {
             }
             #pragma omp task
             {
-                if(!update_game_config(rotwk_toml_.toLatin1().data(), !invert_dat, &latch, &data_, &pc)) {
+                if(!update_game_config(rotwk_toml_.toLatin1().data(), !invert_dat, &latch, &data_, &pc, &cancel)) {
                     atomic_or(&failed, rotwk);
                 }
 
@@ -565,7 +565,6 @@ void MainWindow::update_all_configs() {
             int const total = 100;
             QProgressDialog dialog("Updating config files...", "Cancel", 0, total, this);
             dialog.setWindowModality(Qt::WindowModal);
-            dialog.setCancelButton(nullptr);
             dialog.setWindowTitle("Update");
 
             dialog.show();
@@ -575,11 +574,17 @@ void MainWindow::update_all_configs() {
             while(tasks) {
                 progress = progress_get_percentage(&pc);
                 QCoreApplication::processEvents();
-                dialog.setValue(progress);
+
+                if(dialog.wasCanceled())
+                    atomic_write(&cancel, 1);
+                else
+                    dialog.setValue(progress);
 
                 tasks = atomic_read(&tasks_running);
             }
-            dialog.setValue(total);
+            if(!cancel)
+                dialog.setValue(total);
+
             dialog.close();
         }
     }
@@ -608,8 +613,6 @@ void MainWindow::update_all_configs() {
 
         QMessageBox::warning(this, tr("Warning"), msg);
     }
-
-    QApplication::restoreOverrideCursor();
 }
 
 QString MainWindow::wrap_text(QString const& text) {
