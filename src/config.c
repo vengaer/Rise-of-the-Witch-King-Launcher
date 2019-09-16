@@ -6,7 +6,6 @@
 #include "pattern.h"
 #include "strutils.h"
 #include <ctype.h>
-#include <omp.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

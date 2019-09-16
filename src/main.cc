@@ -3,7 +3,6 @@
 #include "mainwindow.h"
 #include "strutils.h"
 #include <QApplication>
-#include <omp.h>
 
 #if defined __CYGWIN__ || defined _WIN32
 #include <windows.h>

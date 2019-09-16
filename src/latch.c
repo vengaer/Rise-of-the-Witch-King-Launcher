@@ -1,6 +1,5 @@
 #include "latch.h"
 #include "command.h"
-#include <omp.h>
 
 #define SILENCE_LINT(x) (void)(x);
 

@@ -1,6 +1,5 @@
 #include "pattern.h"
 #include "string_view_regex.h"
-#include <stdio.h>
 #include <regex>
 #include <string>
 #include <string_view>

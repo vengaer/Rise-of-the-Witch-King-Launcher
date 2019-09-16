@@ -1,7 +1,6 @@
 #include "atomic.h"
-#include <omp.h>
 
-#define SILENCE_LINT(x) (void)(x);
+#define UNUSED(x) (void)(x);
 
 int atomic_inc(int volatile* value) {
     int rv;
@@ -189,7 +188,7 @@ int atomic_read(int const volatile* value) {
 }
 
 int atomic_write(int volatile* value, int new_value) {
-    SILENCE_LINT(new_value)
+    UNUSED(new_value)
     int old;
     #pragma omp flush
 
