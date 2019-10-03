@@ -34,10 +34,10 @@ static inline void mutex_unlock(mutex* m) {
 #else
 
 typedef struct { } mutex;
-static inline void mutex_init(mutex* m) { /* no-op */ }
-static inline void mutex_destroy(mutex* m) { /* no-op */ }
-static inline void mutex_lock(mutex* m) { /* no-op */ }
-static inline void mutex_unlock(mutex* m) { /* no-op */ }
+static inline void mutex_init(mutex*) { /* no-op */ }
+static inline void mutex_destroy(mutex*) { /* no-op */ }
+static inline void mutex_lock(mutex*) { /* no-op */ }
+static inline void mutex_unlock(mutex*) { /* no-op */ }
 
 #endif
 
