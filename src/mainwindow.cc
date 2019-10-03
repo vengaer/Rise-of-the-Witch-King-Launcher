@@ -91,7 +91,7 @@ void MainWindow::on_mount_image_clicked() {
     QString start_path = mount_image_ == "" ? "C://" : mount_image_;
     QString img = QFileDialog::getOpenFileName(this, tr("Choose image"), start_path, "All files (*.*);; Iso files (*.iso);; Mds files (*.mds)");
     if(img != "") {
-        mount_image_ = img; 
+        mount_image_ = img;
         ui->mount_image->setText(wrap_text(mount_image_));
     }
 }
@@ -175,10 +175,10 @@ void MainWindow::init() {
 
     ui->kill_on_launch->setChecked(data_.kill_on_launch);
     ui->show_console->setChecked(data_.show_console);
-    
+
     for(auto const& state : default_states)
         ui->default_state->addItem(state);
-    
+
     for(auto const& s : ROTWK_VERSIONS)
         ui->rotwk_version->addItem(s);
 
@@ -400,7 +400,7 @@ void MainWindow::launch(configuration config) {
 
     md5sum(dat_file_location_.toLatin1().data(), &game_hash[0]);
 
-    if(config == rotwk) 
+    if(config == rotwk)
         set_active_configuration(rotwk_toml_.toLatin1().data(), data_.patch_version, true, data_.verify_active);
     else {
 
@@ -417,7 +417,7 @@ void MainWindow::launch(configuration config) {
 
     if(mounting_necessary && data_.automatic_mount) {
         if(system(data_.mount_cmd) != 0) {
-            fprintf(stderr, "'%s' returned an error\n", data_.mount_cmd);
+            errdispf("'%s' returned an error", data_.mount_cmd);
             return;
         }
     }
@@ -434,14 +434,14 @@ void MainWindow::launch(configuration config) {
     }
 
     if(system(launch_cmd.toLatin1().data()) != 0)
-        fprintf(stderr, "Failed to launch game.\n");
+        errdisp("Failed to launch game");
 
     while(game_running())
         sleep_for(SLEEP_TIME);
 
     if(mounting_necessary && data_.automatic_mount) {
         if(system(data_.umount_cmd) != 0)
-            fprintf(stderr, "'%s' returned an error\n", data_.umount_cmd);
+            errdispf("'%s' returned an error", data_.umount_cmd);
     }
 
     switch(data_.default_state) {
@@ -458,6 +458,7 @@ void MainWindow::launch(configuration config) {
             break;
     }
 
+    err_diag.flush();
     if(data_.kill_on_launch)
         QApplication::quit();
 }
@@ -544,7 +545,9 @@ void MainWindow::update_single_config(configuration config) {
         }
     }
 
-    if(!update_successful) 
+    err_diag.flush();
+
+    if(!update_successful)
         QMessageBox::warning(this, tr("Warning"), "Failed to update the " + version + " config.\nNo changes will be written");
 }
 
@@ -629,6 +632,8 @@ void MainWindow::update_all_configs() {
             dialog.close();
         }
     }
+    err_diag.flush();
+
     if(failed) {
         QVector<QString> failed_files;
 
