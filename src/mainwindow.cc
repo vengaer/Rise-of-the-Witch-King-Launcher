@@ -6,6 +6,7 @@
 #include "crypto.h"
 #include "fsys.h"
 #include "game_data.h"
+#include "gui_error_dialog.h"
 #include "latch.h"
 #include "progress_callback.h"
 #include "strutils.h"
@@ -29,6 +30,7 @@
 #include <windows.h>
 #endif
 
+static gui_error_dialog err_diag{};
 extern void(*errdisp)(char const*);
 
 /* RAII utilities */
@@ -45,11 +47,8 @@ struct scoped_bool {
         bool& b_;
 };
 
-/* GUI error dialog */
 void gui_error_diag(char const* info) {
-    QMessageBox box;
-    box.critical(0, "Error", info);
-    box.setFixedSize(500, 200);
+    err_diag.post(info);
 }
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow{parent}, ui{new Ui::MainWindow}, launch_img_{"images/argonath.jpg"}, upd_img_{"images/minas_tirith.jpg"} {
