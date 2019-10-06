@@ -30,6 +30,10 @@
 #include <windows.h>
 #endif
 
+#ifndef _OPENMP
+#error Compiling without OpenMP not supported
+#endif
+
 static gui_error_dialog err_diag{};
 extern void(*errdisp)(char const*);
 

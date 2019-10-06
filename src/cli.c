@@ -21,6 +21,10 @@
 #include <signal.h>
 #include <unistd.h>
 
+#ifndef _OPENMP
+#error Compiling without OpenMP not supported
+#endif
+
 extern void(*errdisp)(char const*);
 static int volatile cancel_update = 0;
 
