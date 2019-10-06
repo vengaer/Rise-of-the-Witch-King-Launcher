@@ -33,7 +33,7 @@ static inline void mutex_unlock(mutex* m) {
 
 #else
 
-typedef struct { } mutex;
+typedef char mutex;
 static inline void mutex_init(mutex*) { /* no-op */ }
 static inline void mutex_destroy(mutex*) { /* no-op */ }
 static inline void mutex_lock(mutex*) { /* no-op */ }
