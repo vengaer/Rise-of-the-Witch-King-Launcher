@@ -36,15 +36,6 @@ In the MSYS MinGW64 shell:
 
 After doing this, `rotwk_launcher` will contain everything needed to run the launcher.
 
-
-### Linux
-
-*Note that there is no "official" support for Linux as I have never run the game under Wine and therefore can't guarantee that everything works.*
-
- - `sudo pacman -Syu && pacman --needed -S git gcc make qt5-base openmp` (or equivalent for your package manager)
- - `cd && git clone https://gitlab.com/vilhelmengstrom/rotwkl.git && cd rotwkl`
- - `make release`
-
 ## Disclaimer
 
 This piece of software is not affiliated with either the Edain or BotTA mods. All credit for the mods go to the respective authors.
